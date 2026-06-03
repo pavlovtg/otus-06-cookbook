@@ -1,0 +1,51 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+*.trx
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Бинарные файлы
+*.snk
+*.png
+*.svg
+*.jpg
+*.ico
+
+# Секреты и локальные конфигурации
+*.env
+*.env.local
+appsettings.Local.json
+secrets.json
+*.pfx
+*.p12
+
+# NuGet
+*.nupkg
+.nuget/
+
+# Логи
+*.log
+
+# macOS
+.DS_Store
