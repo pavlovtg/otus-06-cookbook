@@ -9,6 +9,8 @@ metadata:
   generatedBy: "1.3.1"
 ---
 
+Перед началом прочитать `architecture.md` и следовать политике загрузки контекста.
+
 Propose a new change - create the change and generate all artifacts in one step.
 
 I'll create a change with artifacts:
@@ -70,12 +72,19 @@ When ready to implement, run /opsx:apply
       - Apply `context` and `rules` as constraints - but do NOT copy them into the file
       - Show brief progress: "Created <artifact-id>"
 
-   b. **Continue until all `applyRequires` artifacts are complete**
+   b. **Перед созданием `tasks.md`** — обновить архитектурную документацию:
+      - Если `design.md` или ADR вводят новые архитектурные решения — использовать скил `update-architecture-from-adr`.
+      - Если вводятся новые архитектурные ограничения — использовать скил `update-architecture-from-ar`.
+      - Если вводятся новые требования к реализации — использовать скил `update-architecture-from-standard`.
+      - Если нужны новые диаграммы — использовать скил `diagram`.
+      - При сомнении в необходимости обновления — спросить у пользователя.
+
+   c. **Continue until all `applyRequires` artifacts are complete**
       - After creating each artifact, re-run `openspec status --change "<name>" --json`
       - Check if every artifact ID in `applyRequires` has `status: "done"` in the artifacts array
       - Stop when all `applyRequires` artifacts are done
 
-   c. **If an artifact requires user input** (unclear context):
+   d. **If an artifact requires user input** (unclear context):
       - Use **AskUserQuestion tool** to clarify
       - Then continue with creation
 

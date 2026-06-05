@@ -9,6 +9,12 @@ metadata:
   generatedBy: "1.3.1"
 ---
 
+Перед началом прочитать `architecture.md` и следовать политике загрузки контекста.
+
+При реализации задач — проверять соответствие действующим AR и стандартам из `architecture.md`.
+
+Перед началом реализации задач проверить, обновлена ли архитектурная документация (ADR, AR, стандарты, диаграммы). Если нет — обновить с помощью соответствующих скилов до начала работы над `tasks.md`.
+
 Implement tasks from an OpenSpec change.
 
 **Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.

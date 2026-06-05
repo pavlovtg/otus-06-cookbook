@@ -1,17 +1,18 @@
-# NNNN. <Decision title>
+# NNNN. <Название решения>
 
-- Status: proposed | accepted | accepted, supersedes ADR-XXXX
-- Date: YYYY-MM-DD
-<!-- Supersedes: ADR-XXXX  (include this line only if this ADR replaces a prior in-force ADR; omit otherwise) -->
+- **Статус**: принят | устарел | заменён ADR-NNNN
+- **Дата**: YYYY-MM-DD
 
-## Context
+<!-- Заменяет: ADR-XXXX (указать только если этот ADR заменяет предыдущий; иначе убрать строку) -->
 
-<!-- Forces at play, constraints, what's prompting this decision. If this ADR supersedes a prior one, explain here why the earlier decision is being revisited — the prior ADR's file is immutable and will not be edited. -->
+## Контекст
 
-## Decision
+<!-- Ограничения, предпосылки, причины принятия решения. Если ADR заменяет предыдущий — объяснить почему. -->
 
-<!-- The choice being made, stated clearly and unambiguously. -->
+## Решение
 
-## Consequences
+<!-- Принятый выбор, сформулированный чётко и однозначно. -->
 
-<!-- Positive, negative, and neutral consequences. What becomes easier? What becomes harder? -->
+## Последствия
+
+<!-- Положительные, отрицательные и нейтральные последствия. -->
