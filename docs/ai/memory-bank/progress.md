@@ -13,6 +13,8 @@
   - Скилы: `adr`, `ar`, `diagram`, `update-architecture-from-adr`, `update-architecture-from-ar`, `update-architecture-from-standard`
   - Шаблоны OpenSpec переведены на русский
   - Скилы `openspec-propose` и `openspec-apply-change` обновлены
+- ADR-0002 — Монорепозиторий создан
+- `docs/standards/repository-structure.md` — стандарт структуры репозитория создан
 
 ## В работе
 

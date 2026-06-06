@@ -6,15 +6,11 @@
 
 ## Последнее выполненное
 
-Создана система архитектурной документации по промту `docs/ai/prompts/02-update-openspec-architecture.md`:
+Создан ADR-0002 и стандарт структуры репозитория по промту `docs/ai/prompts/03-adr-monorepo.md`:
 
-- `architecture.md` — единая точка входа с таблицами AR, стандартов, ADR
-- `docs/adr/general/ADR-0001-markdown-documentation.md` — первый ADR
-- `docs/architecture/overview.md`, `components.md` — обзор архитектуры
-- Скилы: `adr`, `ar`, `diagram`, `update-architecture-from-adr`, `update-architecture-from-ar`, `update-architecture-from-standard`
-- Шаблоны OpenSpec переведены на русский (`proposal.md`, `design.md`, `adr.md`, `tasks.md`)
-- Скилы `openspec-propose` и `openspec-apply-change` обновлены
-- `docs/standards/markdown-code-style.md` — добавлена ссылка на ADR-0001
+- `docs/adr/general/ADR-0002-monorepo.md` — ADR о выборе монорепозитория
+- `docs/standards/repository-structure.md` — стандарт структуры папок репозитория
+- `architecture.md` — добавлены ADR-0002 и стандарт `repository-structure.md` в индексы
 
 ## Выполнено
 
