@@ -6,6 +6,13 @@
 
 ## Последнее выполненное
 
+Выполнен промт `docs/ai/prompts/07-add-reporting-workflow.md`:
+
+- Создан `.clinerules/workflows/add-report.md` — workflow для добавления записей в `REPORT.md`.
+- Создан `REPORT.md` с 5 разделами; раздел `## Примеры промтов` заполнен таблицей по промтам 01, 03, 04, 05.
+
+## Предыдущее выполненное
+
 Переименован `architecture.md` → `ARCHITECTURE.md` (git mv), обновлены все ссылки:
 
 - `ARCHITECTURE.md` — корневой файл переименован
