@@ -24,6 +24,6 @@
 
 ## Связанные документы
 
-- [ADR-0006: REST API](../adr/general/ADR-0006-rest-api.md)
-- [ADR-0005: JWT-аутентификация](../adr/general/ADR-0005-jwt-authentication.md)
+- [ADR-0006: REST API](../adr/rest-api/ADR-0006-rest-api.md)
+- [ADR-0005: JWT-аутентификация](../adr/rest-api/ADR-0005-jwt-authentication.md)
 - [AR-0002: Swagger UI доступен по живому URL](../architecture/rules/general/AR-0002-swagger-ui-live.md)

@@ -53,6 +53,6 @@
 | ADR-0002: Монорепозиторий | Выбран монорепозиторий для единого управления всеми компонентами проекта | [ADR-0002](docs/adr/general/ADR-0002-monorepo.md) | general | принят |
 | ADR-0003: Релизная политика и модель ветвления | Выбраны Continuous Delivery и GitHub Flow для управления изменениями | [ADR-0003](docs/adr/general/ADR-0003-release-and-branching.md) | general | принят |
 | ADR-0004: PostgreSQL как СУБД | Выбрана PostgreSQL для хранения данных приложения | [ADR-0004](docs/adr/general/ADR-0004-postgresql.md) | general | принят |
-| ADR-0005: JWT-аутентификация | Аутентификация пользователей через JWT-токены | [ADR-0005](docs/adr/general/ADR-0005-jwt-authentication.md) | general | принят |
-| ADR-0006: REST API как протокол взаимодействия | Взаимодействие frontend и backend через REST API с OpenAPI | [ADR-0006](docs/adr/general/ADR-0006-rest-api.md) | general | принят |
+| ADR-0005: JWT-аутентификация | Аутентификация пользователей через JWT-токены | [ADR-0005](docs/adr/rest-api/ADR-0005-jwt-authentication.md) | rest-api | принят |
+| ADR-0006: REST API как протокол взаимодействия | Взаимодействие frontend и backend через REST API с OpenAPI | [ADR-0006](docs/adr/rest-api/ADR-0006-rest-api.md) | rest-api | принят |
 | ADR-0007: Docker Compose как среда развёртывания | Локальный запуск всего приложения через Docker Compose | [ADR-0007](docs/adr/general/ADR-0007-docker-compose.md) | general | принят |

@@ -2,6 +2,7 @@
 
 ## Выполнено
 
+- ADR-0005 и ADR-0006 перемещены в домен `rest-api` (`docs/adr/rest-api/`); обновлены все перекрёстные ссылки
 - Рефакторинг skills архитектурной документации: 4 симметричных skill (`adr`, `ar`, `standard`, `diagram`); удалены `update-architecture-from-*`; актуализированы индексы в `ARCHITECTURE.md`
 - Добавлены правила-триггеры skills в `.clinerules/architecture.md` (ADR/AR/стандарт → соответствующий skill)
 - Инициализирован memory bank

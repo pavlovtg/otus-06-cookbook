@@ -6,6 +6,14 @@
 
 ## Последнее выполненное
 
+Перемещение ADR-0005 и ADR-0006 в домен `rest-api`:
+
+- Файлы перемещены: `docs/adr/general/` → `docs/adr/rest-api/`
+- Поле `**Домен**` обновлено в обоих ADR: `general` → `rest-api`
+- Обновлены ссылки в: `ARCHITECTURE.md`, `AR-0002`, `api-design.md`, `components.md`, `overview.md`
+
+## Предыдущее выполненное
+
 Рефакторинг skills архитектурной документации (промт `09-update-architecture-skills.md`):
 
 - Симметричная структура «один артефакт — один skill»: `adr`, `ar`, `standard`, `diagram`.

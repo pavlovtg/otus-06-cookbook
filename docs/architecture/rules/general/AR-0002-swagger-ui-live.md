@@ -20,5 +20,5 @@ PRD-0001 требует, чтобы преподаватель мог откры
 
 ## Связанные документы
 
-- [ADR-0006: REST API](../../../adr/general/ADR-0006-rest-api.md)
+- [ADR-0006: REST API](../../../adr/rest-api/ADR-0006-rest-api.md)
 - [Стандарт REST API Design](../../../standards/api-design.md)

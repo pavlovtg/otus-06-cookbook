@@ -8,8 +8,8 @@
 ## Ключевые технологии
 
 - **PostgreSQL** — основная СУБД ([ADR-0004](../adr/general/ADR-0004-postgresql.md))
-- **JWT** — аутентификация и авторизация ([ADR-0005](../adr/general/ADR-0005-jwt-authentication.md))
-- **REST API + OpenAPI/Swagger** — протокол взаимодействия frontend–backend ([ADR-0006](../adr/general/ADR-0006-rest-api.md))
+- **JWT** — аутентификация и авторизация ([ADR-0005](../adr/rest-api/ADR-0005-jwt-authentication.md))
+- **REST API + OpenAPI/Swagger** — протокол взаимодействия frontend–backend ([ADR-0006](../adr/rest-api/ADR-0006-rest-api.md))
 - **Docker Compose** — среда развёртывания ([ADR-0007](../adr/general/ADR-0007-docker-compose.md))
 - **GitHub Actions** — CI pipeline
 
