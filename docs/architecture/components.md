@@ -4,10 +4,11 @@
 
 ### Backend
 
-- REST API сервер, реализующий бизнес-логику приложения.
+- REST API сервер, реализующий бизнес-логику приложения (см. [ADR-0006](../adr/general/ADR-0006-rest-api.md), [стандарт API Design](../standards/api-design.md)).
 - OpenAPI/Swagger документация, доступная по живому URL (см. [AR-0002](rules/general/AR-0002-swagger-ui-live.md)).
 - JWT-аутентификация и авторизация (см. [ADR-0005](../adr/general/ADR-0005-jwt-authentication.md)).
 - Управление миграциями и загрузка seed-данных при старте.
+- Покрытие тестами (см. [стандарт тестирования](../standards/testing.md)).
 
 ### Frontend
 
@@ -22,7 +23,7 @@
 
 ### Infrastructure
 
-- Docker Compose объединяет Backend, Frontend и БД в единый стек (см. [ADR-0007](../adr/general/ADR-0007-docker-compose.md)).
+- Docker Compose объединяет Backend, Frontend и БД в единый стек (см. [ADR-0007](../adr/general/ADR-0007-docker-compose.md), [AR-0001](rules/general/AR-0001-docker-compose-self-contained.md), [стандарт Docker Compose](../standards/docker-compose-standard.md)).
 - GitHub Actions CI: lint + тесты при каждом push и pull request (см. [стандарт CI](../standards/ci-standard.md)).
 
 ## Зависимости

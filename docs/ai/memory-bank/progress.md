@@ -2,6 +2,8 @@
 
 ## Выполнено
 
+- Рефакторинг skills архитектурной документации: 4 симметричных skill (`adr`, `ar`, `standard`, `diagram`); удалены `update-architecture-from-*`; актуализированы индексы в `ARCHITECTURE.md`
+- Добавлены правила-триггеры skills в `.clinerules/architecture.md` (ADR/AR/стандарт → соответствующий skill)
 - Инициализирован memory bank
 - Создан стандарт Markdown (`docs/standards/markdown-code-style.md`)
 - Создана система архитектурной документации (ADR, AR, overview, components, standards)

@@ -26,3 +26,4 @@ API документируется через OpenAPI/Swagger; Swagger UI дос
 - Все эндпоинты описываются в OpenAPI-спецификации.
 - Swagger UI доступен в запущенном приложении (не статический файл).
 - Стандарт реализации: [docs/standards/api-design.md](../../standards/api-design.md).
+- Архитектурное правило: [AR-0002: Swagger UI доступен по живому URL](../../architecture/rules/general/AR-0002-swagger-ui-live.md).

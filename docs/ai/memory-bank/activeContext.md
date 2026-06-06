@@ -6,6 +6,18 @@
 
 ## Последнее выполненное
 
+Рефакторинг skills архитектурной документации (промт `09-update-architecture-skills.md`):
+
+- Симметричная структура «один артефакт — один skill»: `adr`, `ar`, `standard`, `diagram`.
+- Удалены `update-architecture-from-{adr,ar,standard}`; шаблон стандарта перенесён в `standard/assets/`.
+- В каждом skill добавлен явный блок «Консистентность» (индекс в `ARCHITECTURE.md`, перекрёстные ссылки, `overview.md`, `components.md`).
+- Правила «Домен» и «Нумерация» оставлены внутри skills (экономия токенов базового контекста).
+- `.clinerules/architecture.md` сведён к 6 триггерам.
+- Актуализированы индексы AR/стандартов/ADR в `ARCHITECTURE.md` (AR-0001/0002, стандарты api-design/docker-compose/testing/ci, ADR-0004…0007).
+
+
+## Предыдущее выполненное
+
 Выполнен промт `docs/ai/prompts/08-adr-from-assigment.md`:
 
 - ADR-0004 — PostgreSQL как СУБД

@@ -18,3 +18,8 @@
 - Требование выполнить миграции или seed вручную (`docker exec ...`, `npm run migrate`).
 - Зависимость от внешних сервисов, недоступных в чистом окружении (внешняя БД, сторонний API без mock).
 - Приложение не запускается или падает при первом `docker compose up` без предварительной подготовки.
+
+## Связанные документы
+
+- [ADR-0007: Docker Compose](../../../adr/general/ADR-0007-docker-compose.md)
+- [Стандарт Docker Compose](../../../standards/docker-compose-standard.md)
