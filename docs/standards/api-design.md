@@ -1,0 +1,29 @@
+# Стандарт: REST API Design
+
+## Правила
+
+- Все эндпоинты описываются в OpenAPI-спецификации (версия 3.x).
+- API реализуется как REST: HTTP-методы (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`) соответствуют операциям над ресурсами.
+
+## Именование
+
+- URL ресурсов — во множественном числе, kebab-case: `/recipes`, `/shopping-lists`.
+- Вложенные ресурсы: `/recipes/{id}/comments`.
+- Версионирование API — через префикс пути: `/api/v1/`.
+
+## Ответы
+
+- Успешные ответы: `200 OK`, `201 Created`, `204 No Content`.
+- Ошибки клиента: `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`.
+- Тело ошибки содержит поле `message` с описанием.
+
+## Аутентификация
+
+- Защищённые эндпоинты требуют заголовка `Authorization: Bearer <JWT>`.
+- Публичные эндпоинты (просмотр публичных рецептов) доступны без токена.
+
+## Связанные документы
+
+- [ADR-0006: REST API](../adr/general/ADR-0006-rest-api.md)
+- [ADR-0005: JWT-аутентификация](../adr/general/ADR-0005-jwt-authentication.md)
+- [AR-0002: Swagger UI доступен по живому URL](../architecture/rules/general/AR-0002-swagger-ui-live.md)
