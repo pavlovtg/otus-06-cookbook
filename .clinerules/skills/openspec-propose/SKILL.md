@@ -9,7 +9,7 @@ metadata:
   generatedBy: "1.3.1"
 ---
 
-Перед началом прочитать `architecture.md` и следовать политике загрузки контекста.
+Перед началом прочитать `ARCHITECTURE.md` и следовать политике загрузки контекста.
 
 Propose a new change - create the change and generate all artifacts in one step.
 

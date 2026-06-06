@@ -5,7 +5,7 @@
 - `docs/ai/prompts/` — промты для Cline
 - `docs/ai/memory-bank/` — memory bank
 - `.clinerules/` — правила и workflows для Cline
-- `architecture.md` — единая точка входа в архитектурную документацию
+- `ARCHITECTURE.md` — единая точка входа в архитектурную документацию
 - `docs/adr/` — Architecture Decision Records
 - `docs/architecture/rules/` — Architecture Rules
 - `docs/architecture/diagrams/` — диаграммы (PlantUML + C4)

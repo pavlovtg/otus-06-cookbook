@@ -6,11 +6,26 @@
 
 ## Последнее выполненное
 
-Создан ADR-0003 и стандарт ветвления по промту `docs/ai/prompts/04-branch-plan-standard.md`:
+Переименован `architecture.md` → `ARCHITECTURE.md` (git mv), обновлены все ссылки:
 
-- `docs/adr/general/ADR-0003-release-and-branching.md` — ADR о релизной политике и модели ветвления
-- `docs/standards/branch-plan.md` — стандарт ветвления и релизной политики (GitHub Flow)
-- `architecture.md` — добавлены ADR-0003 и стандарт `branch-plan.md` в индексы
+- `ARCHITECTURE.md` — корневой файл переименован
+- `.clinerules/architecture.md` — обновлена ссылка в тексте правила
+- `.clinerules/skills/` — обновлены все 8 скилов
+- `docs/ai/prompts/02-04` — обновлены все промты
+- `docs/standards/repository-structure.md`, `docs/architecture/overview.md` — обновлены
+- `docs/ai/memory-bank/` — обновлены все файлы
+
+Ранее создана contributing-документация по промту `docs/ai/prompts/05-contributing-guide.md`:
+
+- `docs/contributing/feature-workflow.md` — процесс реализации фичи (ветка → openspec-propose → openspec-apply-change → openspec-archive-change → PR)
+- `docs/contributing/chore-workflow.md` — процесс технической задачи (ветка → выполнение → PR)
+- `CONTRIBUTING.md` — корневой файл для участников репозитория
+
+Дополнительно:
+
+- `.clinerules/architecture.md` — добавлено правило загрузки `markdown-code-style.md` при работе с Markdown
+- `.clinerules/workflows/create-prompt.md` — добавлена ссылка на стандарт Markdown
+- `docs/ai/prompts/05-contributing-guide.md` — исправлены нарушения MD032
 
 ## Выполнено
 

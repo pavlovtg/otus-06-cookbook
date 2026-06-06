@@ -8,7 +8,7 @@
 
 - Проект `otus-06-cookbook` — учебный монорепозиторий «Книга рецептов».
 - Сервисов пока нет, только инфраструктура (docs, openspec, .clinerules).
-- Используется система ADR + standards: `docs/adr/`, `docs/standards/`, `architecture.md`.
+- Используется система ADR + standards: `docs/adr/`, `docs/standards/`, `ARCHITECTURE.md`.
 - Текущая структура репозитория:
 
 ```
@@ -32,7 +32,7 @@ docs/
 apps/                 # приложения
 tests/                # тесты
 openspec/             # спецификации и схемы
-architecture.md       # единая точка входа
+ARCHITECTURE.md       # единая точка входа
 README.md
 .clineignore          # правила игнорирования файлов для агента
 .gitignore            # правила игнорирования файлов для git
@@ -45,16 +45,16 @@ README.md
    - Контекст: проект содержит несколько компонентов (документация, спецификации, правила агента, будущий код сервисов) — нужна единая точка управления зависимостями и версионирования.
    - Рассмотренные варианты: монорепозиторий, полирепозиторий.
    - Решение: использовать монорепозиторий.
-   - Стандарт реализации: `docs/standards/project-structure.md`.
+   - Стандарт реализации: `docs/standards/repository-structure.md`.
 
-2. Использовать скил `update-architecture-from-standard` — создать `docs/standards/project-structure.md`:
+2. Использовать скил `update-architecture-from-standard` — создать `docs/standards/repository-structure.md`:
    - Описать структуру папок репозитория (см. раздел «Контекст»).
    - Добавить назначение каждой папки.
    - Добавить ссылку на ADR-0002.
 
-3. Обновить `architecture.md`:
+3. Обновить `ARCHITECTURE.md`:
    - Добавить ADR-0002 в индекс ADR.
-   - Добавить `project-structure.md` в индекс стандартов.
+   - Добавить `repository-structure.md` в индекс стандартов.
 
 ## Требования
 

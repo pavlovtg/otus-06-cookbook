@@ -14,7 +14,7 @@
 ## Структура документации
 
 ```
-architecture.md              # единая точка входа
+ARCHITECTURE.md              # единая точка входа
 docs/
 ├── adr/                     # архитектурные решения
 ├── architecture/
