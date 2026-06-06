@@ -38,6 +38,7 @@
 |----------|---------------------|------|
 | Стандарт оформления Markdown | Правила форматирования Markdown-файлов: отступы, заголовки, списки, пустые строки | [markdown-code-style.md](docs/standards/markdown-code-style.md) |
 | Стандарт структуры репозитория | Структура папок монорепозитория и назначение каждой папки | [repository-structure.md](docs/standards/repository-structure.md) |
+| Стандарт ветвления и релизной политики | Правила работы с ветками по GitHub Flow: именование, PR, защита main | [branch-plan.md](docs/standards/branch-plan.md) |
 
 ## ADR
 
@@ -45,3 +46,4 @@
 |----------|---------------------|------|-------|--------|
 | ADR-0001: Markdown как единый формат документации | Markdown выбран как единый формат документации для людей и AI-агентов | [ADR-0001](docs/adr/general/ADR-0001-markdown-documentation.md) | general | принят |
 | ADR-0002: Монорепозиторий | Выбран монорепозиторий для единого управления всеми компонентами проекта | [ADR-0002](docs/adr/general/ADR-0002-monorepo.md) | general | принят |
+| ADR-0003: Релизная политика и модель ветвления | Выбраны Continuous Delivery и GitHub Flow для управления изменениями | [ADR-0003](docs/adr/general/ADR-0003-release-and-branching.md) | general | принят |

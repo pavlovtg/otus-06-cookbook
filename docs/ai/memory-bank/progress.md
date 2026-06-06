@@ -15,6 +15,8 @@
   - Скилы `openspec-propose` и `openspec-apply-change` обновлены
 - ADR-0002 — Монорепозиторий создан
 - `docs/standards/repository-structure.md` — стандарт структуры репозитория создан
+- ADR-0003 — Релизная политика и модель ветвления создан
+- `docs/standards/branch-plan.md` — стандарт ветвления и релизной политики создан
 
 ## В работе
 

@@ -6,11 +6,11 @@
 
 ## Последнее выполненное
 
-Создан ADR-0002 и стандарт структуры репозитория по промту `docs/ai/prompts/03-adr-monorepo.md`:
+Создан ADR-0003 и стандарт ветвления по промту `docs/ai/prompts/04-branch-plan-standard.md`:
 
-- `docs/adr/general/ADR-0002-monorepo.md` — ADR о выборе монорепозитория
-- `docs/standards/repository-structure.md` — стандарт структуры папок репозитория
-- `architecture.md` — добавлены ADR-0002 и стандарт `repository-structure.md` в индексы
+- `docs/adr/general/ADR-0003-release-and-branching.md` — ADR о релизной политике и модели ветвления
+- `docs/standards/branch-plan.md` — стандарт ветвления и релизной политики (GitHub Flow)
+- `architecture.md` — добавлены ADR-0003 и стандарт `branch-plan.md` в индексы
 
 ## Выполнено
 
