@@ -6,6 +6,17 @@
 
 ## Последнее выполненное
 
+Выбор edge reverse proxy (Solution Architect-сессия):
+
+- Зафиксированы требования: единая точка входа + кэш статики (hit ≥ 90%, p95 < 30ms, uptime 99.9%); RPS пик 50 → 200 через год; OSS, $0, Docker Compose, команда .NET; self-signed TLS, без DNS/ACME; 100% трафика через edge.
+- Рассмотрены 4 варианта: Nginx, Caddy, Traefik, YARP-as-edge. Выбран Nginx (зрелый дисковый HTTP-кэш, низкий overhead, минимальная сложность).
+- ADR-0020 — Nginx как edge reverse proxy перед Next.js и YARP; `proxy_cache` 1 GB, access_log stdout, self-signed TLS, маршруты `/api/*` и `/swagger` → YARP, остальное → Next.js.
+- AR-0011 (general) — Edge reverse proxy обязателен; Next.js и YARP не публикуются наружу; API на edge не кэшируется; авторизация остаётся на API Gateway.
+- Обновлён `ARCHITECTURE.md` (индексы ADR/AR).
+- Open questions: способ распространения self-signed CA пользователям; стратегия инвалидации кэша при деплое статики.
+
+## Предыдущее выполненное
+
 Дедупликация и компактизация ADR/AR/standards:
 
 - AR сжаты с 15 до 10: слияние AR-0003+0004+0005 → AR-0004 «API Gateway boundary», AR-0012+0013+0014+0015 → AR-0010 «BFF boundary». AR перенумерованы без дыр.

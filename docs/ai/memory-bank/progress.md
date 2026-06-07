@@ -2,6 +2,10 @@
 
 ## Выполнено
 
+- Выбор edge reverse proxy (Solution Architect-сессия):
+  - ADR-0020: Nginx как edge reverse proxy перед Next.js и YARP (proxy_cache 1 GB, access_log stdout, self-signed TLS).
+  - AR-0011 (general): Edge reverse proxy обязателен; Next.js и YARP не публикуются наружу; API на edge не кэшируется.
+  - Обновлены индексы AR/ADR в `ARCHITECTURE.md`.
 - Дедупликация и компактизация ADR/AR/standards:
   - AR сжаты с 15 до 10 (слияния AR-0003+0004+0005 → AR-0004, AR-0012+0013+0014+0015 → AR-0010); перенумерованы без дыр.
   - ADR (19) приведены к формату «шапка + Контекст/Решение/Последствия»; альтернативы свёрнуты в строку; убраны блоки «Связанные документы» и поле «Домен».
