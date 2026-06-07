@@ -41,6 +41,9 @@
 | AR-0009: Frontend и BFF — TypeScript / Node.js | Frontend и BFF только на TypeScript / Node.js LTS; исключение из AR-0005 | [AR-0009](docs/architecture/rules/frontend/AR-0009-frontend-typescript-nodejs.md) | frontend |
 | AR-0010: BFF boundary | BFF stateless, без бизнес-логики, без БД; JWT не покидает сервер; UI и BFF — один Next.js-процесс | [AR-0010](docs/architecture/rules/frontend/AR-0010-bff-boundary.md) | frontend |
 | AR-0011: Edge reverse proxy обязателен | Весь внешний трафик через nginx; Next.js и YARP не публикуются наружу | [AR-0011](docs/architecture/rules/general/AR-0011-edge-reverse-proxy-mandatory.md) | general |
+| AR-0012: Auth-service — единственный issuer JWT | Все JWT выпускает только auth-service; доменные сервисы и BFF — не выпускают | [AR-0012](docs/architecture/rules/rest-api/AR-0012-auth-service-sole-issuer.md) | rest-api |
+| AR-0013: JWT-валидация обязательна на downstream | Каждый backend за gateway повторно валидирует JWT (sig, iss, aud, exp) | [AR-0013](docs/architecture/rules/rest-api/AR-0013-jwt-validation-on-downstream.md) | rest-api |
+| AR-0014: Ошибки REST API — Problem+JSON | Все 4xx/5xx сериализуются по RFC 7807 с `application/problem+json` | [AR-0014](docs/architecture/rules/rest-api/AR-0014-error-responses-problem-json.md) | rest-api |
 
 ## Стандарты
 
@@ -83,6 +86,8 @@
 | ADR-0018: Tailwind CSS + shadcn/ui | Система стилей и базовых компонентов UI | [ADR-0018](docs/adr/frontend/ADR-0018-tailwind-shadcn.md) | frontend |
 | ADR-0019: Zod как валидация схем | Единая библиотека валидации и источник TS-типов | [ADR-0019](docs/adr/frontend/ADR-0019-zod-schema-validation.md) | frontend |
 | ADR-0020: Nginx как edge reverse proxy | Edge reverse proxy перед Next.js и YARP с кэшем статики | [ADR-0020](docs/adr/general/ADR-0020-nginx-as-edge-reverse-proxy.md) | general |
+| ADR-0021: Auth-service как отдельный сервис | JWT выпускается выделенным сервисом auth-service за YARP | [ADR-0021](docs/adr/rest-api/ADR-0021-dedicated-auth-service.md) | rest-api |
+| ADR-0022: S2S через OAuth 2.0 client_credentials | Сервис-клиенты получают JWT через client_credentials у auth-service | [ADR-0022](docs/adr/rest-api/ADR-0022-s2s-client-credentials.md) | rest-api |
 
 ## Диаграммы
 

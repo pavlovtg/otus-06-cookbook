@@ -6,6 +6,20 @@
 
 ## Последнее выполненное
 
+Детализация авторизации/JWT (Solution Architect-сессия, выбран Variant 2 — выделенный auth-service):
+
+- Зафиксированы требования: HS256, TTL 24ч, без refresh/ротации/blacklist/rate-limit/password-reset; роли `user`/`admin`, `author` derived из ownership; S2S через client_credentials; BFF хранит JWT в encrypted httpOnly cookie (рекомендация iron-session); ошибки 4xx/5xx — Problem+JSON; тесты — минимум happy-path login + 401.
+- NFR: /login p95 ≤ 300ms / p99 ≤ 800ms; validate overhead p95 ≤ 5ms; throughput /login ≤ 10 RPS, validate ≤ 200 RPS; доступность 99%/мес; RPO 24ч / RTO 4ч; TTI ≤ 1 раб.день; clock skew ≤ 60с.
+- ADR-0021 — Auth-service как отдельный сервис (минимальный, без impl-деталей).
+- ADR-0022 — S2S через OAuth 2.0 client_credentials.
+- AR-0012 (rest-api) — auth-service единственный issuer JWT.
+- AR-0013 (rest-api) — JWT-валидация обязательна на каждом downstream-сервисе.
+- AR-0014 (rest-api) — ошибки REST API в формате Problem+JSON (RFC 7807).
+- Обновлён `ARCHITECTURE.md` (индексы ADR/AR).
+- Открытые вопросы (отложены): способ изоляции данных auth-service в PostgreSQL (одна БД+схемы vs БД на сервис); параметры Argon2id (приняли F1 — appsettings.json); финальный выбор cookie-крипто на BFF (приняли A1 — iron-session); агрегация Swagger от auth-service на YARP.
+
+## Предыдущее выполненное
+
 Выбор edge reverse proxy (Solution Architect-сессия):
 
 - Зафиксированы требования: единая точка входа + кэш статики (hit ≥ 90%, p95 < 30ms, uptime 99.9%); RPS пик 50 → 200 через год; OSS, $0, Docker Compose, команда .NET; self-signed TLS, без DNS/ACME; 100% трафика через edge.
@@ -15,7 +29,7 @@
 - Обновлён `ARCHITECTURE.md` (индексы ADR/AR).
 - Open questions: способ распространения self-signed CA пользователям; стратегия инвалидации кэша при деплое статики.
 
-## Предыдущее выполненное
+## Прежде
 
 Дедупликация и компактизация ADR/AR/standards:
 
