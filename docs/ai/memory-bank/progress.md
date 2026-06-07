@@ -2,6 +2,7 @@
 
 ## Выполнено
 
+- Создан воркфлоу `docs/contributing/architecture-workflow.md` («Проектирование») с промтом Solution Architect; ссылка добавлена в `CONTRIBUTING.md`
 - API Gateway введён в архитектуру:
   - ADR-0008: API Gateway как единая точка доступа
   - ADR-0009: Swagger UI публикуется на API Gateway
