@@ -14,6 +14,10 @@
 - **YARP** — реализация API Gateway ([ADR-0010](../adr/rest-api/ADR-0010-yarp-as-api-gateway.md))
 - **Docker Compose** — среда развёртывания ([ADR-0007](../adr/general/ADR-0007-docker-compose.md))
 - **GitHub Actions** — CI pipeline
+- **Frontend** — Next.js (App Router, RSC) + React + TypeScript ([ADR-0015](../adr/frontend/ADR-0015-nextjs-frontend-meta-framework.md), [ADR-0016](../adr/frontend/ADR-0016-react-typescript-frontend.md))
+- **BFF** — логически выделенный слой внутри Next.js-сервиса; httpOnly + signed encrypted cookie, агрегация, проксирование к YARP ([ADR-0017](../adr/frontend/ADR-0017-bff-logical-layer.md))
+- **UI-стилизация** — Tailwind CSS + shadcn/ui ([ADR-0018](../adr/frontend/ADR-0018-tailwind-shadcn.md))
+- **Валидация схем** — Zod ([ADR-0019](../adr/frontend/ADR-0019-zod-schema-validation.md))
 
 ## Ключевые принципы
 

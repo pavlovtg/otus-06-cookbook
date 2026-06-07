@@ -18,11 +18,22 @@
 - Управление миграциями и загрузка seed-данных при старте.
 - Покрытие тестами (см. [стандарт тестирования](../standards/testing.md)).
 
-### Frontend
+### Frontend (web)
 
-- Веб-приложение с адаптивной вёрсткой (desktop + mobile).
-- Взаимодействует с Backend исключительно через API Gateway (см. [AR-0003](rules/rest-api/AR-0003-frontend-via-api-gateway.md)).
-- Включает: список рецептов, карточку рецепта, планировщик меню, список покупок, дашборд.
+- Single-service Next.js приложение (App Router, React Server Components) — UI + BFF в одном Node-процессе (см. [ADR-0015](../adr/frontend/ADR-0015-nextjs-frontend-meta-framework.md), [AR-0015](rules/frontend/AR-0015-ui-and-bff-single-process.md)).
+- React 18+ и TypeScript `strict: true` (см. [ADR-0016](../adr/frontend/ADR-0016-react-typescript-frontend.md), [AR-0011](rules/frontend/AR-0011-frontend-typescript-nodejs.md)).
+- SSR публичных страниц (рецепт, поиск) для SEO; SPA-навигация после первой загрузки.
+- Адаптивная вёрстка (desktop + mobile); Tailwind CSS + shadcn/ui (см. [ADR-0018](../adr/frontend/ADR-0018-tailwind-shadcn.md)).
+- Формы и валидация через Zod + react-hook-form (см. [ADR-0019](../adr/frontend/ADR-0019-zod-schema-validation.md)).
+- Включает: список рецептов, карточку рецепта, drag-and-drop планировщик меню, список покупок, дашборд.
+
+#### BFF (логический слой внутри Frontend)
+
+- Не отдельный процесс, а набор серверных модулей в `apps/web/lib/bff/`, Route Handlers и Server Actions (см. [ADR-0017](../adr/frontend/ADR-0017-bff-logical-layer.md)).
+- Единственный путь браузера к backend — через BFF (см. [AR-0003](rules/rest-api/AR-0003-frontend-via-api-gateway.md)).
+- BFF получает JWT от backend через API Gateway и хранит его на server-side; в браузер уходит только httpOnly + Secure + SameSite signed encrypted cookie (см. [AR-0013](rules/frontend/AR-0013-bff-stateless.md), [AR-0014](rules/frontend/AR-0014-jwt-not-leak-to-browser.md)).
+- Агрегирует ответы backend под нужды UI (минимум — страница рецепта одним запросом).
+- Не содержит бизнес-логики (см. [AR-0012](rules/frontend/AR-0012-bff-no-business-logic.md)).
 
 ### Database
 

@@ -40,6 +40,11 @@
 | AR-0008: Доменная логика — через DDD-паттерны | Агрегаты, VO, доменные события; запрет анемичной модели | [AR-0008](docs/architecture/rules/backend/AR-0008-ddd-domain-logic.md) | backend |
 | AR-0009: Видимость типов — internal по умолчанию | Public только у публичного API библиотек; сервисы — всё internal | [AR-0009](docs/architecture/rules/backend/AR-0009-type-visibility-internal.md) | backend |
 | AR-0010: .editorconfig — обязательный источник кодстайла | Единый `.editorconfig` в корне репозитория для всех стеков | [AR-0010](docs/architecture/rules/general/AR-0010-editorconfig-mandatory.md) | general |
+| AR-0011: Frontend и BFF — TypeScript / Node.js | Frontend и BFF реализуются только на TypeScript / Node.js LTS; исключение из AR-0006 | [AR-0011](docs/architecture/rules/frontend/AR-0011-frontend-typescript-nodejs.md) | frontend |
+| AR-0012: BFF не содержит бизнес-логики | BFF выполняет только агрегацию, сессии, прокси; бизнес-логика — в backend | [AR-0012](docs/architecture/rules/frontend/AR-0012-bff-no-business-logic.md) | frontend |
+| AR-0013: BFF stateless | Состояние сессии — только в signed encrypted cookie; без внешних хранилищ | [AR-0013](docs/architecture/rules/frontend/AR-0013-bff-stateless.md) | frontend |
+| AR-0014: JWT не покидает BFF | В браузер уходит только httpOnly session cookie; raw JWT никогда | [AR-0014](docs/architecture/rules/frontend/AR-0014-jwt-not-leak-to-browser.md) | frontend |
+| AR-0015: UI и BFF упакованы в один процесс | Один Next.js-сервис; граница UI/BFF на уровне кода и ESLint | [AR-0015](docs/architecture/rules/frontend/AR-0015-ui-and-bff-single-process.md) | frontend |
 
 ## Стандарты
 
@@ -54,6 +59,9 @@
 | Стандарт CI Pipeline | Обязательные шаги CI (lint, тесты, build) и блокировка PR при падении | [ci-standard.md](docs/standards/ci-standard.md) |
 | Стандарт структуры .NET-проектов | Размещение .NET-решений и проектов backend в монорепо, структура папок сервиса | [dotnet-project-structure.md](docs/standards/dotnet-project-structure.md) |
 | Стандарт стиля C#-кода | Минимальные правила оформления C#: отступы, nullable, namespace, format в CI | [csharp-code-style.md](docs/standards/csharp-code-style.md) |
+| Стандарт структуры frontend-проекта | Структура `apps/web` для Next.js + BFF, границы UI/BFF, конфигурация | [frontend-project-structure.md](docs/standards/frontend-project-structure.md) |
+| Стандарт стиля TypeScript | `strict: true`, запрет `any`, naming, ESLint/Prettier правила | [typescript-code-style.md](docs/standards/typescript-code-style.md) |
+| Стандарт тестирования frontend | Vitest + Testing Library + Playwright; целевое покрытие ≥ 80% | [frontend-testing.md](docs/standards/frontend-testing.md) |
 
 ## ADR
 
@@ -73,3 +81,8 @@
 | ADR-0012: Domain-Driven Design | Подход к моделированию доменной логики backend | [ADR-0012](docs/adr/backend/ADR-0012-domain-driven-design.md) | backend | принят |
 | ADR-0013: Гексагональная архитектура | Архитектура backend-сервисов (Ports & Adapters) | [ADR-0013](docs/adr/backend/ADR-0013-hexagonal-architecture.md) | backend | принят |
 | ADR-0014: EF Core как ORM | ORM для backend-сервисов поверх PostgreSQL | [ADR-0014](docs/adr/backend/ADR-0014-ef-core-orm.md) | backend | принят |
+| ADR-0015: Next.js как frontend meta-framework | Next.js App Router + RSC как стек frontend и хост BFF | [ADR-0015](docs/adr/frontend/ADR-0015-nextjs-frontend-meta-framework.md) | frontend | принят |
+| ADR-0016: React + TypeScript как UI-стек frontend | React 18+ и TypeScript strict как UI-стек | [ADR-0016](docs/adr/frontend/ADR-0016-react-typescript-frontend.md) | frontend | принят |
+| ADR-0017: BFF как логически выделенный слой | BFF — модули внутри Next.js-сервиса, не отдельный процесс | [ADR-0017](docs/adr/frontend/ADR-0017-bff-logical-layer.md) | frontend | принят |
+| ADR-0018: Tailwind CSS + shadcn/ui | Система стилей и базовых компонентов UI | [ADR-0018](docs/adr/frontend/ADR-0018-tailwind-shadcn.md) | frontend | принят |
+| ADR-0019: Zod как валидация схем | Единая библиотека валидации и источник TS-типов | [ADR-0019](docs/adr/frontend/ADR-0019-zod-schema-validation.md) | frontend | принят |

@@ -2,6 +2,22 @@
 
 ## Выполнено
 
+- Зафиксирован frontend-стек (Solution Architect-сессия):
+  - ADR-0015: Next.js (App Router, RSC) как frontend meta-framework
+  - ADR-0016: React + TypeScript (`strict: true`) как UI-стек
+  - ADR-0017: BFF как логически выделенный слой внутри Next.js-сервиса
+  - ADR-0018: Tailwind CSS + shadcn/ui
+  - ADR-0019: Zod как валидация схем
+  - AR-0011: Frontend и BFF — TypeScript / Node.js (исключение из AR-0006)
+  - AR-0012: BFF не содержит бизнес-логики
+  - AR-0013: BFF stateless (signed encrypted cookie)
+  - AR-0014: JWT не покидает BFF
+  - AR-0015: UI и BFF в одном процессе
+  - Стандарты: `frontend-project-structure.md`, `typescript-code-style.md`, `frontend-testing.md`
+  - Обновлены `ARCHITECTURE.md`, `overview.md`, `components.md`, `techContext.md`, `repository-structure.md`
+- Зафиксирован backend-стек:
+  - ADR-0011..0014, AR-0006..0009, AR-0010 (.editorconfig)
+  - Стандарты: `dotnet-project-structure.md`, `csharp-code-style.md`
 - Создан воркфлоу `docs/contributing/architecture-workflow.md` («Проектирование») с промтом Solution Architect; ссылка добавлена в `CONTRIBUTING.md`
 - API Gateway введён в архитектуру:
   - ADR-0008: API Gateway как единая точка доступа

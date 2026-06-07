@@ -6,6 +6,27 @@
 
 ## Последнее выполненное
 
+Зафиксирован frontend-стек проекта (Solution Architect-сессия):
+
+- ADR-0015 — Next.js (App Router, RSC) как frontend meta-framework.
+- ADR-0016 — React 18+ и TypeScript `strict: true` как UI-стек.
+- ADR-0017 — BFF как логически выделенный слой внутри Next.js-сервиса (не отдельный процесс).
+- ADR-0018 — Tailwind CSS + shadcn/ui как система стилей и компонентов.
+- ADR-0019 — Zod как единая библиотека валидации схем.
+- AR-0011 (frontend) — Frontend и BFF только TypeScript / Node.js LTS; исключение из AR-0006.
+- AR-0012 (frontend) — BFF не содержит бизнес-логики.
+- AR-0013 (frontend) — BFF stateless (signed encrypted cookie).
+- AR-0014 (frontend) — JWT не покидает BFF, в браузер уходит только httpOnly session cookie.
+- AR-0015 (frontend) — UI и BFF упакованы в один процесс, граница на уровне кода и ESLint.
+- Стандарт `frontend-project-structure.md` — структура `apps/web/` (app, components, lib/bff, tests).
+- Стандарт `typescript-code-style.md` — `strict: true`, запрет `any`, ESLint/Prettier.
+- Стандарт `frontend-testing.md` — Vitest + Testing Library + Playwright, coverage ≥ 80%.
+- Обновлены `ARCHITECTURE.md`, `overview.md`, `components.md`, `techContext.md`, `repository-structure.md`.
+- Зафиксированы NFR: LCP ≤ 2.5 s, TTI ≤ 3.0 s, initial JS ≤ 200 KB gzip, Lighthouse ≥ 80, BFF overhead ≤ 30 ms, агрегация ≤ 150 ms.
+- Открытые вопросы: способ генерации TS-типов из OpenAPI (отложен), хранение/доставка фото рецептов, OpenAPI BFF↔браузер, точные мажорные версии Node.js/Next.js/React, стратегия CSRF.
+
+## Предыдущее выполненное
+
 Приведение репозитория в соответствие с AR-0010:
 
 - Создан `/.editorconfig` в корне репозитория.
