@@ -27,4 +27,7 @@ Access-токен передаётся в заголовке `Authorization: Bea
 - Stateless-архитектура: сервер не хранит состояние сессий.
 - Инвалидация токенов до истечения срока требует дополнительного механизма (blacklist) — в MVP не реализуется.
 - Два предзаполненных пользователя создаются через seed-данные.
-- Стандарт реализации: [docs/standards/api-design.md](../../standards/api-design.md) (заголовок `Authorization: Bearer`).
+
+## Связанные документы
+
+- [docs/standards/api-design.md](../../standards/api-design.md) — стандарт REST API (заголовок `Authorization: Bearer`).

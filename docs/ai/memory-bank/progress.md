@@ -2,6 +2,15 @@
 
 ## Выполнено
 
+- API Gateway введён в архитектуру:
+  - ADR-0008: API Gateway как единая точка доступа
+  - ADR-0009: Swagger UI публикуется на API Gateway
+  - ADR-0010: YARP как реализация API Gateway
+  - AR-0003: Frontend через API Gateway
+  - AR-0004: Backend не публикуется наружу
+  - AR-0005: Gateway без бизнес-логики
+  - Обновлены `ARCHITECTURE.md`, `overview.md`, `components.md`
+  - Шаблон ADR дополнен разделом «Связанные документы»; ADR-0001..0007 приведены к новому стилю
 - ADR-0005 и ADR-0006 перемещены в домен `rest-api` (`docs/adr/rest-api/`); обновлены все перекрёстные ссылки
 - Рефакторинг skills архитектурной документации: 4 симметричных skill (`adr`, `ar`, `standard`, `diagram`); удалены `update-architecture-from-*`; актуализированы индексы в `ARCHITECTURE.md`
 - Добавлены правила-триггеры skills в `.clinerules/architecture.md` (ADR/AR/стандарт → соответствующий skill)
@@ -30,3 +39,4 @@
 
 - Реализация кода приложения (backend, frontend, БД)
 - OpenSpec спецификации для фич
+- Решение по способу формирования содержимого Swagger UI на API Gateway (единый документ vs агрегация спецификаций backend)

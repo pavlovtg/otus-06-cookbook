@@ -32,6 +32,9 @@
 |----------|---------------------|------|-------|
 | AR-0001: Docker Compose Self-Contained | Приложение запускается одной командой `docker compose up` без ручной настройки | [AR-0001](docs/architecture/rules/general/AR-0001-docker-compose-self-contained.md) | general |
 | AR-0002: Swagger UI доступен по живому URL | Swagger UI обязан быть доступен в запущенном приложении, статический файл не считается | [AR-0002](docs/architecture/rules/general/AR-0002-swagger-ui-live.md) | general |
+| AR-0003: Frontend взаимодействует с backend только через API Gateway | Прямые вызовы клиентов к backend в обход gateway запрещены | [AR-0003](docs/architecture/rules/rest-api/AR-0003-frontend-via-api-gateway.md) | rest-api |
+| AR-0004: Backend-сервисы не публикуются наружу напрямую | Наружу публикуется только порт API Gateway; backend доступен только во внутренней сети | [AR-0004](docs/architecture/rules/rest-api/AR-0004-backend-not-exposed.md) | rest-api |
+| AR-0005: API Gateway не содержит бизнес-логики | Gateway отвечает только за cross-cutting задачи, бизнес-логика — в backend-сервисах | [AR-0005](docs/architecture/rules/rest-api/AR-0005-gateway-no-business-logic.md) | rest-api |
 
 ## Стандарты
 
@@ -56,3 +59,6 @@
 | ADR-0005: JWT-аутентификация | Аутентификация пользователей через JWT-токены | [ADR-0005](docs/adr/rest-api/ADR-0005-jwt-authentication.md) | rest-api | принят |
 | ADR-0006: REST API как протокол взаимодействия | Взаимодействие frontend и backend через REST API с OpenAPI | [ADR-0006](docs/adr/rest-api/ADR-0006-rest-api.md) | rest-api | принят |
 | ADR-0007: Docker Compose как среда развёртывания | Локальный запуск всего приложения через Docker Compose | [ADR-0007](docs/adr/general/ADR-0007-docker-compose.md) | general | принят |
+| ADR-0008: API Gateway как единая точка доступа | Единая точка доступа для frontend и внешних клиентов, изолирующая backend | [ADR-0008](docs/adr/rest-api/ADR-0008-api-gateway-single-entry-point.md) | rest-api | принят |
+| ADR-0009: Swagger UI публикуется на API Gateway | Каноничный источник OpenAPI-документации для клиентов — на gateway | [ADR-0009](docs/adr/rest-api/ADR-0009-swagger-ui-on-api-gateway.md) | rest-api | принят |
+| ADR-0010: YARP как реализация API Gateway | Выбор YARP как технологии реализации API Gateway | [ADR-0010](docs/adr/rest-api/ADR-0010-yarp-as-api-gateway.md) | rest-api | принят |

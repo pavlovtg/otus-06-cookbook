@@ -10,6 +10,8 @@
 - **PostgreSQL** — основная СУБД ([ADR-0004](../adr/general/ADR-0004-postgresql.md))
 - **JWT** — аутентификация и авторизация ([ADR-0005](../adr/rest-api/ADR-0005-jwt-authentication.md))
 - **REST API + OpenAPI/Swagger** — протокол взаимодействия frontend–backend ([ADR-0006](../adr/rest-api/ADR-0006-rest-api.md))
+- **API Gateway** — единая точка доступа frontend и внешних клиентов к backend ([ADR-0008](../adr/rest-api/ADR-0008-api-gateway-single-entry-point.md))
+- **YARP** — реализация API Gateway ([ADR-0010](../adr/rest-api/ADR-0010-yarp-as-api-gateway.md))
 - **Docker Compose** — среда развёртывания ([ADR-0007](../adr/general/ADR-0007-docker-compose.md))
 - **GitHub Actions** — CI pipeline
 

@@ -6,6 +6,20 @@
 
 ## Последнее выполненное
 
+Введение API Gateway в архитектуру (Solution Architect-сессия):
+
+- ADR-0008 — API Gateway как единая точка доступа (без технологий).
+- ADR-0009 — Swagger UI публикуется на API Gateway (без технологий и способа сборки).
+- ADR-0010 — YARP как реализация API Gateway.
+- AR-0003 — Frontend взаимодействует с backend только через API Gateway.
+- AR-0004 — Backend-сервисы не публикуются наружу напрямую.
+- AR-0005 — API Gateway не содержит бизнес-логики.
+- Обновлены `ARCHITECTURE.md`, `docs/architecture/overview.md`, `docs/architecture/components.md`.
+- Шаблон ADR (`.clinerules/skills/adr/assets/adr-template.md`) дополнен разделом «Связанные документы»; существующие ADR (0001–0007) приведены к новому стилю.
+- Открытый вопрос: способ формирования содержимого Swagger UI на gateway (единый документ vs агрегация спецификаций backend) — отложено.
+
+## Предыдущее выполненное
+
 Перемещение ADR-0005 и ADR-0006 в домен `rest-api`:
 
 - Файлы перемещены: `docs/adr/general/` → `docs/adr/rest-api/`

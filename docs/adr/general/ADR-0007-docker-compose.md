@@ -26,5 +26,8 @@ PRD требует, чтобы всё приложение (backend + frontend +
 
 - Все переменные окружения задаются в `docker-compose.yml` или `.env`-файле, включённом в репозиторий.
 - Миграции БД и загрузка seed-данных выполняются автоматически при старте.
-- Стандарт реализации: [docs/standards/docker-compose-standard.md](../../standards/docker-compose-standard.md).
-- Архитектурное правило: [AR-0001](../../architecture/rules/general/AR-0001-docker-compose-self-contained.md).
+
+## Связанные документы
+
+- [docs/standards/docker-compose-standard.md](../../standards/docker-compose-standard.md) — стандарт Docker Compose.
+- [AR-0001: Docker Compose Self-Contained](../../architecture/rules/general/AR-0001-docker-compose-self-contained.md).
