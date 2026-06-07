@@ -93,8 +93,13 @@
 
 | Название | Описание для агента | Файл | Тип C4 | Источник |
 |----------|---------------------|------|--------|----------|
-
-_Пока пусто. Файлы — в `docs/architecture/diagrams/`._
+| C4 Context — Cookbook | Системный контекст: единственный внешний актор — пользователь в браузере; внешних систем нет | [c4-context.md](docs/architecture/diagrams/c4-context.md) | L1 Context | ADR-0008 |
+| C4 Containers — Cookbook | Контейнеры Docker Compose: nginx → Next.js (UI+BFF) / YARP → auth-service, доменные сервисы; у каждого сервиса своя PG | [c4-containers.md](docs/architecture/diagrams/c4-containers.md) | L2 Container | ADR-0007, ADR-0008, ADR-0010, ADR-0015, ADR-0017, ADR-0020, ADR-0021 |
+| C4 Component — Frontend (web) | Внутреннее устройство Next.js: граница client UI ↔ серверный BFF, JWT хранится server-side | [c4-component-frontend.md](docs/architecture/diagrams/c4-component-frontend.md) | L3 Component | ADR-0015, ADR-0017, AR-0010 |
+| C4 Component — Backend | Гексагональная архитектура доменного сервиса: Domain / Application / Adapters; auth — инфраструктурный cross-cutting слой | [c4-component-backend.md](docs/architecture/diagrams/c4-component-backend.md) | L3 Component | ADR-0011, ADR-0012, ADR-0013, ADR-0014, AR-0006, AR-0007, AR-0013 |
+| C4 Component — auth-service | Устройство единственного issuer JWT: /auth/login, /auth/token, Identity domain, JWT issuer | [c4-component-auth-service.md](docs/architecture/diagrams/c4-component-auth-service.md) | L3 Component | ADR-0021, ADR-0022, AR-0012 |
+| Flow — User login + защищённый запрос | Логин через BFF и последующий вызов защищённого ресурса; JWT не покидает сервер, в браузер только httpOnly cookie | [flow-user-login.md](docs/architecture/diagrams/flow-user-login.md) | Dynamic | ADR-0005, ADR-0017, ADR-0021, AR-0010, AR-0012, AR-0013 |
+| Flow — S2S client_credentials | Межсервисный вызов: service-A получает JWT у auth-service по client_credentials и зовёт service-B напрямую внутри Compose-сети | [flow-s2s-client-credentials.md](docs/architecture/diagrams/flow-s2s-client-credentials.md) | Dynamic | ADR-0022, AR-0012, AR-0013 |
 
 ## Формат документов
 
