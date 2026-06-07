@@ -29,6 +29,11 @@ docs/
 ├── contributing/     # руководства для участников репозитория
 └── standards/        # стандарты реализации
 apps/                 # приложения (сервисы, фронтенд и т.д.)
+├── <BoundedContext>/ # backend bounded context (.NET)
+│   ├── <BoundedContext>.slnx
+│   ├── src/          # исходники сервисов bounded context
+│   └── tests/        # тестовые проекты bounded context
+└── web/              # frontend + BFF (Next.js, TypeScript) — см. стандарт frontend-project-structure
 tests/                # тесты
 openspec/             # спецификации и схемы (OpenSpec)
 ARCHITECTURE.md       # единая точка входа в архитектурную документацию
@@ -54,7 +59,3 @@ README.md             # описание проекта
 | `openspec/` | Спецификации изменений, схемы, шаблоны OpenSpec |
 | `ARCHITECTURE.md` | Единая точка входа: индексы AR, стандартов, ADR |
 | `CONTRIBUTING.md` | Руководство для участников: типовые задачи и процессы |
-
-## Связанные AR и ADR
-
-- [ADR-0002: Монорепозиторий](../adr/general/ADR-0002-monorepo.md) — обоснование выбора монорепозитория

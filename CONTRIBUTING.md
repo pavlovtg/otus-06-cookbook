@@ -12,5 +12,6 @@
 
 ## Типовые задачи
 
+- [Проектирование](docs/contributing/architecture-workflow.md) — архитектурная задача без реализации.
 - [Реализация фичи](docs/contributing/feature-workflow.md) — новая функциональность с OpenSpec.
 - [Техническая задача](docs/contributing/chore-workflow.md) — chore, refactor, bug, hotfix без OpenSpec.

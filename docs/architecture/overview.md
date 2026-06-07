@@ -2,7 +2,22 @@
 
 ## Назначение системы
 
-Учебный проект OTUS.
+«Книга рецептов» — full-stack приложение для хранения, поиска и планирования рецептов.
+Позволяет домашним поварам хранить рецепты в одном месте, планировать меню на неделю и автоматически формировать список покупок.
+
+## Ключевые технологии
+
+- **PostgreSQL** — основная СУБД ([ADR-0004](../adr/general/ADR-0004-postgresql.md))
+- **JWT** — аутентификация и авторизация ([ADR-0005](../adr/rest-api/ADR-0005-jwt-authentication.md))
+- **REST API + OpenAPI/Swagger** — протокол взаимодействия frontend–backend ([ADR-0006](../adr/rest-api/ADR-0006-rest-api.md))
+- **API Gateway** — единая точка доступа frontend и внешних клиентов к backend ([ADR-0008](../adr/rest-api/ADR-0008-api-gateway-single-entry-point.md))
+- **YARP** — реализация API Gateway ([ADR-0010](../adr/rest-api/ADR-0010-yarp-as-api-gateway.md))
+- **Docker Compose** — среда развёртывания ([ADR-0007](../adr/general/ADR-0007-docker-compose.md))
+- **GitHub Actions** — CI pipeline
+- **Frontend** — Next.js (App Router, RSC) + React + TypeScript ([ADR-0015](../adr/frontend/ADR-0015-nextjs-frontend-meta-framework.md), [ADR-0016](../adr/frontend/ADR-0016-react-typescript-frontend.md))
+- **BFF** — логически выделенный слой внутри Next.js-сервиса; httpOnly + signed encrypted cookie, агрегация, проксирование к YARP ([ADR-0017](../adr/frontend/ADR-0017-bff-logical-layer.md))
+- **UI-стилизация** — Tailwind CSS + shadcn/ui ([ADR-0018](../adr/frontend/ADR-0018-tailwind-shadcn.md))
+- **Валидация схем** — Zod ([ADR-0019](../adr/frontend/ADR-0019-zod-schema-validation.md))
 
 ## Ключевые принципы
 
