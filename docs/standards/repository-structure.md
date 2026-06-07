@@ -29,6 +29,10 @@ docs/
 ├── contributing/     # руководства для участников репозитория
 └── standards/        # стандарты реализации
 apps/                 # приложения (сервисы, фронтенд и т.д.)
+├── <BoundedContext>/
+│   ├── <BoundedContext>.slnx
+│   ├── src/          # исходники сервисов bounded context
+│   └── tests/        # тестовые проекты bounded context
 tests/                # тесты
 openspec/             # спецификации и схемы (OpenSpec)
 ARCHITECTURE.md       # единая точка входа в архитектурную документацию

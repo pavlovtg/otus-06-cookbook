@@ -6,6 +6,24 @@
 
 ## Последнее выполненное
 
+Зафиксирован backend-стек проекта:
+
+- ADR-0011 — .NET 10 / C# как платформа и язык backend.
+- ADR-0012 — Domain-Driven Design.
+- ADR-0013 — Гексагональная архитектура (Ports & Adapters).
+- ADR-0014 — EF Core как ORM.
+- AR-0006 — Backend только .NET 10 / C#.
+- AR-0007 — Внешние интеграции через порты и адаптеры.
+- AR-0008 — Доменная логика через DDD-паттерны.
+- AR-0009 — Видимость типов internal по умолчанию.
+- AR-0010 (general) — `.editorconfig` обязателен, един в корне репо.
+- Стандарт `dotnet-project-structure.md` — размещение `apps/<BoundedContext>/{src,tests}`, структура папок сервиса (`Domain/Application/Adapters/Infrastructure/Program.cs`).
+- Стандарт `csharp-code-style.md` — минимальные правила C#.
+- Обновлены `ARCHITECTURE.md`, `techContext.md`, `repository-structure.md`.
+- Отложено: AR про направления зависимостей между слоями; ADR/стандарт по тестированию backend.
+
+## Предыдущее выполненное
+
 Создан воркфлоу `docs/contributing/architecture-workflow.md` («Проектирование»):
 
 - Шаги: выбор Opus → выполнение промта → итерации → фиксация в ADR/AR/diagrams/standards/overview/components.
