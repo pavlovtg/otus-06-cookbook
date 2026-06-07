@@ -33,9 +33,3 @@
 - Unit + component тесты — на каждый push и PR.
 - E2E — на PR; должны проходить на свежем `docker compose up`.
 - Падение блокирует merge (см. [Стандарт CI](ci-standard.md)).
-
-## Связанные AR и ADR
-
-- [Стандарт тестирования](testing.md)
-- [Стандарт CI](ci-standard.md)
-- [ADR-0015: Next.js как frontend meta-framework](../adr/frontend/ADR-0015-nextjs-frontend-meta-framework.md)

@@ -13,9 +13,3 @@
 - File-scoped namespace (`namespace Foo.Bar;`), блочный namespace запрещён.
 - Порядок `using`: сначала `System.*`, затем остальные — в алфавитном порядке; `using` вне namespace.
 - Проверка стиля в CI: `dotnet format --verify-no-changes`.
-
-## Связанные документы
-
-- [ADR-0011: .NET 10 / C# как платформа backend](../adr/backend/ADR-0011-dotnet-csharp-backend.md)
-- [AR-0010: .editorconfig — обязательный источник кодстайла](../architecture/rules/general/AR-0010-editorconfig-mandatory.md)
-- [Стандарт структуры .NET-проектов](dotnet-project-structure.md)

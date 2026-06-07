@@ -20,8 +20,3 @@
 
 - Все сервисы объединены в одну сеть Docker Compose (создаётся автоматически).
 - Данные БД хранятся в именованнованных томах для сохранения между перезапусками.
-
-## Связанные документы
-
-- [ADR-0007: Docker Compose](../adr/general/ADR-0007-docker-compose.md)
-- [AR-0001: Docker Compose Self-Contained](../architecture/rules/general/AR-0001-docker-compose-self-contained.md)

@@ -58,11 +58,3 @@ Namespace должен соответствовать пути папок: `<Ser
 ## Тесты
 
 Тестовые проекты размещаются под `apps/<BoundedContext>/tests/<Service>.Tests/<Service>.Tests.csproj`.
-
-## Связанные документы
-
-- [ADR-0011: .NET 10 / C# как платформа backend](../adr/backend/ADR-0011-dotnet-csharp-backend.md)
-- [ADR-0013: Гексагональная архитектура](../adr/backend/ADR-0013-hexagonal-architecture.md)
-- [AR-0007: Внешние интеграции — через порты и адаптеры](../architecture/rules/backend/AR-0007-ports-and-adapters.md)
-- [AR-0009: Видимость типов — internal по умолчанию](../architecture/rules/backend/AR-0009-type-visibility-internal.md)
-- [Стандарт структуры репозитория](repository-structure.md)
