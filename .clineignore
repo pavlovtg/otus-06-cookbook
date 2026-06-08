@@ -46,3 +46,24 @@ secrets.json
 
 # macOS
 .DS_Store
+
+# Node.js / Next.js
+node_modules/
+.next/
+out/
+.turbo/
+.cache/
+.parcel-cache/
+.pnpm-store/
+
+# Тесты и покрытие (Node.js)
+.nyc_output/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Vitest
+vitest.config.*.timestamp*
+
+# pnpm
+.pnpm-store/

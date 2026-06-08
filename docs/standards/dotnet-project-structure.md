@@ -58,3 +58,25 @@ Namespace должен соответствовать пути папок: `<Ser
 ## Тесты
 
 Тестовые проекты размещаются под `apps/<BoundedContext>/tests/<Service>.Tests/<Service>.Tests.csproj`.
+
+### Размещение файлов тестов
+
+**Unit-тесты** зеркалируют путь тестируемого класса внутри тестовой сборки:
+
+```text
+src/<Service>/Domain/Recipe.cs
+→ tests/<Service>.Tests/Domain/RecipeTests.cs
+
+src/<Service>/Application/RecipeService.cs
+→ tests/<Service>.Tests/Application/RecipeServiceTests.cs
+```
+
+**Интеграционные тесты адаптеров** зеркалируют путь адаптера внутри тестовой сборки:
+
+```text
+src/<Service>/Adapters/Postgresql/RecipeRepository.cs
+→ tests/<Service>.Tests/Adapters/Postgresql/RecipeRepositoryTests.cs
+
+src/<Service>/Adapters/Web/RecipesController.cs
+→ tests/<Service>.Tests/Adapters/Web/RecipesControllerTests.cs
+```

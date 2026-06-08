@@ -47,5 +47,29 @@ secrets.json
 # Логи
 *.log
 
+# Node.js / Next.js
+node_modules/
+.next/
+.nuxt/
+out/
+dist/
+build/
+.turbo/
+.cache/
+.parcel-cache/
+
+# pnpm
+.pnpm-store/
+
+# Next.js тесты и покрытие
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Vitest
+vitest.config.*.timestamp*
+
 # macOS
 .DS_Store

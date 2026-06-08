@@ -1,0 +1,103 @@
+name: cookbook
+
+services:
+  reverse-proxy:
+    container_name: cookbook-reverse-proxy
+    image: nginx:1.27-alpine
+    ports:
+      - "5500:80"
+    volumes:
+      - ./infrastructure/docker-compose/reverse-proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - frontend-net
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/api/health/v1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    container_name: cookbook-web
+    build:
+      context: apps/web
+      dockerfile: Dockerfile
+    environment:
+      - GATEWAY_URL=http://api-gateway:8080
+    networks:
+      - frontend-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health/v1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+
+  api-gateway:
+    container_name: cookbook-api-gateway
+    build:
+      context: apps/ApiGateway
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - ReverseProxy__Clusters__recipes-cluster__Destinations__recipes__Address=http://recipes:8080/
+    networks:
+      - frontend-net
+      - backend-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health/v1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      recipes:
+        condition: service_healthy
+
+  recipes:
+    container_name: cookbook-recipes
+    build:
+      context: apps/Cookbook
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__Recipes=Host=postgresql;Database=recipes;Username=cookbook;Password=cookbook
+    networks:
+      - backend-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health/v1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      postgresql:
+        condition: service_healthy
+
+  postgresql:
+    container_name: cookbook-postgresql
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=recipes
+      - POSTGRES_USER=cookbook
+      - POSTGRES_PASSWORD=cookbook
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+    networks:
+      - backend-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cookbook -d recipes"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+networks:
+  frontend-net:
+  backend-net:
+
+volumes:
+  postgresql_data:

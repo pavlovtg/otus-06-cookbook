@@ -1,0 +1,76 @@
+openapi: 3.0.0
+info:
+  title: Recipes API
+  version: 1.0.0
+  description: API сервиса рецептов (bounded context cookbook)
+paths:
+  /api/recipes/v1:
+    get:
+      summary: Получить список рецептов
+      operationId: getRecipes
+      tags:
+        - Recipes
+      responses:
+        "200":
+          description: Список рецептов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecipeDto"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+components:
+  schemas:
+    RecipeDto:
+      type: object
+      required:
+        - id
+        - title
+        - description
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: aad1f839-df31-49f2-84d7-4dd01e04be77
+        title:
+          type: string
+          example: Борщ
+        description:
+          type: string
+          example: Классический украинский борщ со свёклой и капустой
+    ProblemDetails:
+      description: RFC 7807 Problem Details
+      type: object
+      required:
+        - type
+        - title
+        - status
+        - detail
+        - instance
+      properties:
+        type:
+          type: string
+          description: URI-ссылка, идентифицирующая тип проблемы
+          example: about:blank
+        title:
+          type: string
+          description: Краткое человекочитаемое описание типа проблемы
+          example: Internal Server Error
+        status:
+          type: integer
+          description: HTTP-статус код
+          example: 500
+        detail:
+          type: string
+          description: Детальное описание конкретного возникшего экземпляра проблемы
+          example: An unexpected error occurred
+        instance:
+          type: string
+          description: URI-ссылка, идентифицирующая конкретный экземпляр проблемы
+          example: /api/recipes/v1

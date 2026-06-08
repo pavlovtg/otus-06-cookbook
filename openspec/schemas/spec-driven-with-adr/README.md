@@ -41,7 +41,7 @@ Gate expectations:
 
 ## ADR Persistence
 
-ADR files are generated under the target repository's top-level `adr/` folder,
+ADR files are generated under `docs/adr/<domain>/` in the target repository,
 not only inside the OpenSpec change folder. Accepted ADRs are immutable. If a
 future decision changes a prior ADR, create a new ADR that supersedes the old
 one and leave the original file unchanged.
