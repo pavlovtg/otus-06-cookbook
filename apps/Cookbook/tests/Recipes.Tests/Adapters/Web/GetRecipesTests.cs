@@ -7,7 +7,7 @@ using Recipes.Adapters.Web.Dto;
 using Testcontainers.PostgreSql;
 using Xunit;
 
-namespace Recipes.Tests;
+namespace Recipes.Tests.Adapters.Web;
 
 public sealed class GetRecipesTests : IAsyncLifetime
 {
