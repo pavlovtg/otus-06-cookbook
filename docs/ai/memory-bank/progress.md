@@ -59,10 +59,9 @@
 
 ## В работе
 
--
+- OpenSpec change `minimal-realization` — готов к реализации (`/opsx:apply`)
 
 ## Запланировано
 
-- Реализация кода приложения (backend, frontend, БД)
-- OpenSpec спецификации для фич
+- Реализация change `minimal-realization` (contract → backend → gateway → frontend → infra)
 - Решение по способу формирования содержимого Swagger UI на API Gateway (единый документ vs агрегация спецификаций backend)

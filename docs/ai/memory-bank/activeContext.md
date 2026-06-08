@@ -2,9 +2,28 @@
 
 ## Текущая задача
 
-Нет активной задачи.
+OpenSpec change `minimal-realization` готов к реализации (`/opsx:apply`).
 
 ## Последнее выполненное
+
+Создан OpenSpec change `minimal-realization` (proposal + specs + design + tasks). Попутно зафиксированы новые архитектурные решения:
+
+- ADR-0023: Contract-First (OpenAPI YAML до реализации; `docs/contracts/<bc>/<service>.yaml`)
+- ADR-0024: Маршрутизация gateway (`/api/{bc}/...` → сервис, стрип bc-префикса)
+- ADR-0025: Database-per-Service (каждый сервис — своя БД; схема по bounded context)
+- ADR-0026: Нейминг сервисов и bounded contexts (lowercase kebab-case)
+- AR-0015: Contract-First — OpenAPI до реализации
+- AR-0016: Соглашение о маршрутизации на API Gateway
+- AR-0017: Database-per-Service — изоляция данных
+- AR-0018: Контроллеры вместо Minimal API в .NET
+- Стандарт `service-registry.md` — реестр сервисов и bounded contexts
+- Обновлён стандарт `api-design.md` (полные правила REST API)
+- Реорганизованы домены ADR/AR: выделены `database` и `dotnet`
+- Обновлён `ARCHITECTURE.md`
+
+Scope change: список рецептов (id, title, description), без авторизации. Сервисы: `reverse-proxy`, `api-gateway` (bc: `api-gateway`), `web`, `recipes` (bc: `cookbook`), `postgresql`.
+
+## Предыдущее выполненное
 
 Детализация авторизации/JWT (Solution Architect-сессия, выбран Variant 2 — выделенный auth-service):
 

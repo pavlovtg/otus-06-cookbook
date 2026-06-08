@@ -34,16 +34,20 @@
 | AR-0002: Swagger UI доступен по живому URL | Swagger UI обязан быть доступен в запущенном приложении, статический файл не считается | [AR-0002](docs/architecture/rules/general/AR-0002-swagger-ui-live.md) | general |
 | AR-0003: `.editorconfig` обязателен | Единый `.editorconfig` в корне репозитория для всех стеков | [AR-0003](docs/architecture/rules/general/AR-0003-editorconfig-mandatory.md) | general |
 | AR-0004: API Gateway boundary | Backend доступен только через gateway; gateway без бизнес-логики; backend наружу не публикуется | [AR-0004](docs/architecture/rules/rest-api/AR-0004-api-gateway-boundary.md) | rest-api |
-| AR-0005: Backend — только .NET 10 / C# | Все backend-сервисы и утилиты реализуются на .NET 10 / C# | [AR-0005](docs/architecture/rules/backend/AR-0005-backend-dotnet-csharp.md) | backend |
-| AR-0006: Внешние интеграции — через порты и адаптеры | Доступ к БД, HTTP, очередям — только через порты в Application и адаптеры | [AR-0006](docs/architecture/rules/backend/AR-0006-ports-and-adapters.md) | backend |
+| AR-0005: Backend — только .NET 10 / C# | Все backend-сервисы и утилиты реализуются на .NET 10 / C# | [AR-0005](docs/architecture/rules/dotnet/AR-0005-backend-dotnet-csharp.md) | dotnet |
+| AR-0006: Внешние интеграции — через порты и адаптеры | Доступ к БД, HTTP, очередям — только через порты в Application и адаптеры | [AR-0006](docs/architecture/rules/dotnet/AR-0006-ports-and-adapters.md) | dotnet |
 | AR-0007: Доменная логика — через DDD-паттерны | Агрегаты, VO, доменные события; запрет анемичной модели | [AR-0007](docs/architecture/rules/backend/AR-0007-ddd-domain-logic.md) | backend |
-| AR-0008: Видимость типов — internal по умолчанию | Public только у публичного API библиотек; сервисы — всё internal | [AR-0008](docs/architecture/rules/backend/AR-0008-type-visibility-internal.md) | backend |
+| AR-0008: Видимость типов — internal по умолчанию | Public только у публичного API библиотек; сервисы — всё internal | [AR-0008](docs/architecture/rules/dotnet/AR-0008-type-visibility-internal.md) | dotnet |
 | AR-0009: Frontend и BFF — TypeScript / Node.js | Frontend и BFF только на TypeScript / Node.js LTS; исключение из AR-0005 | [AR-0009](docs/architecture/rules/frontend/AR-0009-frontend-typescript-nodejs.md) | frontend |
 | AR-0010: BFF boundary | BFF stateless, без бизнес-логики, без БД; JWT не покидает сервер; UI и BFF — один Next.js-процесс | [AR-0010](docs/architecture/rules/frontend/AR-0010-bff-boundary.md) | frontend |
 | AR-0011: Edge reverse proxy обязателен | Весь внешний трафик через nginx; Next.js и YARP не публикуются наружу | [AR-0011](docs/architecture/rules/general/AR-0011-edge-reverse-proxy-mandatory.md) | general |
 | AR-0012: Auth-service — единственный issuer JWT | Все JWT выпускает только auth-service; доменные сервисы и BFF — не выпускают | [AR-0012](docs/architecture/rules/rest-api/AR-0012-auth-service-sole-issuer.md) | rest-api |
 | AR-0013: JWT-валидация обязательна на downstream | Каждый backend за gateway повторно валидирует JWT (sig, iss, aud, exp) | [AR-0013](docs/architecture/rules/rest-api/AR-0013-jwt-validation-on-downstream.md) | rest-api |
 | AR-0014: Ошибки REST API — Problem+JSON | Все 4xx/5xx сериализуются по RFC 7807 с `application/problem+json` | [AR-0014](docs/architecture/rules/rest-api/AR-0014-error-responses-problem-json.md) | rest-api |
+| AR-0015: Contract-First — OpenAPI до реализации | Любой API описывается в OpenAPI YAML (≥ 3.0.0) до написания кода; файл в `docs/contracts/<bc>/<service>.yaml` | [AR-0015](docs/architecture/rules/rest-api/AR-0015-contract-first-openapi.md) | rest-api |
+| AR-0016: Соглашение о маршрутизации на API Gateway | Маршруты gateway: `/api/{bounded-context}/...` → сервис; gateway стрипает bounded-context-префикс | [AR-0016](docs/architecture/rules/rest-api/AR-0016-gateway-routing-convention.md) | rest-api |
+| AR-0017: Database-per-Service — изоляция данных | Каждый сервис владеет собственной БД; прямой доступ к чужой БД запрещён; именование БД и схем — lowercase snake_case | [AR-0017](docs/architecture/rules/database/AR-0017-database-per-service.md) | database |
+| AR-0018: Контроллеры вместо Minimal API | HTTP-эндпоинты в .NET реализуются через `ApiController`, Minimal API запрещён | [AR-0018](docs/architecture/rules/dotnet/AR-0018-controllers-over-minimal-api.md) | dotnet |
 
 ## Стандарты
 
@@ -61,6 +65,7 @@
 | Стандарт структуры frontend-проекта | Структура `apps/web` для Next.js + BFF, границы UI/BFF, конфигурация | [frontend-project-structure.md](docs/standards/frontend-project-structure.md) |
 | Стандарт стиля TypeScript | `strict: true`, запрет `any`, naming, ESLint/Prettier правила | [typescript-code-style.md](docs/standards/typescript-code-style.md) |
 | Стандарт тестирования frontend | Vitest + Testing Library + Playwright; целевое покрытие ≥ 80% | [frontend-testing.md](docs/standards/frontend-testing.md) |
+| Реестр сервисов и bounded contexts | Канонические имена сервисов, bounded contexts, БД и схем проекта | [service-registry.md](docs/standards/service-registry.md) |
 
 ## ADR
 
@@ -69,17 +74,17 @@
 | ADR-0001: Markdown как единый формат документации | Markdown — единый формат документации для людей и AI | [ADR-0001](docs/adr/general/ADR-0001-markdown-documentation.md) | general |
 | ADR-0002: Монорепозиторий | Все компоненты проекта в одном репозитории | [ADR-0002](docs/adr/general/ADR-0002-monorepo.md) | general |
 | ADR-0003: Релизная политика и модель ветвления | Continuous Delivery + GitHub Flow | [ADR-0003](docs/adr/general/ADR-0003-release-and-branching.md) | general |
-| ADR-0004: PostgreSQL как СУБД | PostgreSQL для хранения данных приложения | [ADR-0004](docs/adr/general/ADR-0004-postgresql.md) | general |
+| ADR-0004: PostgreSQL как СУБД | PostgreSQL для хранения данных приложения | [ADR-0004](docs/adr/database/ADR-0004-postgresql.md) | database |
 | ADR-0005: JWT-аутентификация | Аутентификация через JWT-токены | [ADR-0005](docs/adr/rest-api/ADR-0005-jwt-authentication.md) | rest-api |
 | ADR-0006: REST API как протокол | REST + OpenAPI/Swagger для взаимодействия frontend и backend | [ADR-0006](docs/adr/rest-api/ADR-0006-rest-api.md) | rest-api |
 | ADR-0007: Docker Compose как среда развёртывания | Локальный запуск всего приложения через Docker Compose | [ADR-0007](docs/adr/general/ADR-0007-docker-compose.md) | general |
 | ADR-0008: API Gateway как единая точка доступа | Единая точка доступа для клиентов; backend изолирован | [ADR-0008](docs/adr/rest-api/ADR-0008-api-gateway-single-entry-point.md) | rest-api |
 | ADR-0009: Swagger UI публикуется на API Gateway | Каноничный источник OpenAPI — на gateway | [ADR-0009](docs/adr/rest-api/ADR-0009-swagger-ui-on-api-gateway.md) | rest-api |
 | ADR-0010: YARP как реализация API Gateway | YARP/ASP.NET Core как технология gateway | [ADR-0010](docs/adr/rest-api/ADR-0010-yarp-as-api-gateway.md) | rest-api |
-| ADR-0011: .NET 10 / C# как платформа backend | Платформа и язык реализации backend | [ADR-0011](docs/adr/backend/ADR-0011-dotnet-csharp-backend.md) | backend |
+| ADR-0011: .NET 10 / C# как платформа backend | Платформа и язык реализации backend | [ADR-0011](docs/adr/dotnet/ADR-0011-dotnet-csharp-backend.md) | dotnet |
 | ADR-0012: Domain-Driven Design | Подход к моделированию доменной логики | [ADR-0012](docs/adr/backend/ADR-0012-domain-driven-design.md) | backend |
 | ADR-0013: Гексагональная архитектура | Архитектура backend (Ports & Adapters) | [ADR-0013](docs/adr/backend/ADR-0013-hexagonal-architecture.md) | backend |
-| ADR-0014: EF Core как ORM | ORM для backend поверх PostgreSQL | [ADR-0014](docs/adr/backend/ADR-0014-ef-core-orm.md) | backend |
+| ADR-0014: EF Core как ORM | ORM для backend поверх PostgreSQL | [ADR-0014](docs/adr/dotnet/ADR-0014-ef-core-orm.md) | dotnet |
 | ADR-0015: Next.js как frontend meta-framework | Next.js App Router + RSC как стек frontend и хост BFF | [ADR-0015](docs/adr/frontend/ADR-0015-nextjs-frontend-meta-framework.md) | frontend |
 | ADR-0016: React + TypeScript как UI-стек | React + TypeScript strict как UI-стек | [ADR-0016](docs/adr/frontend/ADR-0016-react-typescript-frontend.md) | frontend |
 | ADR-0017: BFF как логический серверный слой | BFF — модули внутри Next.js, не отдельный процесс | [ADR-0017](docs/adr/frontend/ADR-0017-bff-logical-layer.md) | frontend |
@@ -88,6 +93,10 @@
 | ADR-0020: Nginx как edge reverse proxy | Edge reverse proxy перед Next.js и YARP с кэшем статики | [ADR-0020](docs/adr/general/ADR-0020-nginx-as-edge-reverse-proxy.md) | general |
 | ADR-0021: Auth-service как отдельный сервис | JWT выпускается выделенным сервисом auth-service за YARP | [ADR-0021](docs/adr/rest-api/ADR-0021-dedicated-auth-service.md) | rest-api |
 | ADR-0022: S2S через OAuth 2.0 client_credentials | Сервис-клиенты получают JWT через client_credentials у auth-service | [ADR-0022](docs/adr/rest-api/ADR-0022-s2s-client-credentials.md) | rest-api |
+| ADR-0023: Contract-First подход к проектированию API | OpenAPI YAML (≥ 3.0.0) создаётся до реализации; файлы в `docs/contracts/<bc>/<service>.yaml` | [ADR-0023](docs/adr/rest-api/ADR-0023-contract-first-openapi.md) | rest-api |
+| ADR-0024: Соглашение о маршрутизации на API Gateway | Маршруты gateway: `/api/{bounded-context}/...` → сервис; gateway стрипает bounded-context-префикс | [ADR-0024](docs/adr/rest-api/ADR-0024-gateway-routing-convention.md) | rest-api |
+| ADR-0025: Database-per-Service — изоляция данных по сервисам | Каждый сервис владеет собственной БД; доступ к чужой БД запрещён; именование БД и схем — lowercase snake_case | [ADR-0025](docs/adr/database/ADR-0025-database-per-service.md) | database |
+| ADR-0026: Соглашение об именовании сервисов и bounded contexts | Все имена сервисов и bounded contexts — lowercase kebab-case; реестр в `service-registry.md` | [ADR-0026](docs/adr/general/ADR-0026-service-naming-convention.md) | general |
 
 ## Диаграммы
 
