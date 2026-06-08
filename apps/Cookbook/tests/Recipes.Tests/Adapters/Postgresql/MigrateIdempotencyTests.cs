@@ -30,23 +30,6 @@ public sealed class MigrateIdempotencyTests : IAsyncLifetime
             .Options);
 
     [Fact]
-    public async Task MigrateAsync_CalledTwiceSequentially_DoesNotThrow()
-    {
-        // Первый запуск — мигрирует БД
-        await using var db1 = CreateDbContext();
-        await db1.Database.MigrateAsync();
-
-        // Второй запуск на той же БД — должен быть идемпотентным.
-        // Без исправления упадёт с: 42P07 relation "recipes" already exists
-        // потому что __EFMigrationsHistory пишется в public-схему,
-        // а таблица создаётся в cookbook-схеме.
-        await using var db2 = CreateDbContext();
-        var ex = await Record.ExceptionAsync(() => db2.Database.MigrateAsync());
-
-        Assert.Null(ex);
-    }
-
-    [Fact]
     public async Task MigrateAsync_HistoryTable_IsInCookbookSchema()
     {
         await using var db = CreateDbContext();

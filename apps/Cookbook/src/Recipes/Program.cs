@@ -14,7 +14,9 @@ builder.Services.AddControllers()
 builder.Services.AddProblemDetails();
 
 builder.Services.AddDbContext<RecipesDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Recipes")));
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("Recipes"),
+        o => o.MigrationsHistoryTable("__EFMigrationsHistory", "cookbook")));
 
 builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
