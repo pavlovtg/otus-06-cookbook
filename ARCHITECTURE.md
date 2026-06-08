@@ -48,6 +48,14 @@
 | AR-0016: Соглашение о маршрутизации на API Gateway | Маршруты gateway: `/api/{bounded-context}/...` → сервис; gateway стрипает bounded-context-префикс | [AR-0016](docs/architecture/rules/rest-api/AR-0016-gateway-routing-convention.md) | rest-api |
 | AR-0017: Database-per-Service — изоляция данных | Каждый сервис владеет собственной БД; прямой доступ к чужой БД запрещён; именование БД и схем — lowercase snake_case | [AR-0017](docs/architecture/rules/database/AR-0017-database-per-service.md) | database |
 | AR-0018: Контроллеры вместо Minimal API | HTTP-эндпоинты в .NET реализуются через `ApiController`, Minimal API запрещён | [AR-0018](docs/architecture/rules/dotnet/AR-0018-controllers-over-minimal-api.md) | dotnet |
+| AR-0019: Идентификаторы агрегатов — типизированные Value Objects | Идентификаторы агрегатов — `readonly record struct` с `From(Guid)`, валидацией и `ToString("D")` | [AR-0019](docs/architecture/rules/dotnet/AR-0019-ddd-value-object-ids.md) | dotnet |
+| AR-0020: Streaming через IAsyncEnumerable вместо буферизации | Репозитории и сервисы возвращают `IAsyncEnumerable<T>`; буферизация только в трёх исключительных случаях | [AR-0020](docs/architecture/rules/dotnet/AR-0020-async-enumerable-streaming.md) | dotnet |
+| AR-0021: Изоляция адаптеров — адаптеры не зависят друг от друга | Web-адаптер и Postgresql-адаптер зависят только от Application и Domain; прямые зависимости между адаптерами запрещены | [AR-0021](docs/architecture/rules/dotnet/AR-0021-adapter-layer-isolation.md) | dotnet |
+| AR-0022: Internal-контроллеры регистрируются через ControllerFeatureProvider | Контроллеры остаются `internal`; регистрируются через кастомный `ControllerFeatureProvider` в `ApplicationPartManager` | [AR-0022](docs/architecture/rules/dotnet/AR-0022-internal-controllers-feature-provider.md) | dotnet |
+| AR-0023: Запрет проверок environment и провайдера в production-коде | `MigrateAsync()` всегда без условий; InMemory запрещён в тестах; тесты используют Testcontainers | [AR-0023](docs/architecture/rules/dotnet/AR-0023-no-environment-checks-in-production.md) | dotnet |
+| AR-0024: HTTP-зависимости в тестах мокируются через WireMock.Net | Интеграционные тесты .NET-сервисов используют WireMock.Net; адрес переопределяется через `AddInMemoryCollection`; тест верифицирует запрос к mock | [AR-0024](docs/architecture/rules/dotnet/AR-0024-wiremock-for-http-mocking.md) | dotnet |
+| AR-0025: Каждый микросервис реализует `GET /api/health/v1` | Health-check эндпоинт обязателен; путь соответствует REST URI-шаблону; используется в `docker-compose.yml` для `depends_on: service_healthy` | [AR-0025](docs/architecture/rules/rest-api/AR-0025-health-check-endpoint.md) | rest-api |
+| AR-0026: Сетевая изоляция в Docker Compose по принципу безопасности | `frontend-net` и `backend-net`; api-gateway в обеих сетях; только reverse-proxy публикует порты на хост | [AR-0026](docs/architecture/rules/general/AR-0026-docker-compose-network-isolation.md) | general |
 
 ## Стандарты
 
@@ -97,6 +105,9 @@
 | ADR-0024: Соглашение о маршрутизации на API Gateway | Маршруты gateway: `/api/{bounded-context}/...` → сервис; gateway стрипает bounded-context-префикс | [ADR-0024](docs/adr/rest-api/ADR-0024-gateway-routing-convention.md) | rest-api |
 | ADR-0025: Database-per-Service — изоляция данных по сервисам | Каждый сервис владеет собственной БД; доступ к чужой БД запрещён; именование БД и схем — lowercase snake_case | [ADR-0025](docs/adr/database/ADR-0025-database-per-service.md) | database |
 | ADR-0026: Соглашение об именовании сервисов и bounded contexts | Все имена сервисов и bounded contexts — lowercase kebab-case; реестр в `service-registry.md` | [ADR-0026](docs/adr/general/ADR-0026-service-naming-convention.md) | general |
+| ADR-0027: WireMock.Net для мокирования HTTP-зависимостей в тестах | HTTP-зависимости в интеграционных тестах .NET мокируются через WireMock.Net; адрес переопределяется через конфигурацию | [ADR-0027](docs/adr/dotnet/ADR-0027-wiremock-for-http-mocking.md) | dotnet |
+| ADR-0028: Сетевая изоляция сервисов в Docker Compose | Сервисы разбиваются на `frontend-net` и `backend-net` по принципу безопасности; api-gateway в обеих сетях | [ADR-0028](docs/adr/general/ADR-0028-docker-compose-network-isolation.md) | general |
+| ADR-0029: Health-check API обязателен для каждого микросервиса | Каждый микросервис реализует `GET /api/health/v1`; путь соответствует REST URI-шаблону | [ADR-0029](docs/adr/general/ADR-0029-health-check-api.md) | general |
 
 ## Диаграммы
 
