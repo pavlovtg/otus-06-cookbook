@@ -5,7 +5,7 @@ services:
     container_name: cookbook-reverse-proxy
     image: nginx:1.27-alpine
     ports:
-      - "6666:80"
+      - "5500:80"
     volumes:
       - ./infrastructure/docker-compose/reverse-proxy/nginx.conf:/etc/nginx/nginx.conf:ro
     networks:
@@ -46,6 +46,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - ASPNETCORE_URLS=http://+:8080
+      - ReverseProxy__Clusters__recipes-cluster__Destinations__recipes__Address=http://recipes:8080/
     networks:
       - frontend-net
       - backend-net

@@ -15,12 +15,12 @@
 docker compose up
 ```
 
-Приложение будет доступно по адресу: <http://localhost:6666>
+Приложение будет доступно по адресу: <http://localhost:5500>
 
 ## Архитектура
 
 ```
-Браузер → nginx:6666 → web:3000 (Next.js BFF) → api-gateway:8080 (YARP) → recipes:8080
+Браузер → nginx:5500 → web:3000 (Next.js BFF) → api-gateway:8080 (YARP) → recipes:8080
                                                                           ↓
                                                                    postgresql:5432
 ```

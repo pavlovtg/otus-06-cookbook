@@ -10,7 +10,7 @@
 - Инфраструктура: `docker-compose.yml` (сетевая изоляция), `nginx.conf`, Dockerfiles
 - **minimal-realization: все 47/47 задач выполнены** (09.06.2026)
   - `docker compose up` — все 5 контейнеров healthy
-  - Приложение доступно на `http://localhost:6666`
+  - Приложение доступно на `http://localhost:5500`
 
 ## Не начато
 
