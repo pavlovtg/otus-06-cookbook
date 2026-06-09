@@ -4,7 +4,8 @@
 OpenSpec flow plus durable Architecture Decision Records.
 
 Key references:
-- Article: https://intent-driven.dev/blog/2026/04/29/spec-driven-development-with-adr/
+
+- Article: <https://intent-driven.dev/blog/2026/04/29/spec-driven-development-with-adr/>
 
 [![Spec-Driven Development with ADR](https://img.youtube.com/vi/y5oemaPsmOA/hqdefault.jpg)](https://youtu.be/y5oemaPsmOA)
 
@@ -17,6 +18,7 @@ Key references:
 ## Install (copy/paste)
 
 Use the root `README.md` single-line install command with:
+
 - `SCHEMA="spec-driven-with-adr"`
 
 ## Activate
@@ -33,6 +35,7 @@ Artifact order:
 `proposal -> specs -> design -> adr -> tasks`
 
 Gate expectations:
+
 - `specs` must be based on the capabilities identified in `proposal.md`.
 - `design` must account for the proposal, specs, and currently in-force ADRs.
 - `adr` records durable decisions after design and before task planning.
@@ -48,11 +51,11 @@ one and leave the original file unchanged.
 
 ## Note
 
-- For ADR skills please refer to: [Intent-Driven-Template Skills](https://github.com/intent-driven-dev/intent-driven-template/tree/main/.agents/skills/architectural-decision-records).
+- For ADR skills please refer to: [Intent-Driven-Template Skills](<https://github.com/intent-driven-dev/intent-driven-template/tree/main/.agents/skills/architectural-decision-records>).
 - This skill takes care of choosing the ADR style/template used by this schema.
 
 ## Pending
 
 - Package schema and associated skills together.
 
-For more schemas, refer to https://github.com/intent-driven-dev/openspec-schemas.
+For more schemas, refer to <https://github.com/intent-driven-dev/openspec-schemas>.

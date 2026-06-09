@@ -13,6 +13,7 @@
 - `.clinerules/skills/` — скилы агента
 
 ## Соглашения
+
 - Язык: русский
 - Именование промтов: `<index>-<codename>.md`
 - Коммиты: conventional commits через skill `git-commit`
