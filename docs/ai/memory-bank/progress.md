@@ -2,7 +2,7 @@
 
 ## Выполнено
 
-- Архитектурная документация: ADR-0001..ADR-0029, AR-0001..AR-0026, стандарты
+- Архитектурная документация: ADR-0001..ADR-0030, AR-0001..AR-0031, стандарты
 - OpenAPI-спецификация: `docs/contracts/cookbook/recipes.yaml`
 - Backend `recipes`: гексагональная архитектура, DDD, EF Core, PostgreSQL, тесты
 - API Gateway: YARP, маршрутизация `/api/cookbook/...` → `recipes`, тесты
@@ -11,9 +11,13 @@
 - **minimal-realization: все 47/47 задач выполнены** (09.06.2026)
   - `docker compose up` — все 5 контейнеров healthy
   - Приложение доступно на `http://localhost:5500`
+- CI-стратегия: ADR-0030, AR-0030, AR-0031, обновлён `ci-standard.md`
+- Промт `10-github-ci.md` для генерации GitHub Actions pipeline
 
 ## Не начато
 
 - Auth-service
 - Tailwind CSS / shadcn/ui
-- E2E тесты (Playwright)
+- E2E тесты (pytest, `tests/e2e/`)
+- UI-тесты (Playwright, `tests/ui/`)
+- GitHub Actions workflows (`ci-push.yml`, `ci-pr.yml`)
