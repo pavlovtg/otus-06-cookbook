@@ -2,17 +2,16 @@
 
 ## Текущая задача
 
-**CI Pipeline — промт и архитектурные документы** (09.06.2026)
+**CI Pipeline — реализация workflow-файлов** (09.06.2026)
 
 ## Что сделано в этой сессии
 
-- Промт `docs/ai/prompts/10-github-ci.md` — генерация GitHub Actions CI pipeline
-- ADR-0030: Стратегия CI (два режима: push по paths, PR в main полный)
-- AR-0030: CI toolchain (фиксированный набор инструментов по стекам)
-- AR-0031: CI trigger strategy (правила запуска по событиям)
-- Обновлён `docs/standards/ci-standard.md` (инструменты, структура jobs, режимы)
-- Обновлён `ARCHITECTURE.md` (ADR-0030, AR-0030, AR-0031)
+- `.github/workflows/ci-push.yml` — push в feature-ветки, paths-фильтры через `dorny/paths-filter@v3`
+- `.github/workflows/ci-pr.yml` — PR в main, полный прогон без фильтров
+- `.markdownlint.json` — правила MD009, MD012, MD022, MD032, MD034, MD047
+- `tests/e2e/requirements.txt` — pytest>=8.0, httpx>=0.27
+- `.editorconfig` — добавлены C# правила стиля (namespace, using, var, скобки)
 
 ## Следующий шаг
 
-Реализация `.github/workflows/ci-push.yml` и `ci-pr.yml` по промту `10-github-ci.md`.
+Нет активных задач.

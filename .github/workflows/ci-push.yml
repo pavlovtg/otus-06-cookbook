@@ -1,0 +1,239 @@
+# CI: push в feature-ветки
+# Запускает только jobs для затронутых компонентов (paths-фильтры).
+# Для PR в main используется ci-pr.yml (полный прогон без фильтров).
+
+name: CI Push
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  # ─── Определение затронутых компонентов ───────────────────────────────────
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      cookbook: ${{ steps.filter.outputs.cookbook }}
+      apigateway: ${{ steps.filter.outputs.apigateway }}
+      web: ${{ steps.filter.outputs.web }}
+      markdown: ${{ steps.filter.outputs.markdown }}
+      python: ${{ steps.filter.outputs.python }}
+      e2e: ${{ steps.filter.outputs.e2e }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            cookbook:
+              - 'apps/Cookbook/**'
+            apigateway:
+              - 'apps/ApiGateway/**'
+            web:
+              - 'apps/web/**'
+            markdown:
+              - '**/*.md'
+            python:
+              - 'tests/e2e/**'
+            e2e:
+              - 'apps/**'
+              - 'docker-compose.yml'
+              - 'infrastructure/**'
+
+  # ─── Lint ─────────────────────────────────────────────────────────────────
+  lint-cookbook:
+    needs: changes
+    if: needs.changes.outputs.cookbook == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Lint C# (Cookbook)
+        run: dotnet format --verify-no-changes apps/Cookbook/Cookbook.slnx
+
+  lint-apigateway:
+    needs: changes
+    if: needs.changes.outputs.apigateway == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Lint C# (ApiGateway)
+        run: dotnet format --verify-no-changes apps/ApiGateway/ApiGateway.slnx
+
+  lint-web:
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - name: Install dependencies
+        working-directory: apps/web
+        run: pnpm install --frozen-lockfile
+      - name: Lint (Next.js)
+        working-directory: apps/web
+        run: pnpm lint
+
+  lint-markdown:
+    needs: changes
+    if: needs.changes.outputs.markdown == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint Markdown
+        run: npx markdownlint-cli2 "**/*.md" --ignore node_modules
+
+  lint-python:
+    needs: changes
+    if: needs.changes.outputs.python == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install ruff
+        run: pip install ruff
+      - name: Lint Python
+        run: ruff check tests/e2e/
+
+  # ─── Test ─────────────────────────────────────────────────────────────────
+  test-cookbook:
+    needs: changes
+    if: needs.changes.outputs.cookbook == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Test (Cookbook)
+        run: dotnet test apps/Cookbook/Cookbook.slnx
+
+  test-apigateway:
+    needs: changes
+    if: needs.changes.outputs.apigateway == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Test (ApiGateway)
+        run: dotnet test apps/ApiGateway/ApiGateway.slnx
+
+  test-web:
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - name: Install dependencies
+        working-directory: apps/web
+        run: pnpm install --frozen-lockfile
+      - name: Test (Next.js)
+        working-directory: apps/web
+        run: pnpm test
+
+  # ─── Build ────────────────────────────────────────────────────────────────
+  build-cookbook:
+    needs: [lint-cookbook, test-cookbook]
+    if: |
+      always() &&
+      needs.lint-cookbook.result == 'success' &&
+      needs.test-cookbook.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image (Cookbook)
+        run: docker build apps/Cookbook
+
+  build-apigateway:
+    needs: [lint-apigateway, test-apigateway]
+    if: |
+      always() &&
+      needs.lint-apigateway.result == 'success' &&
+      needs.test-apigateway.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image (ApiGateway)
+        run: docker build apps/ApiGateway
+
+  build-web:
+    needs: [lint-web, test-web]
+    if: |
+      always() &&
+      needs.lint-web.result == 'success' &&
+      needs.test-web.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image (web)
+        run: docker build apps/web
+
+  # ─── E2e ──────────────────────────────────────────────────────────────────
+  # Запускается если изменились инфраструктура (e2e filter) или любой из компонентов.
+  # build-* jobs могут быть skipped (компонент не менялся) — это допустимо;
+  # e2e блокируется только при явном failure одного из build-* jobs.
+  e2e:
+    needs: [changes, build-cookbook, build-apigateway, build-web]
+    if: |
+      always() &&
+      needs.changes.outputs.e2e == 'true' ||
+      needs.changes.outputs.cookbook == 'true' ||
+      needs.changes.outputs.apigateway == 'true' ||
+      needs.changes.outputs.web == 'true' &&
+      contains(fromJSON('["success", "skipped"]'), needs.build-cookbook.result) &&
+      contains(fromJSON('["success", "skipped"]'), needs.build-apigateway.result) &&
+      contains(fromJSON('["success", "skipped"]'), needs.build-web.result)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Start services
+        run: docker compose up -d --wait
+      - name: Install e2e dependencies
+        run: pip install -r tests/e2e/requirements.txt
+      - name: Run e2e tests
+        env:
+          BASE_URL: http://localhost:5500
+        run: pytest tests/e2e/
+      - name: Stop services
+        if: always()
+        run: docker compose down
+
+  # ─── UI-тесты (зарезервировано) ───────────────────────────────────────────
+  # TODO: реализовать после добавления Playwright-тестов в tests/ui/
+  # Аналогично e2e: запускается при изменении apps/**, docker-compose.yml, infrastructure/**
+  ui-test:
+    needs: [changes, build-cookbook, build-apigateway, build-web]
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run UI tests (Playwright)
+        run: echo "Not implemented yet"

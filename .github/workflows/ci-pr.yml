@@ -1,0 +1,174 @@
+# CI: PR в main
+# Полный прогон всех jobs без фильтров по paths.
+# Падение любого job блокирует merge.
+#
+# Branch protection rules (настроить в Settings → Branches → main):
+#   - Require status checks to pass before merging
+#   - Добавить все jobs: lint-cookbook, lint-apigateway, lint-web,
+#     lint-markdown, lint-python, test-cookbook, test-apigateway, test-web,
+#     build-cookbook, build-apigateway, build-web, e2e
+#   - Require branches to be up to date before merging
+
+name: CI PR
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # ─── Lint ─────────────────────────────────────────────────────────────────
+  lint-cookbook:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Lint C# (Cookbook)
+        run: dotnet format --verify-no-changes apps/Cookbook/Cookbook.slnx
+
+  lint-apigateway:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Lint C# (ApiGateway)
+        run: dotnet format --verify-no-changes apps/ApiGateway/ApiGateway.slnx
+
+  lint-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - name: Install dependencies
+        working-directory: apps/web
+        run: pnpm install --frozen-lockfile
+      - name: Lint (Next.js)
+        working-directory: apps/web
+        run: pnpm lint
+
+  lint-markdown:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint Markdown
+        run: npx markdownlint-cli2 "**/*.md" --ignore node_modules
+
+  lint-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install ruff
+        run: pip install ruff
+      - name: Lint Python
+        run: ruff check tests/e2e/
+
+  # ─── Test ─────────────────────────────────────────────────────────────────
+  test-cookbook:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Test (Cookbook)
+        run: dotnet test apps/Cookbook/Cookbook.slnx
+
+  test-apigateway:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Test (ApiGateway)
+        run: dotnet test apps/ApiGateway/ApiGateway.slnx
+
+  test-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - name: Install dependencies
+        working-directory: apps/web
+        run: pnpm install --frozen-lockfile
+      - name: Test (Next.js)
+        working-directory: apps/web
+        run: pnpm test
+
+  # ─── Build ────────────────────────────────────────────────────────────────
+  build-cookbook:
+    needs: [lint-cookbook, test-cookbook]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image (Cookbook)
+        run: docker build apps/Cookbook
+
+  build-apigateway:
+    needs: [lint-apigateway, test-apigateway]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image (ApiGateway)
+        run: docker build apps/ApiGateway
+
+  build-web:
+    needs: [lint-web, test-web]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image (web)
+        run: docker build apps/web
+
+  # ─── E2e ──────────────────────────────────────────────────────────────────
+  e2e:
+    needs: [build-cookbook, build-apigateway, build-web]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Start services
+        run: docker compose up -d --wait
+      - name: Install e2e dependencies
+        run: pip install -r tests/e2e/requirements.txt
+      - name: Run e2e tests
+        env:
+          BASE_URL: http://localhost:5500
+        run: pytest tests/e2e/
+      - name: Stop services
+        if: always()
+        run: docker compose down
+
+  # ─── UI-тесты (зарезервировано) ───────────────────────────────────────────
+  # TODO: реализовать после добавления Playwright-тестов в tests/ui/
+  ui-test:
+    needs: [build-cookbook, build-apigateway, build-web]
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run UI tests (Playwright)
+        run: echo "Not implemented yet"
