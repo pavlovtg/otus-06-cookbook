@@ -24,5 +24,12 @@
 ## Конфигурационные файлы сервисов
 
 - Конфиги, монтируемые в контейнеры через `volumes`, хранятся в `infrastructure/docker-compose/<service>/`.
-- Пример: `infrastructure/docker-compose/reverse-proxy/nginx.conf`.
+- Пример: `infrastructure/docker-compose/reverse-proxy/nginx.conf.template`.
 - Исключение: `docker-compose.yml` остаётся в корне репозитория.
+
+## Конфигурация через env-переменные
+
+- Все конфигурируемые параметры (имена контейнеров, порты, хосты, credentials) выносятся в `.env`.
+- Формат подстановки в `docker-compose.yml` обязателен для всех переменных: `${VAR_NAME:?NO_VAR_NAME}`.
+- `container_name` каждого сервиса собирается из `COMPOSE_NAME` как префикс: `${COMPOSE_NAME}-<service>`.
+- `ASPNETCORE_URLS` для всех .NET-сервисов задаётся единой переменной через `DEFAULT_HTTP_PORT`.
