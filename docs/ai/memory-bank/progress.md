@@ -7,7 +7,7 @@
 - ApiGateway (YARP)
 - Frontend (Next.js 15, BFF, Zod)
 - Docker Compose (5 сервисов, healthcheck, nginx reverse proxy)
-- Архитектурные документы: ADR-0001..ADR-0030, AR-0005..AR-0024
+- Архитектурные документы: ADR-0001..ADR-0030, AR-0005..AR-0033
 - Стандарты: ci-standard, csharp-code-style, markdown-code-style и др.
 - CI Pipeline:
   - `.github/workflows/ci-push.yml` (paths-фильтры, dorny/paths-filter)

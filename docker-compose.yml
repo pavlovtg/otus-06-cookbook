@@ -1,13 +1,17 @@
-name: cookbook
+name: ${COMPOSE_NAME:?NO_COMPOSE_NAME}
 
 services:
   reverse-proxy:
-    container_name: cookbook-reverse-proxy
+    container_name: ${REVERSE_PROXY_CONTAINER_NAME:?NO_REVERSE_PROXY_CONTAINER_NAME}
     image: nginx:1.27-alpine
     ports:
-      - "5500:80"
+      - "${REVERSE_PROXY_PORT:?NO_REVERSE_PROXY_PORT}:${REVERSE_PROXY_INTERNAL_PORT:?NO_REVERSE_PROXY_INTERNAL_PORT}"
     volumes:
-      - ./infrastructure/docker-compose/reverse-proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/docker-compose/reverse-proxy/nginx.conf.template:/etc/nginx/templates/default.conf.template
+    environment:
+      - GATEWAY_URL=${GATEWAY_URL:?NO_GATEWAY_URL}
+      - REVERSE_PROXY_INTERNAL_PORT=${REVERSE_PROXY_INTERNAL_PORT:?NO_REVERSE_PROXY_INTERNAL_PORT}
+      - WEB_URL=${WEB_URL:?NO_WEB_URL}
     networks:
       - frontend-net
     depends_on:
@@ -16,22 +20,22 @@ services:
       web:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/api/health/v1"]
+      test: ["CMD", "curl", "-f", "${REVERSE_PROXY_HEALTH_URL:?NO_REVERSE_PROXY_HEALTH_URL}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   web:
-    container_name: cookbook-web
+    container_name: ${WEB_CONTAINER_NAME:?NO_WEB_CONTAINER_NAME}
     build:
       context: apps/web
       dockerfile: Dockerfile
     environment:
-      - GATEWAY_URL=http://api-gateway:8080
+      - GATEWAY_URL=${GATEWAY_URL:?NO_GATEWAY_URL}
     networks:
       - frontend-net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health/v1"]
+      test: ["CMD", "curl", "-f", "${WEB_HEALTH_URL:?NO_WEB_HEALTH_URL}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -40,18 +44,18 @@ services:
         condition: service_healthy
 
   api-gateway:
-    container_name: cookbook-api-gateway
+    container_name: ${API_GATEWAY_CONTAINER_NAME:?NO_API_GATEWAY_CONTAINER_NAME}
     build:
       context: apps/ApiGateway
       dockerfile: Dockerfile
     environment:
-      - ASPNETCORE_URLS=http://+:8080
-      - ReverseProxy__Clusters__recipes-cluster__Destinations__recipes__Address=http://recipes:8080/
+      - ASPNETCORE_URLS=${ASPNETCORE_URLS:?NO_ASPNETCORE_URLS}
+      - ReverseProxy__Clusters__recipes-cluster__Destinations__recipes__Address=${RECIPES_URL:?NO_RECIPES_URL}/
     networks:
       - frontend-net
       - backend-net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health/v1"]
+      test: ["CMD", "curl", "-f", "${SELF_HEALTH_URL:?NO_SELF_HEALTH_URL}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -60,17 +64,17 @@ services:
         condition: service_healthy
 
   recipes:
-    container_name: cookbook-recipes
+    container_name: ${RECIPES_CONTAINER_NAME:?NO_RECIPES_CONTAINER_NAME}
     build:
       context: apps/Cookbook
       dockerfile: Dockerfile
     environment:
-      - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__Recipes=Host=postgresql;Database=recipes;Username=cookbook;Password=cookbook
+      - ASPNETCORE_URLS=${ASPNETCORE_URLS:?NO_ASPNETCORE_URLS}
+      - ConnectionStrings__Recipes=Host=${POSTGRESQL_HOST:?NO_POSTGRESQL_HOST};Database=${POSTGRES_DB:?NO_POSTGRES_DB};Username=${POSTGRES_USER:?NO_POSTGRES_USER};Password=${POSTGRES_PASSWORD:?NO_POSTGRES_PASSWORD}
     networks:
       - backend-net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health/v1"]
+      test: ["CMD", "curl", "-f", "${SELF_HEALTH_URL:?NO_SELF_HEALTH_URL}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -79,18 +83,18 @@ services:
         condition: service_healthy
 
   postgresql:
-    container_name: cookbook-postgresql
+    container_name: ${POSTGRESQL_CONTAINER_NAME:?NO_POSTGRESQL_CONTAINER_NAME}
     image: postgres:16-alpine
     environment:
-      - POSTGRES_DB=recipes
-      - POSTGRES_USER=cookbook
-      - POSTGRES_PASSWORD=cookbook
+      - POSTGRES_DB=${POSTGRES_DB:?NO_POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER:?NO_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?NO_POSTGRES_PASSWORD}
     volumes:
       - postgresql_data:/var/lib/postgresql/data
     networks:
       - backend-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U cookbook -d recipes"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:?NO_POSTGRES_USER} -d ${POSTGRES_DB:?NO_POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10

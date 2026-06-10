@@ -58,6 +58,8 @@
 | AR-0026: Сетевая изоляция в Docker Compose по принципу безопасности | `frontend-net` и `backend-net`; api-gateway в обеих сетях; только reverse-proxy публикует порты на хост | [AR-0026](docs/architecture/rules/general/AR-0026-docker-compose-network-isolation.md) | general |
 | AR-0030: CI toolchain — фиксированный набор инструментов | Каждый стек использует строго определённый линтер и тест-раннер: dotnet format, next lint, ruff, markdownlint-cli2, Playwright | [AR-0030](docs/architecture/rules/general/AR-0030-ci-toolchain.md) | general |
 | AR-0031: CI — стратегия триггеров | Push → умный запуск по затронутым компонентам; PR в main → полный прогон; e2e/ui-test только при изменении кода или compose | [AR-0031](docs/architecture/rules/general/AR-0031-ci-trigger-strategy.md) | general |
+| AR-0032: Docker Compose — конфигурация через env-переменные | Все параметры docker-compose выносятся в `.env`; формат `${VAR:?ERR}`; `container_name` из `COMPOSE_NAME`; `ASPNETCORE_URLS` через `DEFAULT_HTTP_PORT`; `.env` коммитится | [AR-0032](docs/architecture/rules/general/AR-0032-docker-compose-env-config.md) | general |
+| AR-0033: Параметризация nginx-конфига через nginx templates | nginx-конфиг параметризуется через `.template`-файл в `/etc/nginx/templates/`; nginx-образ прогоняет `envsubst` при старте | [AR-0033](docs/architecture/rules/general/AR-0033-nginx-templates-config.md) | general |
 
 ## Стандарты
 

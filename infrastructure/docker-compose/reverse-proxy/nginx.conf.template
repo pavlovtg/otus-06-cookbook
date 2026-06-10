@@ -4,17 +4,17 @@ events {
 
 http {
     server {
-        listen 80;
+        listen ${REVERSE_PROXY_INTERNAL_PORT};
 
         location /api/ {
-            proxy_pass http://api-gateway:8080;
+            proxy_pass ${GATEWAY_URL};
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         }
 
         location / {
-            proxy_pass http://web:3000;
+            proxy_pass ${WEB_URL};
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
