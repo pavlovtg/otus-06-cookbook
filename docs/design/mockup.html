@@ -1,0 +1,1402 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Книга рецептов — MVP-макет</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<!-- style: root-tokens -->
+<style>
+  :root{
+    --c-bg:#fafaf7; --c-surface:#fff; --c-border:#e4e2dc; --c-muted:#6b6b6b;
+    --c-text:#1f1f1f; --c-primary:#2f6f4e; --c-primary-2:#255a3e; --c-danger:#b3261e;
+    --c-warn:#a86b00; --c-accent:#e8a73c;
+    --r-sm:4px; --r-md:8px; --r-lg:14px;
+    --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:24px; --s-6:32px;
+    --shadow:0 1px 2px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);
+    --fs-1:12px; --fs-2:14px; --fs-3:16px; --fs-4:20px; --fs-5:24px; --fs-6:30px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--c-bg);color:var(--c-text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  a{color:var(--c-primary);text-decoration:none}
+  a:hover{text-decoration:underline}
+  img{max-width:100%;display:block}
+  /* style: header */
+  header.app-header{position:sticky;top:0;z-index:10;background:var(--c-surface);border-bottom:1px solid var(--c-border);box-shadow:var(--shadow)}
+  .app-header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:var(--s-4);padding:var(--s-3) var(--s-4);flex-wrap:wrap}
+  .brand{font-weight:700;font-size:var(--fs-4);color:var(--c-primary)}
+  /* style: nav */
+  nav.app-nav{display:flex;flex-wrap:wrap;gap:var(--s-2);flex:1}
+  nav.app-nav a{padding:var(--s-2) var(--s-3);border-radius:var(--r-sm);color:var(--c-text)}
+  nav.app-nav a.active{background:var(--c-primary);color:#fff}
+  nav.app-nav a:hover:not(.active){background:#eee;text-decoration:none}
+  .user-box{display:flex;gap:var(--s-2);align-items:center;font-size:var(--fs-2);color:var(--c-muted)}
+  /* style: button */
+  .btn{display:inline-flex;align-items:center;gap:var(--s-2);padding:var(--s-2) var(--s-4);border-radius:var(--r-md);border:1px solid var(--c-border);background:var(--c-surface);cursor:pointer;font:inherit;color:var(--c-text)}
+  .btn:hover{background:#f1f1ee}
+  /* style: button-primary */
+  .btn.primary{background:var(--c-primary);color:#fff;border-color:var(--c-primary)}
+  .btn.primary:hover{background:var(--c-primary-2)}
+  .btn.danger{background:var(--c-danger);color:#fff;border-color:var(--c-danger)}
+  .btn.ghost{background:transparent;border-color:transparent}
+  .btn.sm{padding:2px var(--s-3);font-size:var(--fs-1)}
+  /* style: main */
+  main{max-width:1200px;margin:0 auto;padding:var(--s-5) var(--s-4)}
+  h1,h2,h3{margin:0 0 var(--s-3)}
+  h1{font-size:var(--fs-6)} h2{font-size:var(--fs-5)} h3{font-size:var(--fs-4)}
+  .row{display:flex;gap:var(--s-3);flex-wrap:wrap;align-items:center}
+  .col{display:flex;flex-direction:column;gap:var(--s-3)}
+  .muted{color:var(--c-muted);font-size:var(--fs-2)}
+  /* style: card */
+  .card{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--s-4);box-shadow:var(--shadow)}
+  /* style: recipe-grid */
+  .recipe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:var(--s-4)}
+  .recipe-card{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+  .recipe-card .thumb{aspect-ratio:4/3;background:#ddd;display:block}
+  .recipe-card .body{padding:var(--s-3);display:flex;flex-direction:column;gap:var(--s-2);flex:1}
+  .recipe-card h3{font-size:var(--fs-3);margin:0}
+  /* style: badge-tag */
+  .badge{display:inline-block;padding:2px var(--s-2);border-radius:999px;background:#f0ebe0;color:#5a4a20;font-size:var(--fs-1)}
+  .badge.cat{background:#dceedf;color:#1f4a32}
+  .badge.priv{background:#fde2e1;color:#8a1a14}
+  /* style: rating-stars */
+  .stars{display:inline-flex;gap:2px;cursor:pointer;color:#d6d2c4;font-size:var(--fs-3)}
+  .stars .s{cursor:pointer}
+  .stars .s.on{color:var(--c-accent)}
+  /* style: form */
+  form.form{display:flex;flex-direction:column;gap:var(--s-3)}
+  label{display:flex;flex-direction:column;gap:var(--s-1);font-size:var(--fs-2)}
+  input,textarea,select{font:inherit;padding:var(--s-2) var(--s-3);border:1px solid var(--c-border);border-radius:var(--r-md);background:#fff;color:var(--c-text)}
+  textarea{min-height:80px;resize:vertical}
+  .field-err{color:var(--c-danger);font-size:var(--fs-1)}
+  .input-row{display:flex;gap:var(--s-2);flex-wrap:wrap}
+  .input-row input,.input-row select{flex:1;min-width:80px}
+  /* style: modal */
+  .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:50;padding:var(--s-4)}
+  .modal{background:#fff;border-radius:var(--r-lg);max-width:520px;width:100%;padding:var(--s-5);box-shadow:var(--shadow)}
+  /* style: pagination */
+  .pager{display:flex;gap:var(--s-2);justify-content:center;margin-top:var(--s-4);flex-wrap:wrap}
+  .pager button{min-width:36px}
+  .pager .cur{background:var(--c-primary);color:#fff;border-color:var(--c-primary)}
+  /* style: meal-plan-grid */
+  .mp-grid{display:grid;grid-template-columns:80px repeat(7,1fr);gap:var(--s-2);min-width:760px}
+  .mp-cell{background:var(--c-surface);border:1px dashed var(--c-border);border-radius:var(--r-md);padding:var(--s-2);min-height:90px;font-size:var(--fs-1)}
+  .mp-cell.over{background:#eef6f1;border-color:var(--c-primary)}
+  .mp-head{font-weight:600;text-align:center;padding:var(--s-2)}
+  .mp-slot-item{background:#eef6f1;border:1px solid var(--c-primary);border-radius:var(--r-sm);padding:2px var(--s-2);margin-bottom:2px;cursor:grab;font-size:var(--fs-1);display:flex;justify-content:space-between;gap:4px}
+  .mp-side{font-weight:600;padding:var(--s-2);text-align:right}
+  .mp-scroll{overflow-x:auto}
+  /* style: shopping-list */
+  .sl-table{width:100%;border-collapse:collapse}
+  .sl-table th,.sl-table td{padding:var(--s-2);border-bottom:1px solid var(--c-border);text-align:left;font-size:var(--fs-2)}
+  /* style: dashboard-chart */
+  .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:var(--s-4)}
+  .dash-card{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--s-4);box-shadow:var(--shadow)}
+  /* style: comments */
+  .comment{border-top:1px solid var(--c-border);padding:var(--s-3) 0;display:flex;flex-direction:column;gap:var(--s-1)}
+  .comment .meta{font-size:var(--fs-1);color:var(--c-muted);display:flex;gap:var(--s-2);justify-content:space-between}
+  /* style: ingredient-row */
+  .ing-row{display:grid;grid-template-columns:2fr 100px 90px 32px;gap:var(--s-2);align-items:center}
+  .step-row{display:grid;grid-template-columns:24px 1fr 32px;gap:var(--s-2);align-items:start}
+  /* style: tabs */
+  .tabs{display:flex;gap:var(--s-2);border-bottom:1px solid var(--c-border);margin-bottom:var(--s-4)}
+  .tabs button{background:none;border:none;padding:var(--s-2) var(--s-3);cursor:pointer;border-bottom:2px solid transparent;font:inherit;color:var(--c-text)}
+  .tabs button.active{border-color:var(--c-primary);color:var(--c-primary);font-weight:600}
+  /* style: notice */
+  .notice{padding:var(--s-3);border-radius:var(--r-md);background:#fff8e1;border:1px solid #f0dca0;color:#5a4500}
+  /* style: detail-layout */
+  .detail{display:grid;grid-template-columns:1.2fr 1fr;gap:var(--s-5)}
+  @media (max-width:768px){
+    nav.app-nav{order:3;width:100%}
+    .detail{grid-template-columns:1fr}
+    h1{font-size:var(--fs-5)} h2{font-size:var(--fs-4)}
+    .ing-row{grid-template-columns:1fr 80px 70px 28px}
+  }
+  .hidden{display:none!important}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid #ccc;border-top-color:var(--c-primary);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .toast{position:fixed;bottom:var(--s-4);right:var(--s-4);background:#1f1f1f;color:#fff;padding:var(--s-3) var(--s-4);border-radius:var(--r-md);z-index:100;opacity:.95}
+</style>
+</head>
+<body>
+
+<!-- style: header -->
+<header class="app-header">
+  <div class="app-header-inner">
+    <a href="#/recipes" class="brand">🍲 Книга рецептов</a>
+    <!-- style: nav -->
+    <nav class="app-nav" id="nav"></nav>
+    <div class="user-box" id="user-box"></div>
+  </div>
+</header>
+
+<!-- style: main -->
+<main id="app"></main>
+
+<!-- style: modal -->
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+
+<script>
+/* =========================================================================
+   FAKE API + MOCK DATA + ROUTER + RENDERERS
+   ========================================================================= */
+'use strict';
+
+/* ---------- utils ---------- */
+const $ = (sel, root=document)=>root.querySelector(sel);
+const $$ = (sel, root=document)=>Array.from(root.querySelectorAll(sel));
+const el = (tag, attrs={}, ...children)=>{
+  const e = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs||{})){
+    if (k==='class') e.className=v;
+    else if (k==='style' && typeof v==='object') Object.assign(e.style,v);
+    else if (k.startsWith('on') && typeof v==='function') e.addEventListener(k.slice(2),v);
+    else if (v===true) e.setAttribute(k,'');
+    else if (v!==false && v!=null) e.setAttribute(k,v);
+  }
+  for (const c of children.flat()){
+    if (c==null||c===false) continue;
+    e.appendChild(typeof c==='string'||typeof c==='number'?document.createTextNode(c):c);
+  }
+  return e;
+};
+const esc = s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const fmtDate = ts=>new Date(ts).toLocaleString('ru-RU',{dateStyle:'short',timeStyle:'short'});
+const sleep = ms=>new Promise(r=>setTimeout(r,ms));
+const delay = ()=>sleep(150+Math.random()*250);
+const uid = (p='id')=>p+'_'+Math.random().toString(36).slice(2,9);
+function toast(msg){
+  const t=$('#toast-root'); const n=el('div',{class:'toast'},msg);
+  t.appendChild(n); setTimeout(()=>n.remove(),2200);
+}
+function placeholderSVG(label,color){
+  const c = color||'#'+(Math.floor(Math.abs(Math.sin(label.length*9.7+label.charCodeAt(0))*16777215))%16777215).toString(16).padStart(6,'0');
+  const svg=`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'><rect width='400' height='300' fill='${c}'/><text x='50%' y='50%' fill='#fff' font-family='sans-serif' font-size='28' text-anchor='middle' dominant-baseline='middle'>${esc(label).slice(0,18)}</text></svg>`;
+  return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg);
+}
+
+/* ---------- seed data ---------- */
+const SEED_USERS = [
+  {id:'u1',email:'anna@test.ru',password:'pass1234',name:'Анна'},
+  {id:'u2',email:'boris@test.ru',password:'pass1234',name:'Борис'},
+];
+const SEED_CATEGORIES = [
+  {id:'c1',name:'Завтрак',slug:'breakfast',description:'Утренние блюда'},
+  {id:'c2',name:'Обед',slug:'lunch',description:''},
+  {id:'c3',name:'Ужин',slug:'dinner',description:''},
+  {id:'c4',name:'Десерт',slug:'dessert',description:''},
+  {id:'c5',name:'Салат',slug:'salad',description:''},
+  {id:'c6',name:'Суп',slug:'soup',description:''},
+  {id:'c7',name:'Выпечка',slug:'bakery',description:''},
+  {id:'c8',name:'Напитки',slug:'drinks',description:''},
+];
+const SEED_TAGS = [
+  {id:'t1',name:'веган'},{id:'t2',name:'быстрое'},{id:'t3',name:'без глютена'},
+  {id:'t4',name:'для детей'},{id:'t5',name:'праздничное'},{id:'t6',name:'дешёвое'},
+  {id:'t7',name:'острое'},{id:'t8',name:'диетическое'},{id:'t9',name:'мясное'},
+  {id:'t10',name:'рыба'},{id:'t11',name:'итальянское'},{id:'t12',name:'русское'},
+];
+const INGRED_NAMES = [
+  ['Курица филе','г'],['Говядина','г'],['Свинина','г'],['Лосось','г'],['Тунец консервированный','г'],
+  ['Яйцо','шт'],['Молоко','мл'],['Сливки 20%','мл'],['Сметана','г'],['Кефир','мл'],
+  ['Творог','г'],['Сыр твёрдый','г'],['Сыр моцарелла','г'],['Сливочное масло','г'],['Растительное масло','мл'],
+  ['Мука пшеничная','г'],['Сахар','г'],['Соль','г'],['Перец чёрный','г'],['Дрожжи сухие','г'],
+  ['Разрыхлитель','г'],['Ванилин','г'],['Какао','г'],['Шоколад тёмный','г'],['Мёд','г'],
+  ['Рис','г'],['Гречка','г'],['Овсянка','г'],['Макароны','г'],['Картофель','г'],
+  ['Лук','г'],['Чеснок','г'],['Морковь','г'],['Помидор','г'],['Огурец','г'],
+  ['Перец болгарский','г'],['Капуста','г'],['Брокколи','г'],['Цветная капуста','г'],['Шпинат','г'],
+  ['Яблоко','г'],['Банан','шт'],['Лимон','шт'],['Апельсин','шт'],['Клубника','г'],
+  ['Базилик','г'],['Укроп','г'],['Петрушка','г'],['Соевый соус','мл'],['Томатная паста','г'],
+  ['Оливки','г'],['Грибы шампиньоны','г'],['Креветки','г'],['Кабачок','г'],['Баклажан','г'],
+];
+const SEED_INGREDIENTS = INGRED_NAMES.map((p,i)=>({id:'i'+(i+1),name:p[0],unit:p[1]}));
+
+const RECIPE_TITLES = [
+  'Паста Карбонара','Борщ классический','Цезарь с курицей','Овсянка с бананом','Шакшука',
+  'Том-ям с креветками','Греческий салат','Картофельное пюре','Сырники','Плов с курицей',
+  'Лазанья болоньезе','Тыквенный суп-пюре','Глазированные сырки','Оладьи на кефире','Рататуй',
+  'Стейк рибай','Запечённый лосось','Брускетта с томатами','Шарлотка с яблоками','Чизкейк ванильный',
+  'Гречка с грибами','Куриный суп','Цыплёнок табака','Рагу овощное','Хумус с лавашом',
+  'Пицца Маргарита','Брауни шоколадный'
+];
+const STEPS_POOL = [
+  'Нарежьте овощи кубиками.','Разогрейте сковороду на среднем огне.','Добавьте масло и обжарьте лук.',
+  'Посолите и поперчите по вкусу.','Тушите под крышкой 15 минут.','Взбейте яйца с молоком.',
+  'Разогрейте духовку до 180°C.','Выложите смесь в форму.','Запекайте 25–30 минут.',
+  'Украсьте зеленью перед подачей.','Доведите воду до кипения.','Варите на медленном огне 20 минут.'
+];
+
+function pick(a,n){const c=[...a];const r=[];while(n--&&c.length)r.push(c.splice(Math.floor(Math.random()*c.length),1)[0]);return r}
+
+function buildSeedRecipes(){
+  const out=[];
+  RECIPE_TITLES.forEach((title,idx)=>{
+    const id='r'+(idx+1);
+    const ings = pick(SEED_INGREDIENTS,4+Math.floor(Math.random()*5)).map(ing=>({
+      ingredientId:ing.id, qty:Math.round((ing.unit==='шт'?1+Math.random()*3:50+Math.random()*250)*10)/10
+    }));
+    const cats = pick(SEED_CATEGORIES,1+Math.floor(Math.random()*2)).map(c=>c.id);
+    const tags = pick(SEED_TAGS,1+Math.floor(Math.random()*3)).map(t=>t.id);
+    const steps = pick(STEPS_POOL,4+Math.floor(Math.random()*3));
+    out.push({
+      id,title,
+      description:'Простой и понятный рецепт «'+title+'». Подходит для домашнего ужина.',
+      timeMin: 10+Math.floor(Math.random()*70),
+      difficulty:['лёгкая','средняя','сложная'][idx%3],
+      servings:2+(idx%4),
+      photo:placeholderSVG(title),
+      steps,
+      ingredients:ings,
+      categories:cats, tags,
+      authorId: idx%2===0?'u1':'u2',
+      isPublic: idx%7!==0,
+      ratings:{}, // userId -> 1..5
+      createdAt: Date.now()-idx*86400000,
+    });
+  });
+  // distribute some ratings
+  out.forEach((r,i)=>{
+    r.ratings['u1'] = 3+((i*7)%3);
+    r.ratings['u2'] = 3+((i*5)%3);
+  });
+  return out;
+}
+
+function buildSeedComments(recipes){
+  const out=[]; const texts=[
+    'Очень вкусно, спасибо!','Готовила вчера — семья в восторге.','Слишком солёно на мой вкус.',
+    'Добавила больше чеснока — отлично!','Попробую завтра.','Идеально на ужин.',
+    'Не получилось тесто. Что я сделал не так?','Великолепно!','Можно ли заменить молоко на сливки?',
+    'Шикарный рецепт.','Дети попросили добавки.','Слишком долго готовить.',
+    'Сделала половину порций — всё ок.','Очень оригинально.','Любимый рецепт уже год.',
+    'Простая и быстрая еда.','Получилось пресно.','Чуть передержал в духовке.',
+    'Отличный вариант для воскресного обеда.','Спасибо автору!','Лучший борщ в моей жизни.',
+    'Картинка лучше реальности :)','Попробую с другими специями.'
+  ];
+  texts.forEach((text,i)=>{
+    const r = recipes[i%recipes.length];
+    out.push({
+      id:'cm'+(i+1), recipeId:r.id,
+      userId: i%2===0?'u1':'u2',
+      text, createdAt: Date.now()-i*3600000
+    });
+  });
+  return out;
+}
+
+function buildSeedMealPlan(recipes){
+  const slots = ['breakfast','lunch','dinner'];
+  const plan = {};
+  for (let d=0;d<7;d++){
+    plan[d] = {};
+    for (const s of slots){
+      // partial fill — leave some empty
+      plan[d][s] = (d+s.length)%4===0 ? [] : [recipes[(d*3 + slots.indexOf(s)) % recipes.length].id];
+    }
+  }
+  return plan;
+}
+
+/* ---------- DB + persistence ---------- */
+const LS_KEY='cookbook_mock_db_v1';
+const LS_TOKEN='cookbook_token';
+function freshDB(){
+  const recipes = buildSeedRecipes();
+  return {
+    users: structuredClone(SEED_USERS),
+    categories: structuredClone(SEED_CATEGORIES),
+    tags: structuredClone(SEED_TAGS),
+    ingredients: structuredClone(SEED_INGREDIENTS),
+    recipes,
+    comments: buildSeedComments(recipes),
+    favorites: {u1:[recipes[0].id,recipes[3].id], u2:[recipes[1].id]},
+    mealPlan: {u1: buildSeedMealPlan(recipes), u2: buildSeedMealPlan(recipes)},
+  };
+}
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return freshDB();
+    return JSON.parse(raw);
+  }catch{ return freshDB(); }
+}
+function saveDB(){ localStorage.setItem(LS_KEY, JSON.stringify(db)); }
+let db = loadDB();
+
+/* ---------- Auth ---------- */
+const b64enc = s => btoa(unescape(encodeURIComponent(s)));
+const b64dec = s => decodeURIComponent(escape(atob(s)));
+function makeToken(user){
+  return b64enc(JSON.stringify({sub:user.id,name:user.name,exp:Date.now()+86400000*7}));
+}
+function currentUser(){
+  const t = localStorage.getItem(LS_TOKEN);
+  if (!t) return null;
+  try{
+    const p = JSON.parse(b64dec(t));
+    if (p.exp<Date.now()) return null;
+    return db.users.find(u=>u.id===p.sub) || null;
+  }catch{ return null; }
+}
+function requireAuth(){
+  if (!currentUser()){ location.hash='#/login'; return false; }
+  return true;
+}
+
+/* ---------- fakeApi ---------- */
+const fakeApi = {
+  /* auth */
+  async login({email,password}){
+    await delay();
+    const u = db.users.find(x=>x.email===email && x.password===password);
+    if (!u) throw new Error('Неверный email или пароль');
+    const token = makeToken(u);
+    localStorage.setItem(LS_TOKEN, token);
+    return {token, user:{id:u.id,email:u.email,name:u.name}};
+  },
+  async register({email,password,name}){
+    await delay();
+    if (db.users.some(u=>u.email===email)) throw new Error('Email уже занят');
+    const u={id:uid('u'),email,password,name};
+    db.users.push(u); saveDB();
+    const token=makeToken(u); localStorage.setItem(LS_TOKEN,token);
+    return {token,user:{id:u.id,email,name}};
+  },
+  async logout(){ await delay(); localStorage.removeItem(LS_TOKEN); return {ok:true}; },
+
+  /* recipes */
+  async getRecipes({page=1,perPage=9,q='',ingredientIds=[],categoryIds=[],tagIds=[],sort='new',onlyMine=false,onlyFavorites=false}={}){
+    await delay();
+    const me = currentUser();
+    let list = db.recipes.filter(r=>r.isPublic || (me && r.authorId===me.id));
+    if (onlyMine && me) list = list.filter(r=>r.authorId===me.id);
+    if (onlyFavorites && me){
+      const fav = db.favorites[me.id]||[];
+      list = list.filter(r=>fav.includes(r.id));
+    }
+    if (q){ const qq=q.toLowerCase(); list=list.filter(r=>r.title.toLowerCase().includes(qq)||r.description.toLowerCase().includes(qq)); }
+    if (ingredientIds.length) list=list.filter(r=>ingredientIds.every(id=>r.ingredients.some(i=>i.ingredientId===id)));
+    if (categoryIds.length) list=list.filter(r=>categoryIds.some(id=>r.categories.includes(id)));
+    if (tagIds.length) list=list.filter(r=>tagIds.some(id=>r.tags.includes(id)));
+    const withMeta = list.map(r=>({...r,avgRating:avgRating(r)}));
+    withMeta.sort((a,b)=>{
+      if (sort==='rating') return b.avgRating-a.avgRating;
+      if (sort==='time') return a.timeMin-b.timeMin;
+      return b.createdAt-a.createdAt;
+    });
+    const total=withMeta.length;
+    const start=(page-1)*perPage;
+    return {items:withMeta.slice(start,start+perPage), total, page, perPage, pages:Math.max(1,Math.ceil(total/perPage))};
+  },
+  async getRecipe(id){
+    await delay();
+    const r = db.recipes.find(x=>x.id===id);
+    if (!r) throw new Error('Рецепт не найден');
+    return {...r, avgRating:avgRating(r)};
+  },
+  async createRecipe(data){
+    await delay(); const me=currentUser(); if(!me) throw new Error('Требуется вход');
+    const r={id:uid('r'),...data,authorId:me.id,ratings:{},createdAt:Date.now()};
+    db.recipes.unshift(r); saveDB(); return r;
+  },
+  async updateRecipe(id,data){
+    await delay(); const me=currentUser(); if(!me) throw new Error('Требуется вход');
+    const r=db.recipes.find(x=>x.id===id); if(!r) throw new Error('Не найдено');
+    if (r.authorId!==me.id) throw new Error('Нет прав');
+    Object.assign(r,data); saveDB(); return r;
+  },
+  async deleteRecipe(id){
+    await delay(); const me=currentUser(); if(!me) throw new Error('Требуется вход');
+    const r=db.recipes.find(x=>x.id===id); if(!r) throw new Error('Не найдено');
+    if (r.authorId!==me.id) throw new Error('Нет прав');
+    db.recipes = db.recipes.filter(x=>x.id!==id);
+    db.comments = db.comments.filter(c=>c.recipeId!==id);
+    for (const uid of Object.keys(db.favorites)) db.favorites[uid]=db.favorites[uid].filter(x=>x!==id);
+    for (const uid of Object.keys(db.mealPlan)) for (const d of Object.keys(db.mealPlan[uid])) for (const s of Object.keys(db.mealPlan[uid][d])) db.mealPlan[uid][d][s]=db.mealPlan[uid][d][s].filter(x=>x!==id);
+    saveDB(); return {ok:true};
+  },
+  async rateRecipe(id,stars){
+    await delay(); const me=currentUser(); if(!me) throw new Error('Требуется вход');
+    const r=db.recipes.find(x=>x.id===id); if(!r) throw new Error('Не найдено');
+    r.ratings[me.id]=Math.max(1,Math.min(5,stars|0)); saveDB(); return {avg:avgRating(r)};
+  },
+
+  /* favorites */
+  async toggleFavorite(id){
+    await delay(); const me=currentUser(); if(!me) throw new Error('Требуется вход');
+    db.favorites[me.id] = db.favorites[me.id]||[];
+    const i=db.favorites[me.id].indexOf(id);
+    if (i>=0) db.favorites[me.id].splice(i,1); else db.favorites[me.id].push(id);
+    saveDB(); return {favorite:i<0};
+  },
+  async getFavorites(){ await delay(); const me=currentUser(); return me?(db.favorites[me.id]||[]):[]; },
+
+  /* comments */
+  async getComments(recipeId){
+    await delay();
+    return db.comments.filter(c=>c.recipeId===recipeId).sort((a,b)=>b.createdAt-a.createdAt).map(c=>({
+      ...c, author: db.users.find(u=>u.id===c.userId)?.name||'?'
+    }));
+  },
+  async addComment(recipeId,text){
+    await delay(); const me=currentUser(); if(!me) throw new Error('Требуется вход');
+    const c={id:uid('cm'),recipeId,userId:me.id,text,createdAt:Date.now()};
+    db.comments.push(c); saveDB(); return c;
+  },
+  async deleteComment(id){
+    await delay(); const me=currentUser(); if(!me) throw new Error('Требуется вход');
+    const c=db.comments.find(x=>x.id===id); if(!c) throw new Error('Не найдено');
+    const r=db.recipes.find(x=>x.id===c.recipeId);
+    if (c.userId!==me.id && r?.authorId!==me.id) throw new Error('Нет прав');
+    db.comments=db.comments.filter(x=>x.id!==id); saveDB(); return {ok:true};
+  },
+
+  /* meal plan + shopping */
+  async getMealPlan(){
+    await delay(); const me=currentUser(); if(!me) throw new Error('Требуется вход');
+    db.mealPlan[me.id] = db.mealPlan[me.id] || buildSeedMealPlan(db.recipes);
+    saveDB();
+    return db.mealPlan[me.id];
+  },
+  async updateMealPlan(plan){
+    await delay(); const me=currentUser(); if(!me) throw new Error('Требуется вход');
+    db.mealPlan[me.id]=plan; saveDB(); return plan;
+  },
+  async getShoppingList(){
+    await delay(); const me=currentUser(); if(!me) throw new Error('Требуется вход');
+    const plan=db.mealPlan[me.id]||{};
+    const map=new Map(); // key=ingredientId|unit
+    for (const d of Object.keys(plan)){
+      for (const s of Object.keys(plan[d])){
+        for (const rid of plan[d][s]){
+          const r=db.recipes.find(x=>x.id===rid); if(!r) continue;
+          for (const ing of r.ingredients){
+            const meta=db.ingredients.find(x=>x.id===ing.ingredientId); if(!meta) continue;
+            const k=ing.ingredientId+'|'+meta.unit;
+            map.set(k,(map.get(k)||{name:meta.name,unit:meta.unit,qty:0}));
+            map.get(k).qty += ing.qty;
+          }
+        }
+      }
+    }
+    return [...map.values()].sort((a,b)=>a.name.localeCompare(b.name,'ru'));
+  },
+
+  /* taxonomy */
+  async getCategories(){ await delay(); return [...db.categories]; },
+  async createCategory({name,description}){
+    await delay();
+    if (db.categories.some(c=>c.name.toLowerCase()===name.toLowerCase())) throw new Error('Уже существует');
+    const c={id:uid('c'),name,slug:name.toLowerCase().replace(/\s+/g,'-'),description:description||''};
+    db.categories.push(c); saveDB(); return c;
+  },
+  async updateCategory(id,{name,description}){
+    await delay(); const c=db.categories.find(x=>x.id===id); if(!c) throw new Error('Не найдено');
+    if (db.categories.some(x=>x.id!==id && x.name.toLowerCase()===name.toLowerCase())) throw new Error('Имя занято');
+    c.name=name; c.slug=name.toLowerCase().replace(/\s+/g,'-'); c.description=description||''; saveDB(); return c;
+  },
+  async deleteCategory(id){
+    await delay();
+    const affected = db.recipes.filter(r=>r.categories.includes(id)).length;
+    db.categories=db.categories.filter(c=>c.id!==id);
+    db.recipes.forEach(r=>{r.categories=r.categories.filter(x=>x!==id)});
+    saveDB(); return {affected};
+  },
+  async getTags(){ await delay(); return [...db.tags]; },
+  async createTag({name}){
+    await delay();
+    if (db.tags.some(t=>t.name.toLowerCase()===name.toLowerCase())) throw new Error('Уже существует');
+    const t={id:uid('t'),name}; db.tags.push(t); saveDB(); return t;
+  },
+  async updateTag(id,{name}){
+    await delay(); const t=db.tags.find(x=>x.id===id); if(!t) throw new Error('Не найдено');
+    if (db.tags.some(x=>x.id!==id && x.name.toLowerCase()===name.toLowerCase())) throw new Error('Имя занято');
+    t.name=name; saveDB(); return t;
+  },
+  async deleteTag(id){
+    await delay();
+    const affected = db.recipes.filter(r=>r.tags.includes(id)).length;
+    db.tags=db.tags.filter(t=>t.id!==id);
+    db.recipes.forEach(r=>{r.tags=r.tags.filter(x=>x!==id)});
+    saveDB(); return {affected};
+  },
+
+  /* ingredients dictionary */
+  async getIngredients(){ await delay(); return [...db.ingredients]; },
+
+  /* dashboard */
+  async getDashboardStats(){
+    await delay();
+    const byCat = db.categories.map(c=>({label:c.name, value:db.recipes.filter(r=>r.categories.includes(c.id)).length}));
+    const top = [...db.recipes].map(r=>({title:r.title,avg:avgRating(r),id:r.id}))
+      .sort((a,b)=>b.avg-a.avg).slice(0,5);
+    const me = currentUser();
+    let planFilled=0,planTotal=21;
+    if (me){
+      const plan=db.mealPlan[me.id]||{};
+      for (const d of Object.keys(plan)) for (const s of Object.keys(plan[d])) if (plan[d][s].length) planFilled++;
+    }
+    return {byCategory:byCat, topRated:top, planFilled, planTotal,
+      totals:{recipes:db.recipes.length,users:db.users.length,comments:db.comments.length}};
+  },
+
+  /* dev */
+  async resetData(){ db = freshDB(); saveDB(); return {ok:true}; },
+};
+
+function avgRating(r){
+  const vals=Object.values(r.ratings||{});
+  if (!vals.length) return 0;
+  return Math.round((vals.reduce((s,x)=>s+x,0)/vals.length)*10)/10;
+}
+
+/* ---------- Router ---------- */
+const routes = [
+  {re:/^#\/login$/, view:viewLogin, public:true},
+  {re:/^#\/register$/, view:viewRegister, public:true},
+  {re:/^#\/recipes$/, view:viewRecipeList},
+  {re:/^#\/recipes\/new$/, view:viewRecipeForm, auth:true},
+  {re:/^#\/recipes\/([\w-]+)\/edit$/, view:(m)=>viewRecipeForm(m[1]), auth:true},
+  {re:/^#\/recipes\/([\w-]+)$/, view:(m)=>viewRecipeDetail(m[1])},
+  {re:/^#\/favorites$/, view:viewFavorites, auth:true},
+  {re:/^#\/meal-plan$/, view:viewMealPlan, auth:true},
+  {re:/^#\/shopping-list$/, view:viewShoppingList, auth:true},
+  {re:/^#\/taxonomy$/, view:viewTaxonomy, auth:true},
+  {re:/^#\/dashboard$/, view:viewDashboard},
+];
+function navigate(){
+  if (!location.hash) location.hash='#/recipes';
+  renderChrome();
+  const hash = location.hash;
+  for (const r of routes){
+    const m = hash.match(r.re);
+    if (m){
+      if (r.auth && !requireAuth()) return;
+      $('#app').innerHTML=''; $('#modal-root').innerHTML='';
+      Promise.resolve(r.view(m)).catch(e=>renderError(e));
+      return;
+    }
+  }
+  $('#app').innerHTML='<div class="card">404 — не найдено</div>';
+}
+window.addEventListener('hashchange',navigate);
+
+/* ---------- Chrome (header nav + user box) ---------- */
+function renderChrome(){
+  const me = currentUser();
+  const nav = $('#nav'); nav.innerHTML='';
+  const links = [
+    ['#/recipes','Рецепты'],
+    ['#/favorites','Избранное', true],
+    ['#/meal-plan','План меню', true],
+    ['#/shopping-list','Покупки', true],
+    ['#/taxonomy','Категории/Теги', true],
+    ['#/dashboard','Дашборд'],
+  ];
+  for (const [href,label,needAuth] of links){
+    if (needAuth && !me) continue;
+    const a = el('a',{href, class: location.hash.startsWith(href)?'active':''},label);
+    nav.appendChild(a);
+  }
+  const ub = $('#user-box'); ub.innerHTML='';
+  if (me){
+    ub.append(
+      el('span',{},`👤 ${me.name}`),
+      el('button',{class:'btn sm',onclick:async()=>{await fakeApi.logout();toast('Вы вышли');location.hash='#/login';}},'Выйти'),
+      el('button',{class:'btn sm ghost', title:'Сбросить мок-данные',onclick:async()=>{
+        if (!confirm('Сбросить все данные макета?')) return;
+        await fakeApi.resetData(); toast('Данные сброшены'); navigate();
+      }},'↻')
+    );
+  } else {
+    ub.append(el('a',{href:'#/login',class:'btn sm primary'},'Войти'));
+  }
+}
+
+/* ---------- Error ---------- */
+function renderError(e){
+  console.error(e);
+  $('#app').innerHTML='';
+  $('#app').appendChild(el('div',{class:'card'},el('div',{class:'notice'},'Ошибка: '+(e.message||e))));
+}
+
+/* =========================================================================
+   SCREENS
+   ========================================================================= */
+
+/* ---------- Login / Register ---------- */
+async function viewLogin(){
+  const app=$('#app'); app.innerHTML='';
+  // style: auth-card
+  const card = el('div',{class:'card',style:{maxWidth:'420px',margin:'40px auto'}});
+  card.append(el('h2',{},'Вход'));
+  const err = el('div',{class:'field-err'});
+  const form = el('form',{class:'form',onsubmit:async(ev)=>{
+    ev.preventDefault();
+    err.textContent='';
+    const fd = new FormData(form);
+    try{
+      await fakeApi.login({email:fd.get('email'),password:fd.get('password')});
+      toast('Добро пожаловать!'); location.hash='#/recipes';
+    }catch(e){ err.textContent=e.message; }
+  }},
+    el('label',{},'Email', el('input',{name:'email',type:'email',required:true,value:'anna@test.ru'})),
+    el('label',{},'Пароль', el('input',{name:'password',type:'password',required:true,minlength:4,value:'pass1234'})),
+    err,
+    el('button',{class:'btn primary',type:'submit'},'Войти'),
+    el('div',{class:'muted'},'Тестовые: anna@test.ru / pass1234 · boris@test.ru / pass1234'),
+    el('div',{},el('a',{href:'#/register'},'Регистрация →')),
+  );
+  card.append(form);
+  app.append(card);
+}
+async function viewRegister(){
+  const app=$('#app'); app.innerHTML='';
+  const card = el('div',{class:'card',style:{maxWidth:'420px',margin:'40px auto'}});
+  card.append(el('h2',{},'Регистрация'));
+  const err = el('div',{class:'field-err'});
+  const form = el('form',{class:'form',onsubmit:async(ev)=>{
+    ev.preventDefault(); err.textContent='';
+    const fd=new FormData(form);
+    try{
+      await fakeApi.register({name:fd.get('name'),email:fd.get('email'),password:fd.get('password')});
+      toast('Аккаунт создан'); location.hash='#/recipes';
+    }catch(e){ err.textContent=e.message; }
+  }},
+    el('label',{},'Имя', el('input',{name:'name',required:true,minlength:2,maxlength:40})),
+    el('label',{},'Email', el('input',{name:'email',type:'email',required:true})),
+    el('label',{},'Пароль', el('input',{name:'password',type:'password',required:true,minlength:4})),
+    err,
+    el('button',{class:'btn primary',type:'submit'},'Создать аккаунт'),
+    el('div',{},el('a',{href:'#/login'},'← Назад ко входу')),
+  );
+  card.append(form);
+  app.append(card);
+}
+
+/* ---------- Recipe list ---------- */
+const listState = {page:1, perPage:9, q:'', ingredientIds:[], categoryIds:[], tagIds:[], sort:'new', onlyFavorites:false, onlyMine:false};
+
+async function viewRecipeList(){
+  const app=$('#app'); app.innerHTML='';
+  app.append(el('div',{class:'row',style:{justifyContent:'space-between'}},
+    el('h1',{},'Рецепты'),
+    currentUser() && el('a',{class:'btn primary',href:'#/recipes/new'},'+ Новый рецепт')
+  ));
+
+  const [cats,tags,ings] = await Promise.all([fakeApi.getCategories(),fakeApi.getTags(),fakeApi.getIngredients()]);
+
+  // filters card
+  const filters = el('div',{class:'card'});
+  // style: filter-form
+  filters.innerHTML=`
+    <div class="row">
+      <label style="flex:2"><span>Поиск по названию/описанию</span>
+        <input id="f-q" placeholder="например, борщ" />
+      </label>
+      <label style="flex:1"><span>Сортировка</span>
+        <select id="f-sort">
+          <option value="new">Сначала новые</option>
+          <option value="rating">По рейтингу</option>
+          <option value="time">По времени</option>
+        </select>
+      </label>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <label style="flex:1"><span>Категории</span><select id="f-cat" multiple size="3"></select></label>
+      <label style="flex:1"><span>Теги</span><select id="f-tag" multiple size="3"></select></label>
+      <label style="flex:1"><span>Ингредиенты («что приготовить из…»)</span><select id="f-ing" multiple size="3"></select></label>
+    </div>
+    <div class="row" style="margin-top:8px;justify-content:flex-end">
+      <button class="btn" id="f-reset">Сброс</button>
+      <button class="btn primary" id="f-apply">Применить</button>
+    </div>`;
+  app.append(filters);
+
+  const $fcat=$('#f-cat',filters),$ftag=$('#f-tag',filters),$fing=$('#f-ing',filters);
+  cats.forEach(c=>$fcat.append(el('option',{value:c.id, selected:listState.categoryIds.includes(c.id)},c.name)));
+  tags.forEach(t=>$ftag.append(el('option',{value:t.id, selected:listState.tagIds.includes(t.id)},t.name)));
+  ings.forEach(i=>$fing.append(el('option',{value:i.id, selected:listState.ingredientIds.includes(i.id)},`${i.name} (${i.unit})`)));
+  $('#f-q',filters).value = listState.q;
+  $('#f-sort',filters).value = listState.sort;
+  $('#f-apply',filters).onclick=()=>{
+    listState.q=$('#f-q',filters).value.trim();
+    listState.sort=$('#f-sort',filters).value;
+    listState.categoryIds=[...$fcat.selectedOptions].map(o=>o.value);
+    listState.tagIds=[...$ftag.selectedOptions].map(o=>o.value);
+    listState.ingredientIds=[...$fing.selectedOptions].map(o=>o.value);
+    listState.page=1;
+    refreshList();
+  };
+  $('#f-reset',filters).onclick=()=>{
+    listState.q='';listState.sort='new';listState.categoryIds=[];listState.tagIds=[];listState.ingredientIds=[];listState.page=1;
+    refreshList();
+  };
+
+  const listWrap = el('div',{});
+  app.append(listWrap);
+
+  async function refreshList(){
+    listWrap.innerHTML='<div class="muted"><span class="spinner"></span> Загрузка…</div>';
+    const data = await fakeApi.getRecipes(listState);
+    listWrap.innerHTML='';
+    if (!data.items.length){ listWrap.append(el('div',{class:'card muted'},'Ничего не найдено.')); return; }
+    const grid = el('div',{class:'recipe-grid'});
+    const favs = currentUser()? await fakeApi.getFavorites():[];
+    for (const r of data.items) grid.append(renderRecipeCard(r,cats,tags,favs));
+    listWrap.append(grid);
+    listWrap.append(renderPager(data.page,data.pages,p=>{listState.page=p;refreshList();}));
+  }
+  refreshList();
+}
+
+function renderRecipeCard(r,cats,tags,favs){
+  const author = db.users.find(u=>u.id===r.authorId)?.name || '?';
+  const catBadges = r.categories.map(id=>cats.find(c=>c.id===id)).filter(Boolean);
+  const tagBadges = r.tags.map(id=>tags.find(t=>t.id===id)).filter(Boolean);
+  const me = currentUser();
+  const isFav = me && favs.includes(r.id);
+  // style: recipe-card
+  return el('div',{class:'recipe-card'},
+    el('a',{href:`#/recipes/${r.id}`}, el('img',{class:'thumb',src:r.photo,alt:r.title})),
+    el('div',{class:'body'},
+      el('div',{class:'row'},
+        ...catBadges.map(c=>el('span',{class:'badge cat'},c.name)),
+        !r.isPublic && el('span',{class:'badge priv'},'приватный')
+      ),
+      el('h3',{},el('a',{href:`#/recipes/${r.id}`,style:{color:'inherit'}},r.title)),
+      el('div',{class:'muted'},`⏱ ${r.timeMin} мин · ${r.difficulty} · автор: ${author}`),
+      el('div',{class:'row'}, ...tagBadges.slice(0,4).map(t=>el('span',{class:'badge'},'#'+t.name))),
+      el('div',{class:'row',style:{justifyContent:'space-between',marginTop:'auto'}},
+        el('div',{},`★ ${r.avgRating || '—'}`),
+        me && el('button',{class:'btn sm', onclick:async()=>{
+          await fakeApi.toggleFavorite(r.id); toast(isFav?'Удалено из избранного':'В избранном'); navigate();
+        }}, isFav?'♥':'♡')
+      )
+    )
+  );
+}
+
+function renderPager(page,pages,onGo){
+  const wrap=el('div',{class:'pager'});
+  const mk=(p,label,disabled)=>el('button',{class:'btn'+(p===page?' cur':''),disabled,onclick:()=>onGo(p)},label||String(p));
+  wrap.append(mk(Math.max(1,page-1),'‹',page===1));
+  for (let p=1;p<=pages;p++){
+    if (p===1||p===pages||Math.abs(p-page)<=2) wrap.append(mk(p));
+    else if (Math.abs(p-page)===3) wrap.append(el('span',{class:'muted'},'…'));
+  }
+  wrap.append(mk(Math.min(pages,page+1),'›',page===pages));
+  return wrap;
+}
+
+/* ---------- Recipe detail ---------- */
+async function viewRecipeDetail(id){
+  const app=$('#app'); app.innerHTML='<div class="muted"><span class="spinner"></span> Загрузка…</div>';
+  let r;
+  try{ r = await fakeApi.getRecipe(id); }
+  catch(e){ renderError(e); return; }
+  const [cats,tags,ings,comments,favs] = await Promise.all([
+    fakeApi.getCategories(),fakeApi.getTags(),fakeApi.getIngredients(),
+    fakeApi.getComments(id), currentUser()?fakeApi.getFavorites():[]
+  ]);
+  const me = currentUser();
+  const author = db.users.find(u=>u.id===r.authorId)?.name||'?';
+  const isOwner = me && me.id===r.authorId;
+  const isFav = me && favs.includes(r.id);
+  app.innerHTML='';
+
+  // header row
+  app.append(el('div',{class:'row',style:{justifyContent:'space-between'}},
+    el('a',{href:'#/recipes'},'← К списку'),
+    el('div',{class:'row'},
+      me && el('button',{class:'btn',onclick:async()=>{await fakeApi.toggleFavorite(r.id);toast(isFav?'Удалено':'В избранном');viewRecipeDetail(id);}}, isFav?'♥ В избранном':'♡ В избранное'),
+      isOwner && el('a',{class:'btn',href:`#/recipes/${r.id}/edit`},'Редактировать'),
+      isOwner && el('button',{class:'btn danger',onclick:()=>confirmDelete(r)},'Удалить'),
+    )
+  ));
+
+  // style: detail-layout
+  const detail = el('div',{class:'detail'});
+  // left
+  const portionsBox = el('div',{class:'row'},
+    el('span',{},'Порций:'),
+    el('input',{type:'number',min:1,max:50,value:r.servings,style:{width:'70px'},id:'portions'}),
+    el('span',{class:'muted'},`(базовое: ${r.servings})`),
+  );
+  const ingTable = el('table',{class:'sl-table'});
+  function renderIngTable(){
+    const portions = Math.max(1, Number($('#portions',portionsBox).value)||r.servings);
+    const k = portions/r.servings;
+    ingTable.innerHTML='<thead><tr><th>Ингредиент</th><th>Количество</th></tr></thead>';
+    const tbody = el('tbody');
+    for (const ing of r.ingredients){
+      const meta = ings.find(x=>x.id===ing.ingredientId);
+      if (!meta) continue;
+      tbody.append(el('tr',{},el('td',{},meta.name),el('td',{},`${Math.round(ing.qty*k*10)/10} ${meta.unit}`)));
+    }
+    ingTable.append(tbody);
+  }
+  portionsBox.querySelector('#portions').addEventListener('input',renderIngTable);
+
+  const left = el('div',{class:'col'},
+    el('img',{src:r.photo,alt:r.title,style:{borderRadius:'14px'}}),
+    el('h1',{},r.title),
+    el('div',{class:'row'},
+      el('span',{class:'muted'},`⏱ ${r.timeMin} мин · сложность: ${r.difficulty} · автор: ${author}`),
+      !r.isPublic && el('span',{class:'badge priv'},'приватный')
+    ),
+    el('div',{class:'row'},
+      ...r.categories.map(cid=>{const c=cats.find(x=>x.id===cid);return c&&el('span',{class:'badge cat'},c.name)}),
+      ...r.tags.map(tid=>{const t=tags.find(x=>x.id===tid);return t&&el('span',{class:'badge'},'#'+t.name)}),
+    ),
+    el('p',{},r.description),
+    el('h3',{},'Ингредиенты'),
+    portionsBox,
+    ingTable,
+    el('h3',{},'Шаги приготовления'),
+    el('ol',{}, ...r.steps.map(s=>el('li',{},s))),
+  );
+
+  // right: rating + comments
+  const ratingBox = el('div',{class:'card'});
+  ratingBox.append(el('h3',{},'Рейтинг'));
+  const stars = el('div',{class:'stars'});
+  function paintStars(active){
+    stars.innerHTML='';
+    for (let i=1;i<=5;i++) stars.append(el('span',{class:'s'+(i<=active?' on':''),'data-v':i},'★'));
+  }
+  const myRating = me ? (r.ratings[me.id]||0) : 0;
+  paintStars(myRating);
+  stars.addEventListener('click', async (ev)=>{
+    if (!me){ toast('Войдите, чтобы оценивать'); return; }
+    const v = ev.target.getAttribute('data-v'); if (!v) return;
+    const {avg} = await fakeApi.rateRecipe(r.id, Number(v));
+    paintStars(Number(v));
+    avgLine.textContent=`Средний рейтинг: ${avg||'—'} (${Object.keys(db.recipes.find(x=>x.id===r.id).ratings).length} оценок)`;
+    toast('Оценка сохранена');
+  });
+  const avgLine = el('div',{class:'muted'},`Средний рейтинг: ${r.avgRating||'—'} (${Object.keys(r.ratings).length} оценок)`);
+  ratingBox.append(stars,avgLine);
+
+  // comments
+  const commentsBox = el('div',{class:'card'});
+  commentsBox.append(el('h3',{},`Комментарии (${comments.length})`));
+  if (me){
+    const cErr=el('div',{class:'field-err'});
+    const cf = el('form',{class:'form',onsubmit:async(ev)=>{
+      ev.preventDefault();
+      const ta=cf.querySelector('textarea'); const text=ta.value.trim();
+      if (text.length<2){ cErr.textContent='Минимум 2 символа'; return; }
+      await fakeApi.addComment(r.id,text); ta.value=''; cErr.textContent='';
+      toast('Комментарий добавлен'); viewRecipeDetail(id);
+    }}, el('textarea',{placeholder:'Ваш комментарий…',required:true,minlength:2,maxlength:1000}), cErr,
+      el('div',{},el('button',{class:'btn primary',type:'submit'},'Отправить')));
+    commentsBox.append(cf);
+  } else {
+    commentsBox.append(el('div',{class:'muted'},el('a',{href:'#/login'},'Войдите'),' чтобы оставить комментарий.'));
+  }
+  for (const c of comments){
+    const canDel = me && (me.id===c.userId || isOwner);
+    commentsBox.append(el('div',{class:'comment'},
+      el('div',{class:'meta'},
+        el('span',{},`👤 ${c.author} · ${fmtDate(c.createdAt)}`),
+        canDel && el('button',{class:'btn sm danger',onclick:async()=>{
+          if (!confirm('Удалить комментарий?')) return;
+          await fakeApi.deleteComment(c.id); toast('Удалено'); viewRecipeDetail(id);
+        }},'Удалить')
+      ),
+      el('div',{},c.text)
+    ));
+  }
+
+  const right = el('div',{class:'col'}, ratingBox, commentsBox);
+  detail.append(left,right);
+  app.append(detail);
+  renderIngTable();
+}
+
+function confirmDelete(r){
+  openModal('Удалить рецепт?', el('div',{},
+    el('p',{},`Точно удалить «${r.title}»? Это действие нельзя отменить.`),
+    el('div',{class:'row',style:{justifyContent:'flex-end'}},
+      el('button',{class:'btn',onclick:closeModal},'Отмена'),
+      el('button',{class:'btn danger',onclick:async()=>{
+        await fakeApi.deleteRecipe(r.id); closeModal(); toast('Рецепт удалён'); location.hash='#/recipes';
+      }},'Удалить')
+    )
+  ));
+}
+
+/* ---------- Modal helpers ---------- */
+function openModal(title,body){
+  const root=$('#modal-root'); root.innerHTML='';
+  const back = el('div',{class:'modal-back',onclick:e=>{if(e.target===back)closeModal();}});
+  const m = el('div',{class:'modal'},
+    el('h3',{},title), body
+  );
+  back.append(m); root.append(back);
+}
+function closeModal(){ $('#modal-root').innerHTML=''; }
+
+/* ---------- Recipe form (create/edit) ---------- */
+async function viewRecipeForm(idOrNull){
+  if (!requireAuth()) return;
+  const me=currentUser();
+  const isEdit = !!idOrNull;
+  let r;
+  if (isEdit){
+    try{ r = await fakeApi.getRecipe(idOrNull); }catch(e){ return renderError(e); }
+    if (r.authorId!==me.id){ return renderError(new Error('Нет прав на редактирование')); }
+  } else {
+    r = {title:'',description:'',timeMin:30,difficulty:'средняя',servings:2,photo:'',steps:[''],
+         ingredients:[{ingredientId:'',qty:100}], categories:[], tags:[], isPublic:true};
+  }
+  const [cats,tags,ings] = await Promise.all([fakeApi.getCategories(),fakeApi.getTags(),fakeApi.getIngredients()]);
+  const app=$('#app'); app.innerHTML='';
+  app.append(el('h1',{},isEdit?'Редактировать рецепт':'Новый рецепт'));
+  app.append(el('div',{class:'muted'},
+    el('a',{href:'#/taxonomy'},'Управление категориями и тегами →')));
+
+  // style: form
+  const form = el('form',{class:'form card', enctype:'multipart/form-data'});
+
+  const f_title = el('input',{name:'title',required:true,minlength:3,maxlength:120,value:r.title});
+  const f_desc = el('textarea',{name:'description',maxlength:2000}, r.description);
+  const f_time = el('input',{name:'timeMin',type:'number',min:1,max:24*60,required:true,value:r.timeMin});
+  const f_diff = el('select',{name:'difficulty'},
+    ...['лёгкая','средняя','сложная'].map(d=>el('option',{value:d, selected:r.difficulty===d},d)));
+  const f_serv = el('input',{name:'servings',type:'number',min:1,max:50,required:true,value:r.servings});
+  const f_pub = el('input',{type:'checkbox',name:'isPublic',checked:r.isPublic});
+  const f_photo = el('input',{type:'file',accept:'image/*'});
+  let photoData = r.photo || '';
+  const photoPreview = el('img',{src:photoData||placeholderSVG('фото'), style:{maxWidth:'200px',borderRadius:'8px'}});
+  f_photo.addEventListener('change',()=>{
+    const file=f_photo.files[0]; if(!file) return;
+    const fr=new FileReader(); fr.onload=()=>{photoData=fr.result; photoPreview.src=fr.result;}; fr.readAsDataURL(file);
+  });
+
+  // ingredients
+  const ingBox = el('div',{class:'col'});
+  function addIngRow(row){
+    const sel = el('select',{required:true}, el('option',{value:''},'— выбрать —'),
+      ...ings.map(i=>el('option',{value:i.id, selected:row.ingredientId===i.id},`${i.name} (${i.unit})`)));
+    const qty = el('input',{type:'number',min:0,step:0.1,required:true,value:row.qty,placeholder:'кол-во'});
+    const unitLbl = el('span',{class:'muted'}, ings.find(i=>i.id===row.ingredientId)?.unit||'');
+    sel.addEventListener('change',()=>{ unitLbl.textContent = ings.find(i=>i.id===sel.value)?.unit||''; });
+    const rem = el('button',{type:'button',class:'btn sm danger',onclick:()=>rowEl.remove()},'×');
+    const rowEl = el('div',{class:'ing-row'},sel,qty,unitLbl,rem);
+    ingBox.append(rowEl);
+  }
+  r.ingredients.forEach(addIngRow);
+  const addIngBtn = el('button',{type:'button',class:'btn sm',onclick:()=>addIngRow({ingredientId:'',qty:100})},'+ Ингредиент');
+
+  // steps
+  const stepsBox = el('div',{class:'col'});
+  function addStepRow(text){
+    const num=el('div',{class:'muted',style:{paddingTop:'8px'}}, '');
+    const ta = el('textarea',{required:true,minlength:2,maxlength:500},text||'');
+    const rem = el('button',{type:'button',class:'btn sm danger',onclick:()=>{rowEl.remove();reorderSteps();}},'×');
+    const rowEl = el('div',{class:'step-row'},num,ta,rem);
+    stepsBox.append(rowEl); reorderSteps();
+  }
+  function reorderSteps(){ [...stepsBox.children].forEach((c,i)=>{c.firstChild.textContent=(i+1)+'.';}); }
+  r.steps.forEach(addStepRow);
+  const addStepBtn = el('button',{type:'button',class:'btn sm',onclick:()=>addStepRow('')},'+ Шаг');
+
+  // categories / tags multi-select
+  const f_cat = el('select',{multiple:true,size:5},
+    ...cats.map(c=>el('option',{value:c.id, selected:r.categories.includes(c.id)},c.name)));
+  const f_tag = el('select',{multiple:true,size:5},
+    ...tags.map(t=>el('option',{value:t.id, selected:r.tags.includes(t.id)},t.name)));
+
+  const formErr = el('div',{class:'field-err'});
+
+  form.append(
+    el('label',{},'Название*', f_title),
+    el('label',{},'Описание', f_desc),
+    el('div',{class:'row'},
+      el('label',{style:{flex:1}},'Время (мин)*', f_time),
+      el('label',{style:{flex:1}},'Сложность', f_diff),
+      el('label',{style:{flex:1}},'Порций*', f_serv),
+    ),
+    el('label',{class:'row'}, f_pub, el('span',{},'Публичный')),
+    el('label',{},'Фото (upload)', f_photo, photoPreview),
+    el('h3',{},'Ингредиенты'),
+    ingBox, addIngBtn,
+    el('h3',{},'Шаги'),
+    stepsBox, addStepBtn,
+    el('div',{class:'row'},
+      el('label',{style:{flex:1}},'Категории', f_cat),
+      el('label',{style:{flex:1}},'Теги', f_tag),
+    ),
+    formErr,
+    el('div',{class:'row',style:{justifyContent:'flex-end'}},
+      el('a',{class:'btn',href: isEdit?`#/recipes/${r.id}`:'#/recipes'},'Отмена'),
+      el('button',{class:'btn primary',type:'submit'}, isEdit?'Сохранить':'Создать'),
+    )
+  );
+
+  form.addEventListener('submit', async ev=>{
+    ev.preventDefault(); formErr.textContent='';
+    const ingredients = [...ingBox.children].map(row=>({
+      ingredientId: row.children[0].value,
+      qty: Number(row.children[1].value)
+    })).filter(x=>x.ingredientId && x.qty>0);
+    if (!ingredients.length){ formErr.textContent='Добавьте хотя бы один ингредиент'; return; }
+    const steps = [...stepsBox.children].map(row=>row.children[1].value.trim()).filter(Boolean);
+    if (!steps.length){ formErr.textContent='Добавьте хотя бы один шаг'; return; }
+    const payload = {
+      title: f_title.value.trim(),
+      description: f_desc.value.trim(),
+      timeMin: Number(f_time.value),
+      difficulty: f_diff.value,
+      servings: Number(f_serv.value),
+      isPublic: f_pub.checked,
+      photo: photoData || placeholderSVG(f_title.value.trim()||'рецепт'),
+      ingredients, steps,
+      categories: [...f_cat.selectedOptions].map(o=>o.value),
+      tags: [...f_tag.selectedOptions].map(o=>o.value),
+    };
+    try{
+      if (isEdit){ await fakeApi.updateRecipe(r.id,payload); toast('Сохранено'); location.hash='#/recipes/'+r.id; }
+      else { const nr = await fakeApi.createRecipe(payload); toast('Создано'); location.hash='#/recipes/'+nr.id; }
+    }catch(e){ formErr.textContent=e.message; }
+  });
+
+  app.append(form);
+}
+
+/* ---------- Favorites ---------- */
+async function viewFavorites(){
+  const app=$('#app'); app.innerHTML='';
+  app.append(el('h1',{},'Избранное'));
+  listState.onlyFavorites=true; listState.onlyMine=false;
+  const data = await fakeApi.getRecipes({...listState, page:1, perPage:9});
+  if (!data.items.length){ app.append(el('div',{class:'card muted'},'Пока ничего нет. Добавляйте рецепты в избранное со страницы рецепта.')); listState.onlyFavorites=false; return; }
+  const [cats,tags] = await Promise.all([fakeApi.getCategories(),fakeApi.getTags()]);
+  const favs = await fakeApi.getFavorites();
+  const grid = el('div',{class:'recipe-grid'});
+  for (const r of data.items) grid.append(renderRecipeCard(r,cats,tags,favs));
+  app.append(grid);
+  app.append(renderPager(data.page,data.pages, async p=>{
+    const more = await fakeApi.getRecipes({...listState,page:p,perPage:9});
+    grid.innerHTML=''; for (const r of more.items) grid.append(renderRecipeCard(r,cats,tags,favs));
+  }));
+  listState.onlyFavorites=false;
+}
+
+/* ---------- Meal plan ---------- */
+async function viewMealPlan(){
+  const app=$('#app'); app.innerHTML='';
+  app.append(el('h1',{},'План меню на неделю'));
+  app.append(el('div',{class:'muted'},'Перетаскивайте рецепты из списка справа в слоты. Можно перетаскивать карточку из плана между слотами или удалить кликом на ×.'));
+
+  const plan = await fakeApi.getMealPlan();
+  const data = await fakeApi.getRecipes({page:1,perPage:50,sort:'rating'});
+  const recipes = data.items;
+
+  // style: meal-plan-grid
+  const layout = el('div',{style:{display:'grid',gridTemplateColumns:'2fr 1fr',gap:'16px'}});
+  const planWrap = el('div',{class:'card'});
+  const sidebar = el('div',{class:'card'});
+
+  const days = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  const slots = [['breakfast','Завтрак'],['lunch','Обед'],['dinner','Ужин']];
+
+  function renderPlan(){
+    planWrap.innerHTML='';
+    const scroll = el('div',{class:'mp-scroll'});
+    const grid = el('div',{class:'mp-grid'});
+    grid.append(el('div',{class:'mp-head'},''));
+    days.forEach(d=>grid.append(el('div',{class:'mp-head'},d)));
+    slots.forEach(([key,label])=>{
+      grid.append(el('div',{class:'mp-side'},label));
+      for (let d=0;d<7;d++){
+        const cell = el('div',{class:'mp-cell','data-day':d,'data-slot':key});
+        (plan[d][key]||[]).forEach(rid=>{
+          const rec = db.recipes.find(x=>x.id===rid);
+          if (!rec) return;
+          const item = el('div',{class:'mp-slot-item',draggable:true,
+            ondragstart:e=>{e.dataTransfer.setData('text/plain', JSON.stringify({from:'plan',day:d,slot:key,id:rid}));}},
+            el('span',{},rec.title.slice(0,28)),
+            el('button',{class:'btn sm danger',style:{padding:'0 4px'},onclick:async()=>{
+              plan[d][key]=plan[d][key].filter(x=>x!==rid); await fakeApi.updateMealPlan(plan); renderPlan();
+            }},'×')
+          );
+          cell.append(item);
+        });
+        cell.ondragover=e=>{e.preventDefault();cell.classList.add('over');};
+        cell.ondragleave=()=>cell.classList.remove('over');
+        cell.ondrop=async e=>{
+          e.preventDefault(); cell.classList.remove('over');
+          const payload = JSON.parse(e.dataTransfer.getData('text/plain')||'{}');
+          if (!payload.id) return;
+          if (payload.from==='plan'){ plan[payload.day][payload.slot]=plan[payload.day][payload.slot].filter(x=>x!==payload.id); }
+          plan[d][key].push(payload.id);
+          await fakeApi.updateMealPlan(plan); renderPlan();
+        };
+        grid.append(cell);
+      }
+    });
+    scroll.append(grid);
+    planWrap.append(scroll);
+    planWrap.append(el('div',{class:'row',style:{justifyContent:'flex-end',marginTop:'8px'}},
+      el('a',{class:'btn primary',href:'#/shopping-list'},'Сформировать список покупок →')
+    ));
+  }
+
+  // sidebar list
+  sidebar.append(el('h3',{},'Рецепты'));
+  sidebar.append(el('div',{class:'muted'},'Перетащите в слот плана'));
+  const sl = el('div',{style:{maxHeight:'70vh',overflow:'auto',display:'flex',flexDirection:'column',gap:'4px',marginTop:'8px'}});
+  recipes.forEach(rec=>{
+    const item = el('div',{class:'mp-slot-item',draggable:true,
+      ondragstart:e=>{e.dataTransfer.setData('text/plain',JSON.stringify({from:'lib',id:rec.id}));}},
+      el('span',{},rec.title));
+    sl.append(item);
+  });
+  sidebar.append(sl);
+
+  layout.append(planWrap, sidebar);
+  app.append(layout);
+  renderPlan();
+}
+
+/* ---------- Shopping list ---------- */
+async function viewShoppingList(){
+  const app=$('#app'); app.innerHTML='';
+  app.append(el('h1',{},'Список покупок'));
+  app.append(el('div',{class:'muted'},'Автоматически сгенерирован из плана меню (агрегация по единицам).'));
+  const items = await fakeApi.getShoppingList();
+  if (!items.length){
+    app.append(el('div',{class:'card muted'},'План меню пуст. Перейдите в ',el('a',{href:'#/meal-plan'},'Планировщик'),'.'));
+    return;
+  }
+  const card = el('div',{class:'card'});
+  const checked = new Set();
+  const table = el('table',{class:'sl-table'});
+  table.innerHTML='<thead><tr><th></th><th>Ингредиент</th><th>Количество</th><th>Ед.</th></tr></thead>';
+  const tbody = el('tbody');
+  items.forEach((it,i)=>{
+    const cb = el('input',{type:'checkbox', onchange:e=>{if(e.target.checked)checked.add(i);else checked.delete(i); tr.style.opacity=e.target.checked?.5:1;}});
+    const tr = el('tr',{},el('td',{},cb),el('td',{},it.name),el('td',{},String(Math.round(it.qty*10)/10)),el('td',{},it.unit));
+    tbody.append(tr);
+  });
+  table.append(tbody);
+  card.append(table);
+  card.append(el('div',{class:'row',style:{marginTop:'12px',justifyContent:'flex-end'}},
+    el('button',{class:'btn',onclick:()=>{
+      const txt = items.map(i=>`${i.name} — ${Math.round(i.qty*10)/10} ${i.unit}`).join('\n');
+      navigator.clipboard?.writeText(txt).then(()=>toast('Скопировано')).catch(()=>{});
+    }},'Скопировать текстом'),
+    el('button',{class:'btn',onclick:()=>window.print()},'Печать'),
+  ));
+  app.append(card);
+}
+
+/* ---------- Taxonomy (categories + tags) ---------- */
+async function viewTaxonomy(){
+  const app=$('#app'); app.innerHTML='';
+  app.append(el('h1',{},'Категории и теги'));
+  const tabs = el('div',{class:'tabs'});
+  const btnC = el('button',{class:'active'},'Категории');
+  const btnT = el('button',{},'Теги');
+  tabs.append(btnC,btnT);
+  app.append(tabs);
+  const body = el('div',{}); app.append(body);
+  btnC.onclick=()=>{btnC.classList.add('active');btnT.classList.remove('active');renderCategories(body);};
+  btnT.onclick=()=>{btnT.classList.add('active');btnC.classList.remove('active');renderTags(body);};
+  renderCategories(body);
+}
+
+const taxoState = {catPage:1, tagPage:1, perPage:8};
+
+async function renderCategories(host){
+  host.innerHTML='<div class="muted"><span class="spinner"></span></div>';
+  const list = await fakeApi.getCategories();
+  host.innerHTML='';
+  // add form
+  const err = el('div',{class:'field-err'});
+  const addForm = el('form',{class:'form card',onsubmit:async ev=>{
+    ev.preventDefault(); err.textContent='';
+    const fd=new FormData(addForm);
+    try{
+      await fakeApi.createCategory({name:fd.get('name').trim(),description:fd.get('description').trim()});
+      toast('Категория создана'); renderCategories(host);
+    }catch(e){ err.textContent=e.message; }
+  }},
+    el('h3',{},'Добавить категорию'),
+    el('div',{class:'row'},
+      el('label',{style:{flex:1}},'Имя*', el('input',{name:'name',required:true,minlength:2,maxlength:40})),
+      el('label',{style:{flex:2}},'Описание', el('input',{name:'description',maxlength:200})),
+    ),
+    err,
+    el('div',{},el('button',{class:'btn primary',type:'submit'},'Добавить'))
+  );
+  host.append(addForm);
+
+  // list with pagination
+  const start=(taxoState.catPage-1)*taxoState.perPage;
+  const page = list.slice(start,start+taxoState.perPage);
+  const pages = Math.max(1,Math.ceil(list.length/taxoState.perPage));
+  const card = el('div',{class:'card'});
+  card.append(el('h3',{},`Все категории (${list.length})`));
+  const table = el('table',{class:'sl-table'});
+  table.innerHTML='<thead><tr><th>Имя</th><th>Slug</th><th>Описание</th><th>Рецептов</th><th></th></tr></thead>';
+  const tbody = el('tbody');
+  page.forEach(c=>{
+    const count = db.recipes.filter(r=>r.categories.includes(c.id)).length;
+    tbody.append(el('tr',{},
+      el('td',{},c.name),
+      el('td',{class:'muted'},c.slug),
+      el('td',{class:'muted'},c.description||'—'),
+      el('td',{},String(count)),
+      el('td',{},
+        el('button',{class:'btn sm',onclick:()=>editCategoryModal(c,()=>renderCategories(host))},'✎'),
+        ' ',
+        el('button',{class:'btn sm danger',onclick:()=>deleteCategoryModal(c,()=>renderCategories(host))},'×')
+      )
+    ));
+  });
+  table.append(tbody);
+  card.append(table);
+  card.append(renderPager(taxoState.catPage,pages,p=>{taxoState.catPage=p;renderCategories(host);}));
+  host.append(card);
+}
+
+function editCategoryModal(c,onDone){
+  const err=el('div',{class:'field-err'});
+  const f = el('form',{class:'form',onsubmit:async ev=>{
+    ev.preventDefault(); err.textContent='';
+    const fd=new FormData(f);
+    try{ await fakeApi.updateCategory(c.id,{name:fd.get('name').trim(),description:fd.get('description').trim()}); closeModal(); toast('Сохранено'); onDone(); }
+    catch(e){ err.textContent=e.message; }
+  }},
+    el('label',{},'Имя*',el('input',{name:'name',required:true,minlength:2,maxlength:40,value:c.name})),
+    el('label',{},'Описание',el('input',{name:'description',maxlength:200,value:c.description||''})),
+    err,
+    el('div',{class:'row',style:{justifyContent:'flex-end'}},
+      el('button',{type:'button',class:'btn',onclick:closeModal},'Отмена'),
+      el('button',{class:'btn primary',type:'submit'},'Сохранить'),
+    )
+  );
+  openModal('Редактировать категорию',f);
+}
+function deleteCategoryModal(c,onDone){
+  const affected = db.recipes.filter(r=>r.categories.includes(c.id)).length;
+  openModal('Удалить категорию?', el('div',{},
+    el('p',{},`Удалить «${c.name}»?`),
+    affected>0 && el('div',{class:'notice'},`Категория используется в ${affected} рецептах — она будет снята с них.`),
+    el('div',{class:'row',style:{justifyContent:'flex-end'}},
+      el('button',{class:'btn',onclick:closeModal},'Отмена'),
+      el('button',{class:'btn danger',onclick:async()=>{await fakeApi.deleteCategory(c.id);closeModal();toast('Удалено');onDone();}},'Удалить')
+    )
+  ));
+}
+
+async function renderTags(host){
+  host.innerHTML='<div class="muted"><span class="spinner"></span></div>';
+  const list = await fakeApi.getTags();
+  host.innerHTML='';
+  const err = el('div',{class:'field-err'});
+  const addForm = el('form',{class:'form card',onsubmit:async ev=>{
+    ev.preventDefault(); err.textContent='';
+    const fd=new FormData(addForm);
+    try{ await fakeApi.createTag({name:fd.get('name').trim()}); toast('Тег создан'); renderTags(host); }
+    catch(e){ err.textContent=e.message; }
+  }},
+    el('h3',{},'Добавить тег'),
+    el('label',{},'Имя*', el('input',{name:'name',required:true,minlength:2,maxlength:30})),
+    err,
+    el('div',{},el('button',{class:'btn primary',type:'submit'},'Добавить'))
+  );
+  host.append(addForm);
+
+  const start=(taxoState.tagPage-1)*taxoState.perPage;
+  const page = list.slice(start,start+taxoState.perPage);
+  const pages = Math.max(1,Math.ceil(list.length/taxoState.perPage));
+  const card = el('div',{class:'card'});
+  card.append(el('h3',{},`Все теги (${list.length})`));
+  const table = el('table',{class:'sl-table'});
+  table.innerHTML='<thead><tr><th>Имя</th><th>Рецептов</th><th></th></tr></thead>';
+  const tbody = el('tbody');
+  page.forEach(t=>{
+    const count = db.recipes.filter(r=>r.tags.includes(t.id)).length;
+    tbody.append(el('tr',{},
+      el('td',{},'#'+t.name),
+      el('td',{},String(count)),
+      el('td',{},
+        el('button',{class:'btn sm',onclick:()=>editTagModal(t,()=>renderTags(host))},'✎'),
+        ' ',
+        el('button',{class:'btn sm danger',onclick:()=>deleteTagModal(t,()=>renderTags(host))},'×')
+      )
+    ));
+  });
+  table.append(tbody);
+  card.append(table);
+  card.append(renderPager(taxoState.tagPage,pages,p=>{taxoState.tagPage=p;renderTags(host);}));
+  host.append(card);
+}
+function editTagModal(t,onDone){
+  const err=el('div',{class:'field-err'});
+  const f=el('form',{class:'form',onsubmit:async ev=>{
+    ev.preventDefault(); err.textContent='';
+    const fd=new FormData(f);
+    try{ await fakeApi.updateTag(t.id,{name:fd.get('name').trim()}); closeModal(); toast('Сохранено'); onDone(); }
+    catch(e){ err.textContent=e.message; }
+  }},
+    el('label',{},'Имя*',el('input',{name:'name',required:true,minlength:2,maxlength:30,value:t.name})),
+    err,
+    el('div',{class:'row',style:{justifyContent:'flex-end'}},
+      el('button',{type:'button',class:'btn',onclick:closeModal},'Отмена'),
+      el('button',{class:'btn primary',type:'submit'},'Сохранить'),
+    )
+  );
+  openModal('Редактировать тег',f);
+}
+function deleteTagModal(t,onDone){
+  const affected = db.recipes.filter(r=>r.tags.includes(t.id)).length;
+  openModal('Удалить тег?', el('div',{},
+    el('p',{},`Удалить «#${t.name}»?`),
+    affected>0 && el('div',{class:'notice'},`Тег используется в ${affected} рецептах — он будет снят с них.`),
+    el('div',{class:'row',style:{justifyContent:'flex-end'}},
+      el('button',{class:'btn',onclick:closeModal},'Отмена'),
+      el('button',{class:'btn danger',onclick:async()=>{await fakeApi.deleteTag(t.id);closeModal();toast('Удалено');onDone();}},'Удалить')
+    )
+  ));
+}
+
+/* ---------- Dashboard ---------- */
+async function viewDashboard(){
+  const app=$('#app'); app.innerHTML='';
+  app.append(el('h1',{},'Дашборд'));
+  const stats = await fakeApi.getDashboardStats();
+
+  // style: dashboard-chart
+  const totalsCard = el('div',{class:'dash-card'},
+    el('h3',{},'Сводка'),
+    el('div',{class:'row'},
+      el('div',{class:'card',style:{flex:1}},el('div',{class:'muted'},'Рецептов'),el('div',{style:{fontSize:'30px'}},String(stats.totals.recipes))),
+      el('div',{class:'card',style:{flex:1}},el('div',{class:'muted'},'Пользователей'),el('div',{style:{fontSize:'30px'}},String(stats.totals.users))),
+      el('div',{class:'card',style:{flex:1}},el('div',{class:'muted'},'Комментариев'),el('div',{style:{fontSize:'30px'}},String(stats.totals.comments))),
+    )
+  );
+  const catCard = el('div',{class:'dash-card'},el('h3',{},'Рецепты по категориям'),el('canvas',{id:'ch-cat',height:'200'}));
+  const topCard = el('div',{class:'dash-card'},el('h3',{},'Топ-5 по рейтингу'),el('canvas',{id:'ch-top',height:'220'}));
+  const planCard = el('div',{class:'dash-card'},el('h3',{},'Заполненность плана меню'),el('canvas',{id:'ch-plan',height:'200'}));
+
+  const grid = el('div',{class:'dash-grid'},catCard,topCard,planCard);
+  app.append(totalsCard,grid);
+
+  // charts
+  new Chart($('#ch-cat'),{type:'bar', data:{labels:stats.byCategory.map(x=>x.label), datasets:[{label:'Рецептов',data:stats.byCategory.map(x=>x.value),backgroundColor:'#2f6f4e'}]}, options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}}});
+  new Chart($('#ch-top'),{type:'bar', data:{labels:stats.topRated.map(x=>x.title), datasets:[{label:'★',data:stats.topRated.map(x=>x.avg),backgroundColor:'#e8a73c'}]}, options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{min:0,max:5}}}});
+  new Chart($('#ch-plan'),{type:'doughnut', data:{labels:['Заполнено','Свободно'],datasets:[{data:[stats.planFilled, Math.max(0,stats.planTotal-stats.planFilled)],backgroundColor:['#2f6f4e','#e4e2dc']}]}});
+}
+
+/* ---------- start ---------- */
+navigate();
+</script>
+</body>
+</html>
