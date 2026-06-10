@@ -1,9 +1,11 @@
 # Memory Bank
 
 ## Расположение
+
 `docs/ai/memory-bank/`
 
 ## Файлы
+
 - `projectbrief.md` — цель и стек проекта
 - `productContext.md` — контекст продукта
 - `activeContext.md` — текущая задача и прогресс

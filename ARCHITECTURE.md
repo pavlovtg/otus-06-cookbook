@@ -56,6 +56,8 @@
 | AR-0024: HTTP-зависимости в тестах мокируются через WireMock.Net | Интеграционные тесты .NET-сервисов используют WireMock.Net; адрес переопределяется через `AddInMemoryCollection`; тест верифицирует запрос к mock | [AR-0024](docs/architecture/rules/dotnet/AR-0024-wiremock-for-http-mocking.md) | dotnet |
 | AR-0025: Каждый микросервис реализует `GET /api/health/v1` | Health-check эндпоинт обязателен; путь соответствует REST URI-шаблону; используется в `docker-compose.yml` для `depends_on: service_healthy` | [AR-0025](docs/architecture/rules/rest-api/AR-0025-health-check-endpoint.md) | rest-api |
 | AR-0026: Сетевая изоляция в Docker Compose по принципу безопасности | `frontend-net` и `backend-net`; api-gateway в обеих сетях; только reverse-proxy публикует порты на хост | [AR-0026](docs/architecture/rules/general/AR-0026-docker-compose-network-isolation.md) | general |
+| AR-0030: CI toolchain — фиксированный набор инструментов | Каждый стек использует строго определённый линтер и тест-раннер: dotnet format, next lint, ruff, markdownlint-cli2, Playwright | [AR-0030](docs/architecture/rules/general/AR-0030-ci-toolchain.md) | general |
+| AR-0031: CI — стратегия триггеров | Push → умный запуск по затронутым компонентам; PR в main → полный прогон; e2e/ui-test только при изменении кода или compose | [AR-0031](docs/architecture/rules/general/AR-0031-ci-trigger-strategy.md) | general |
 
 ## Стандарты
 
@@ -108,6 +110,7 @@
 | ADR-0027: WireMock.Net для мокирования HTTP-зависимостей в тестах | HTTP-зависимости в интеграционных тестах .NET мокируются через WireMock.Net; адрес переопределяется через конфигурацию | [ADR-0027](docs/adr/dotnet/ADR-0027-wiremock-for-http-mocking.md) | dotnet |
 | ADR-0028: Сетевая изоляция сервисов в Docker Compose | Сервисы разбиваются на `frontend-net` и `backend-net` по принципу безопасности; api-gateway в обеих сетях | [ADR-0028](docs/adr/general/ADR-0028-docker-compose-network-isolation.md) | general |
 | ADR-0029: Health-check API обязателен для каждого микросервиса | Каждый микросервис реализует `GET /api/health/v1`; путь соответствует REST URI-шаблону | [ADR-0029](docs/adr/general/ADR-0029-health-check-api.md) | general |
+| ADR-0030: Стратегия CI | Два режима CI: push → умный запуск по затронутым компонентам; PR в main → полный прогон с блокировкой merge | [ADR-0030](docs/adr/general/ADR-0030-ci-strategy.md) | general |
 
 ## Диаграммы
 

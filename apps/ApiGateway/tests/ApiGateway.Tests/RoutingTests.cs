@@ -49,6 +49,16 @@ public sealed class RoutingTests : IDisposable
     }
 
     [Fact]
+    public async Task UnknownRoute_Returns404()
+    {
+        var client = _factory.CreateClient();
+
+        var response = await client.GetAsync("/api/unknown/v1");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
     public async Task CookbookRoute_StripsBoundedContextPrefix_AndProxiesToUpstream()
     {
         var client = _factory.CreateClient(new WebApplicationFactoryClientOptions

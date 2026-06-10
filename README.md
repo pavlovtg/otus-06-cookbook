@@ -26,6 +26,7 @@ docker compose up
 ```
 
 Сети:
+
 - `frontend-net`: `reverse-proxy`, `web`, `api-gateway`
 - `backend-net`: `api-gateway`, `recipes`, `postgresql`
 

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Recipes.Adapters.Postgresql;
 using Recipes.Application;
 using Recipes.Application.Ports;
@@ -13,10 +14,10 @@ builder.Services.AddControllers()
     });
 builder.Services.AddProblemDetails();
 
-builder.Services.AddDbContext<RecipesDbContext>(options =>
+builder.Services.AddDbContext<RecipeRepository>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("Recipes"),
-        o => o.MigrationsHistoryTable("__EFMigrationsHistory", "cookbook")));
+        o => o.MigrationsHistoryTable(HistoryRepository.DefaultTableName, RecipeRepository.DefaultSchema)));
 
 builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
@@ -29,7 +30,7 @@ app.UseStatusCodePages();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<RecipesDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<RecipeRepository>();
     await db.Database.MigrateAsync();
 }
 
