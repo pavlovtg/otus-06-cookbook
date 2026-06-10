@@ -21,8 +21,8 @@ jobs:
   lint-cookbook:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-dotnet@v4.3.1
         with:
           dotnet-version: '10.0.x'
       - name: Lint C# (Cookbook)
@@ -31,8 +31,8 @@ jobs:
   lint-apigateway:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-dotnet@v4.3.1
         with:
           dotnet-version: '10.0.x'
       - name: Lint C# (ApiGateway)
@@ -41,12 +41,12 @@ jobs:
   lint-web:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4.2.2
+      - uses: pnpm/action-setup@v4.1.0
         with:
           run_install: false
           package_json_file: apps/web/package.json
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4.4.0
         with:
           node-version: lts/*
           cache: pnpm
@@ -61,15 +61,15 @@ jobs:
   lint-markdown:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
       - name: Lint Markdown
         run: npx markdownlint-cli2 "**/*.md" --ignore node_modules
 
   lint-python:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.6.0
         with:
           python-version: '3.12'
       - name: Install ruff
@@ -81,8 +81,8 @@ jobs:
   test-cookbook:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-dotnet@v4.3.1
         with:
           dotnet-version: '10.0.x'
       - name: Test (Cookbook)
@@ -91,8 +91,8 @@ jobs:
   test-apigateway:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-dotnet@v4.3.1
         with:
           dotnet-version: '10.0.x'
       - name: Test (ApiGateway)
@@ -101,12 +101,12 @@ jobs:
   test-web:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4.2.2
+      - uses: pnpm/action-setup@v4.1.0
         with:
           run_install: false
           package_json_file: apps/web/package.json
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4.4.0
         with:
           node-version: lts/*
           cache: pnpm
@@ -123,7 +123,7 @@ jobs:
     needs: [lint-cookbook, test-cookbook]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
       - name: Build Docker image (Cookbook)
         run: docker build apps/Cookbook
 
@@ -131,7 +131,7 @@ jobs:
     needs: [lint-apigateway, test-apigateway]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
       - name: Build Docker image (ApiGateway)
         run: docker build apps/ApiGateway
 
@@ -139,7 +139,7 @@ jobs:
     needs: [lint-web, test-web]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
       - name: Build Docker image (web)
         run: docker build apps/web
 
@@ -148,8 +148,8 @@ jobs:
     needs: [build-cookbook, build-apigateway, build-web]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.6.0
         with:
           python-version: '3.12'
       - name: Start services
@@ -169,8 +169,8 @@ jobs:
     needs: [build-cookbook, build-apigateway, build-web]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.6.0
         with:
           python-version: '3.12'
       - name: Start services
