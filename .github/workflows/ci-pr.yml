@@ -75,7 +75,7 @@ jobs:
       - name: Install ruff
         run: pip install ruff
       - name: Lint Python
-        run: ruff check tests/e2e/
+        run: ruff check tests/e2e/ tests/ui/
 
   # ─── Test ─────────────────────────────────────────────────────────────────
   test-cookbook:
@@ -164,13 +164,25 @@ jobs:
         if: always()
         run: docker compose down
 
-  # ─── UI-тесты (зарезервировано) ───────────────────────────────────────────
-  # TODO: реализовать после добавления Playwright-тестов в tests/ui/
+  # ─── UI-тесты ─────────────────────────────────────────────────────────────
   ui-test:
     needs: [build-cookbook, build-apigateway, build-web]
-    if: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run UI tests (Playwright)
-        run: echo "Not implemented yet"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Start services
+        run: docker compose up -d --wait
+      - name: Install UI test dependencies
+        run: pip install -r tests/ui/requirements.txt
+      - name: Install Playwright browsers
+        run: playwright install --with-deps chromium
+      - name: Run UI tests
+        env:
+          BASE_URL: http://localhost:5500
+        run: pytest tests/ui/
+      - name: Stop services
+        if: always()
+        run: docker compose down
