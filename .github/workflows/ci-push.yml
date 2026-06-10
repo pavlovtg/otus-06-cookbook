@@ -225,7 +225,10 @@ jobs:
         with:
           python-version: '3.12'
       - name: Start services
-        run: docker compose up -d --wait
+        run: |
+          for i in 1 2 3; do
+            docker compose up -d --wait && break || sleep 15
+          done
       - name: Install e2e dependencies
         run: pip install -r tests/e2e/requirements.txt
       - name: Run e2e tests
@@ -258,7 +261,10 @@ jobs:
         with:
           python-version: '3.12'
       - name: Start services
-        run: docker compose up -d --wait
+        run: |
+          for i in 1 2 3; do
+            docker compose up -d --wait && break || sleep 15
+          done
       - name: Install UI test dependencies
         run: pip install -r tests/ui/requirements.txt
       - name: Install Playwright browsers
