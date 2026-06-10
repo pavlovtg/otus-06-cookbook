@@ -20,6 +20,7 @@ jobs:
       markdown: ${{ steps.filter.outputs.markdown }}
       python: ${{ steps.filter.outputs.python }}
       e2e: ${{ steps.filter.outputs.e2e }}
+      ui: ${{ steps.filter.outputs.ui }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -36,10 +37,17 @@ jobs:
               - '**/*.md'
             python:
               - 'tests/e2e/**'
+              - 'tests/ui/**'
             e2e:
               - 'apps/**'
               - 'docker-compose.yml'
               - 'infrastructure/**'
+              - 'tests/e2e/**'
+            ui:
+              - 'apps/**'
+              - 'docker-compose.yml'
+              - 'infrastructure/**'
+              - 'tests/ui/**'
 
   # ─── Lint ─────────────────────────────────────────────────────────────────
   lint-cookbook:
@@ -109,7 +117,7 @@ jobs:
       - name: Install ruff
         run: pip install ruff
       - name: Lint Python
-        run: ruff check tests/e2e/
+        run: ruff check tests/e2e/ tests/ui/
 
   # ─── Test ─────────────────────────────────────────────────────────────────
   test-cookbook:
@@ -228,14 +236,37 @@ jobs:
         if: always()
         run: docker compose down
 
-  # ─── UI-тесты (зарезервировано) ───────────────────────────────────────────
-  # TODO: реализовать после добавления Playwright-тестов в tests/ui/
-  # Аналогично e2e: запускается при изменении apps/**, docker-compose.yml, infrastructure/**
+  # ─── UI-тесты ─────────────────────────────────────────────────────────────
+  # Запускается если изменились инфраструктура (ui filter) или любой из компонентов.
+  # build-* jobs могут быть skipped (компонент не менялся) — это допустимо;
+  # ui-test блокируется только при явном failure одного из build-* jobs.
   ui-test:
     needs: [changes, build-cookbook, build-apigateway, build-web]
-    if: false
+    if: |
+      always() &&
+      needs.changes.outputs.ui == 'true' ||
+      needs.changes.outputs.cookbook == 'true' ||
+      needs.changes.outputs.apigateway == 'true' ||
+      needs.changes.outputs.web == 'true' &&
+      contains(fromJSON('["success", "skipped"]'), needs.build-cookbook.result) &&
+      contains(fromJSON('["success", "skipped"]'), needs.build-apigateway.result) &&
+      contains(fromJSON('["success", "skipped"]'), needs.build-web.result)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run UI tests (Playwright)
-        run: echo "Not implemented yet"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Start services
+        run: docker compose up -d --wait
+      - name: Install UI test dependencies
+        run: pip install -r tests/ui/requirements.txt
+      - name: Install Playwright browsers
+        run: playwright install --with-deps chromium
+      - name: Run UI tests
+        env:
+          BASE_URL: http://localhost:5500
+        run: pytest tests/ui/
+      - name: Stop services
+        if: always()
+        run: docker compose down
