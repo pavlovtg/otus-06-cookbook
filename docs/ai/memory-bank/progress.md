@@ -15,6 +15,7 @@
   - `.markdownlint.json`
   - `tests/e2e/requirements.txt`
   - `.editorconfig` — C# правила стиля
+- Локальные CI-скрипты: `scripts/jobs/` (10 job-скриптов) + `scripts/` (lint/test/build/run-ci)
 
 ## В работе
 
