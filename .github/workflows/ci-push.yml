@@ -75,6 +75,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         with:
           run_install: false
+          package_json_file: apps/web/package.json
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
@@ -144,6 +145,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         with:
           run_install: false
+          package_json_file: apps/web/package.json
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
