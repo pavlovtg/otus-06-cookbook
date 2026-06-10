@@ -2,16 +2,15 @@
 
 ## Текущая задача
 
-**Тесты и рефакторинг Cookbook/ApiGateway** (10.06.2026)
+**Исправление CI-ошибок в файлах миграций** (10.06.2026)
 
 ## Что сделано в этой сессии
 
-- `ApiGateway.Tests/RoutingTests.cs` — добавлен тест `UnknownRoute_Returns404`
-- `RecipeRepository.cs` — слит с `RecipesDbContext`: теперь наследует `DbContext`, содержит маппинг и `IRecipeRepository`; добавлена константа `DefaultSchema = "cookbook"`
-- `RecipesDbContext.cs` — удалён
-- `Program.cs`, `RecipesDbContextFactory.cs` — переключены на `RecipeRepository`, inline строки заменены на `HistoryRepository.DefaultTableName` + `RecipeRepository.DefaultSchema`
-- Миграции (`Designer.cs`, `Snapshot`) — обновлены `[DbContext(typeof(RecipeRepository))]`
-- Тесты `MigrateIdempotencyTests.cs` — используют `RecipeRepository` и константы
+- Все 3 файла в `Migrations/` перезаписаны с file-scoped namespace и кодировкой UTF-8 без BOM:
+  - `20260608150146_InitialCreate.cs`
+  - `20260608150146_InitialCreate.Designer.cs`
+  - `RecipesDbContextModelSnapshot.cs`
+- Устранены ошибки CI: `CHARSET` (кодировка) и `IDE0161` (блочный namespace)
 
 ## Следующий шаг
 
