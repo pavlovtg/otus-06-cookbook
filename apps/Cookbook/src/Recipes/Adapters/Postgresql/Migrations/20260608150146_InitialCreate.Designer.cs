@@ -11,7 +11,7 @@ using Recipes.Adapters.Postgresql;
 
 namespace Recipes.Adapters.Postgresql.Migrations
 {
-    [DbContext(typeof(RecipesDbContext))]
+    [DbContext(typeof(RecipeRepository))]
     [Migration("20260608150146_InitialCreate")]
     partial class InitialCreate
     {

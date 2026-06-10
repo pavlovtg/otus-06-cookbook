@@ -1,5 +1,6 @@
 using DotNet.Testcontainers.Builders;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
 using Recipes.Adapters.Postgresql;
 using Testcontainers.PostgreSql;
@@ -22,11 +23,11 @@ public sealed class MigrateIdempotencyTests : IAsyncLifetime
 
     public Task DisposeAsync() => _postgres.DisposeAsync().AsTask();
 
-    private RecipesDbContext CreateDbContext() =>
-        new(new DbContextOptionsBuilder<RecipesDbContext>()
+    private RecipeRepository CreateDbContext() =>
+        new(new DbContextOptionsBuilder<RecipeRepository>()
             .UseNpgsql(
                 _postgres.GetConnectionString(),
-                o => o.MigrationsHistoryTable("__EFMigrationsHistory", "cookbook"))
+                o => o.MigrationsHistoryTable(HistoryRepository.DefaultTableName, RecipeRepository.DefaultSchema))
             .Options);
 
     [Fact]
@@ -49,6 +50,6 @@ public sealed class MigrateIdempotencyTests : IAsyncLifetime
         var schema = (string?)await cmd.ExecuteScalarAsync();
 
         // Должна быть в схеме cookbook, а не public
-        Assert.Equal("cookbook", schema);
+        Assert.Equal(RecipeRepository.DefaultSchema, schema);
     }
 }

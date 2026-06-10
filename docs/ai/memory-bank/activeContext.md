@@ -2,15 +2,16 @@
 
 ## Текущая задача
 
-**CI Pipeline — реализация workflow-файлов** (09.06.2026)
+**Тесты и рефакторинг Cookbook/ApiGateway** (10.06.2026)
 
 ## Что сделано в этой сессии
 
-- `.github/workflows/ci-push.yml` — push в feature-ветки, paths-фильтры через `dorny/paths-filter@v3`
-- `.github/workflows/ci-pr.yml` — PR в main, полный прогон без фильтров
-- `.markdownlint.json` — правила MD009, MD012, MD022, MD032, MD034, MD047
-- `tests/e2e/requirements.txt` — pytest>=8.0, httpx>=0.27
-- `.editorconfig` — добавлены C# правила стиля (namespace, using, var, скобки)
+- `ApiGateway.Tests/RoutingTests.cs` — добавлен тест `UnknownRoute_Returns404`
+- `RecipeRepository.cs` — слит с `RecipesDbContext`: теперь наследует `DbContext`, содержит маппинг и `IRecipeRepository`; добавлена константа `DefaultSchema = "cookbook"`
+- `RecipesDbContext.cs` — удалён
+- `Program.cs`, `RecipesDbContextFactory.cs` — переключены на `RecipeRepository`, inline строки заменены на `HistoryRepository.DefaultTableName` + `RecipeRepository.DefaultSchema`
+- Миграции (`Designer.cs`, `Snapshot`) — обновлены `[DbContext(typeof(RecipeRepository))]`
+- Тесты `MigrateIdempotencyTests.cs` — используют `RecipeRepository` и константы
 
 ## Следующий шаг
 

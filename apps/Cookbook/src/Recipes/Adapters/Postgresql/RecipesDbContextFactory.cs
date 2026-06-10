@@ -1,16 +1,19 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Recipes.Adapters.Postgresql;
 
-internal sealed class RecipesDbContextFactory : IDesignTimeDbContextFactory<RecipesDbContext>
+internal sealed class RecipesDbContextFactory : IDesignTimeDbContextFactory<RecipeRepository>
 {
-    public RecipesDbContext CreateDbContext(string[] args)
+    public RecipeRepository CreateDbContext(string[] args)
     {
-        var options = new DbContextOptionsBuilder<RecipesDbContext>()
-            .UseNpgsql("Host=localhost;Database=recipes;Username=postgres;Password=postgres")
+        var options = new DbContextOptionsBuilder<RecipeRepository>()
+            .UseNpgsql(
+                "Host=localhost;Database=recipes;Username=postgres;Password=postgres",
+                o => o.MigrationsHistoryTable(HistoryRepository.DefaultTableName, RecipeRepository.DefaultSchema))
             .Options;
 
-        return new RecipesDbContext(options);
+        return new RecipeRepository(options);
     }
 }
