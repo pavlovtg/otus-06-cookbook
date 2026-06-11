@@ -113,7 +113,7 @@ def test_delete_recipe_cancel(page: Page, base_url: str) -> None:
     page.goto(base_url)
     page.locator(".recipe-card").first.click()
 
-    page.locator(".detail-bar button", has_text="Удалить").click()
+    page.locator(".detail-toolbar button", has_text="Удалить").click()
 
     expect(page.locator(".modal-backdrop.is-open")).to_be_visible()
 

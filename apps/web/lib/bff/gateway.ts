@@ -7,10 +7,11 @@ import {
 } from "@/lib/schemas/recipe";
 
 const GATEWAY_URL = process.env["GATEWAY_URL"] ?? "http://api-gateway";
-const BASE = `${GATEWAY_URL}/api/cookbook/recipes/v1`;
+const SERVER_BASE = `${GATEWAY_URL}/api/cookbook/recipes/v1`;
+const CLIENT_BASE = `/api/cookbook/recipes/v1`;
 
 export async function getRecipes(): Promise<RecipeDto[]> {
-  const response = await fetch(BASE, { cache: "no-store" });
+  const response = await fetch(SERVER_BASE, { cache: "no-store" });
 
   if (!response.ok) {
     throw new Error(`Failed to fetch recipes: ${response.status}`);
@@ -21,7 +22,7 @@ export async function getRecipes(): Promise<RecipeDto[]> {
 }
 
 export async function getRecipe(id: string): Promise<RecipeDto> {
-  const response = await fetch(`${BASE}/${id}`, { cache: "no-store" });
+  const response = await fetch(`${SERVER_BASE}/${id}`, { cache: "no-store" });
 
   if (!response.ok) {
     throw new Error(`Failed to fetch recipe ${id}: ${response.status}`);
@@ -34,7 +35,7 @@ export async function getRecipe(id: string): Promise<RecipeDto> {
 export async function createRecipe(data: RecipeRequest): Promise<RecipeDto> {
   const body = RecipeRequestSchema.parse(data);
 
-  const response = await fetch(BASE, {
+  const response = await fetch(CLIENT_BASE, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -55,7 +56,7 @@ export async function updateRecipe(
 ): Promise<void> {
   const body = RecipeRequestSchema.parse(data);
 
-  const response = await fetch(`${BASE}/${id}`, {
+  const response = await fetch(`${CLIENT_BASE}/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -68,7 +69,7 @@ export async function updateRecipe(
 }
 
 export async function deleteRecipe(id: string): Promise<void> {
-  const response = await fetch(`${BASE}/${id}`, {
+  const response = await fetch(`${CLIENT_BASE}/${id}`, {
     method: "DELETE",
     cache: "no-store",
   });
