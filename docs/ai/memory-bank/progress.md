@@ -17,6 +17,7 @@
   - `tests/e2e/requirements.txt`
   - `.editorconfig` — C# правила стиля
 - Локальные CI-скрипты: `scripts/jobs/` (10 job-скриптов) + `scripts/` (lint/test/build/run-ci)
+- HTML-прототип MVP: `docs/design/mockup/index.html` + `styles.css` (single-file SPA, fakeApi, все сценарии MVP)
 
 ## В работе
 
