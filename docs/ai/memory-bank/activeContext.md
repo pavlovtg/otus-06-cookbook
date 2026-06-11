@@ -2,17 +2,21 @@
 
 ## Текущая задача
 
-**MVP-макет «Книга рецептов» в виде HTML** (11.06.2026)
+**Обновление стандарта структуры репозитория** (11.06.2026)
 
 ## Что сделано в этой сессии
 
-- Создан HTML-прототип MVP в `docs/design/mockup/`:
-  - `index.html` — single-file SPA с hash-роутингом, inline JS, без сборки.
-  - `styles.css` — CSS-переменные из STYLE_GUIDE (Tradeo dark fintech) + все стили.
-- Покрыты все сценарии MVP: авторизация (3 предзаполненных пользователя), список рецептов с пагинацией, детальная страница, CRUD-форма, поиск с автоподстановкой, избранное, планировщик меню (DnD), список покупок, ингредиенты, категории (admin), дашборд (Chart.js).
-- `fakeApi`: 25+ методов, Promise + setTimeout 150–400 мс, JWT-мок и persistence в localStorage.
-- Состояния empty/loading/error/success реализованы; адаптивная вёрстка (desktop ≥1280, mobile ≤768).
+- Создан Storybook-проект в `docs/design/storybook/` (React 19 + Storybook 8 + Vite).
+- Порт `docs/design/mockup/` (single-file SPA) в React-компоненты 1:1 по стилю:
+  - `src/styles.css`, `src/motion.css` — копия из mockup (единственный источник стилей).
+  - `src/icons.tsx`, `src/photo.tsx`, `src/mocks.ts` — иконки, плейсхолдер-фото, seed-данные.
+  - `src/components/` — примитивы: Button, Input, Tag, SearchInput, Segmented, Pagination, Modal, Toast, Skeleton.
+  - `src/domain/` — доменные: RecipeCard, StarsRating, ServingsControl, IngredientList, CommentItem, Header, Planner, ShoppingList.
+  - `src/dash/` — Kpi, BarChart (SVG), TopList, PlanFill.
+- Истории по группам: `Foundation/*` (токены, иконки), `Primitives/*` (Button, Forms, Navigation, Feedback), `Domain/*` (RecipeCard, Recipe, Header, Planner, Dashboard). Каждая группа имеет ★ Playground с интерактивом (drag-and-drop планировщика, избранное на карточках, рейтинг звёздами, тосты).
+- `pnpm build-storybook` → `storybook-static/` собирается без ошибок (8.12 s).
+- README с инструкцией запуска и планом интеграции в `apps/web`.
 
 ## Следующий шаг
 
-Перенести компоненты прототипа в Next.js (Storybook + продакшн UI).
+Перенести компоненты из `docs/design/storybook/src/` в `apps/web/components/` и подключить реальные BFF-вызовы.
