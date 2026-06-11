@@ -2,6 +2,7 @@
 
 ## Завершено
 
+- STYLE_GUIDE из Tradeo Fintech SaaS (Dribbble + webflow): `docs/design/guide/STYLE_GUIDE.md`, мудборд + structure_selects
 - Инициализация проекта (монорепо, структура, ADR)
 - MVP: Cookbook API (DDD, Hexagonal, EF Core, PostgreSQL)
 - ApiGateway (YARP)
