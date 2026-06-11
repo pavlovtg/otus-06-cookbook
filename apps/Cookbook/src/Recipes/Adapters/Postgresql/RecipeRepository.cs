@@ -59,8 +59,6 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository
                 .HasColumnName("instructions")
                 .HasMaxLength(RecipeConstraints.InstructionsMaxLength)
                 .IsRequired();
-
-            entity.HasData(SeedData.Recipes);
         });
     }
 

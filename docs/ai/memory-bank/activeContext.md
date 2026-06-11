@@ -29,3 +29,11 @@
 ## Следующий шаг
 
 Архивировать change `recipes-crud` командой `/opsx:archive`.
+
+## Исправлено
+
+Баг: `duplicate key` при повторном запуске docker-compose.
+- Убран `entity.HasData(SeedData.Recipes)` из `RecipeRepository.OnModelCreating`
+- Убраны `InsertData`/`DeleteData` из миграции `AddRecipeFields`
+- Обновлён `RecipeRepositoryModelSnapshot` (без seed)
+- Seed перенесён в `Program.cs`: `if (!await db.Recipes.AnyAsync())` → `AddRange` + `SaveChangesAsync`
