@@ -54,6 +54,7 @@ DELETE /api/recipes/v1/{id}     — удаление
 Вся валидация бизнес-правил сосредоточена в доменном слое (`Recipe.Create`, `Recipe.Update`). DataAnnotations на DTO не используются — это нарушало бы DDD (ADR-0012).
 
 Паттерн обработки ошибок:
+
 - Доменный метод выбрасывает типизированное исключение (`RecipeDomainException` или специализированные подклассы) при нарушении инварианта.
 - **Контроллер явно перехватывает доменные исключения** в `catch`-блоке и формирует `400 Bad Request` с `application/problem+json`.
 - Глобальный `IExceptionHandler` регистрируется один — как fallback для непредвиденных исключений, возвращает `500 Internal Server Error` с generic-сообщением. Никаких других `IExceptionHandler` не добавляется.
@@ -66,10 +67,12 @@ DELETE /api/recipes/v1/{id}     — удаление
 ### 5. Frontend: страницы и BFF
 
 Источники для реализации UI:
+
 - **`docs/design/mockup/index.html`** — источник поведения, экранов и UX-сценариев (навигация, состояния, взаимодействия).
 - **`docs/design/storybook/src/`** — источник готовых React-компонентов и CSS-стилей.
 
 Новые страницы Next.js (App Router):
+
 - `/` — обновлённый список с расширенными карточками
 - `/recipes/[id]` — детальная страница (RSC, данные через BFF)
 - `/recipes/new` — форма создания (Client Component с React Hook Form + Zod)
@@ -84,6 +87,7 @@ Zod-схемы в `apps/web/lib/schemas/recipe.ts`: `RecipeDetailSchema`, `Creat
 ADR-0018 (Tailwind + shadcn/ui) заменяется новым ADR. Причина: `docs/design/storybook/` содержит полную готовую систему компонентов на чистом CSS с семантическими классами и CSS-переменными. Tailwind несовместим с этой системой — использование обоих создаёт два конкурирующих механизма стилизации.
 
 Решение:
+
 - `docs/design/storybook/src/styles.css` копируется в `apps/web/app/globals.css` — единственный источник стилей.
 - Компоненты из `docs/design/storybook/src/` переносятся в `apps/web/components/` с адаптацией типов (замена `Recipe` из `mocks.ts` на Zod-схемы из `apps/web/lib/schemas/`).
 - Tailwind и shadcn/ui удаляются из зависимостей `apps/web`.
