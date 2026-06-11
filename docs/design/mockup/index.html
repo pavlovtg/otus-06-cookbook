@@ -197,7 +197,7 @@ function build(state) {
     return {
       id: 'r' + (i + 1),
       title: r[0], description: r[1], cooking_time: r[2], difficulty: r[3], servings: r[4],
-      ingredients: ings, instructions: inst, categories: pickCats(state, r[7]),
+      ingredients: ings, instructions: inst.join('\n\n'), categories: pickCats(state, r[7]),
       author_id: r[8], is_public: r[9], photos: []
     };
   });
@@ -633,7 +633,7 @@ const routes = [
   { re: /^#\/recipes$/, view: 'recipesList' },
   { re: /^#\/planner$/, view: 'planner' },
   { re: /^#\/shopping-list$/, view: 'shoppingList' },
-  { re: /^#\/ingredients$/, view: 'ingredients' },
+  { re: /^#\/ingredients$/, view: 'ingredients', guard: 'user' },
   { re: /^#\/categories$/, view: 'categories' },
   { re: /^#\/dashboard$/, view: 'dashboard' },
   { re: /^#\/login$/, view: 'login' },
@@ -645,7 +645,11 @@ function handleRoute() {
   const hash = location.hash || '#/recipes';
   for (const r of routes) {
     const m = hash.match(r.re);
-    if (m) { renderView(r.view, r.extract ? r.extract(m) : {}); return; }
+    if (m) {
+      if (r.guard === 'user' && !currentUser()) { toast('Войдите, чтобы открыть раздел', 'error'); openLoginModal(); go('#/recipes'); return; }
+      if (r.guard === 'admin' && (!currentUser() || currentUser().role !== 'admin')) { toast('Только для администратора', 'error'); go('#/recipes'); return; }
+      renderView(r.view, r.extract ? r.extract(m) : {}); return;
+    }
   }
   renderView('recipesList', {});
 }
@@ -687,10 +691,10 @@ function handleApiError(e) {
 function renderHeader() {
   const u = currentUser();
   const items = [
-    { hash: '#/recipes', label: 'Рецепты', icon: ICONS.book },
+    { hash: '#/recipes', label: 'Рецепты', icon: ICONS.book, exact: true },
     { hash: '#/planner', label: 'Планировщик', icon: ICONS.calendar, requires: 'user' },
     { hash: '#/shopping-list', label: 'Список покупок', icon: ICONS.cart, requires: 'user' },
-    { hash: '#/ingredients', label: 'Ингредиенты', icon: ICONS.leaf },
+    { hash: '#/ingredients', label: 'Ингредиенты', icon: ICONS.leaf, requires: 'user' },
     { hash: '#/categories', label: 'Категории', icon: ICONS.layers, requires: 'admin' },
     { hash: '#/dashboard', label: 'Дашборд', icon: ICONS.chart },
   ];
@@ -698,7 +702,8 @@ function renderHeader() {
   nav.innerHTML = items.map(i => {
     if (i.requires === 'user' && !u) return '';
     if (i.requires === 'admin' && (!u || u.role !== 'admin')) return '';
-    const active = location.hash.startsWith(i.hash) ? 'is-active' : '';
+    const hash = location.hash || '#/recipes';
+    const active = (i.exact ? (hash === i.hash || hash === '' || hash.startsWith('#/recipes')) : hash.startsWith(i.hash)) ? 'is-active' : '';
     return `<a class="${active}" href="${i.hash}" data-requires="${i.requires||''}">${i.icon}<span>${i.label}</span></a>`;
   }).join('');
   const slot = document.getElementById('user-slot');
@@ -827,15 +832,9 @@ function openLoginModal() {
 views.recipesList = async (main) => {
   const vs = sessionState.viewState;
   main.innerHTML = `
-    <div class="page-head">
-      <div class="left">
-        <span class="eyebrow">${ICONS.book}<span>Каталог рецептов</span></span>
-        <h1 class="t-hero">Готовим <span class="t-gradient">сегодня</span>.</h1>
-      </div>
-      <button class="btn btn-primary" id="new-recipe-btn" data-requires="user">${ICONS.plus}<span>Новый рецепт</span></button>
-    </div>
     <div class="layout-with-aside">
       <aside class="aside">
+        <h1 class="aside-title">Готовим <span class="t-gradient">сегодня</span></h1>
         <div class="aside-block">
           <span class="aside-label">Режим</span>
           <div class="aside-item ${vs.recipesMode === 'all' ? 'is-active' : ''}" data-mode="all"><span>Все рецепты</span></div>
@@ -854,6 +853,7 @@ views.recipesList = async (main) => {
             <input class="search-input" id="search-input" placeholder="Найти рецепты, ингредиенты, категории…" value="${escapeHtml(vs.recipesQuery)}" />
             <div class="autocomplete" id="autocomplete"></div>
           </div>
+          <button class="btn btn-primary" id="new-recipe-btn" data-requires="user">${ICONS.plus}<span>Новый рецепт</span></button>
         </div>
         <div id="list-area"></div>
         <div id="pager-area"></div>
@@ -888,7 +888,7 @@ views.recipesList = async (main) => {
     listArea.innerHTML = `<div class="recipes-grid">${Array.from({length: 6}).map(() => '<div class="skeleton skeleton-card"></div>').join('')}</div>`;
     try {
       const { items, total, page, perPage } = await fakeApi.getRecipes({
-        q: vs.recipesQuery, mode: vs.recipesMode, sort: vs.recipesSort, page: vs.recipesPage, perPage: 100
+        q: vs.recipesQuery, mode: vs.recipesMode, sort: vs.recipesSort, page: vs.recipesPage, perPage: 10
       });
       if (!items.length) {
         listArea.innerHTML = `<div class="state">
@@ -940,13 +940,13 @@ function renderRecipeCard(r) {
   return `
     <div class="card recipe-card card-link" data-id="${r.id}">
       <div class="photo">${recipePhoto(r.id, r.title)}
-        ${!r.is_public ? `<div class="photo-badge">${ICONS.lock}<span>Приватный</span></div>` : ''}
+        ${!r.is_public ? `<div class="photo-private" title="Приватный рецепт">${ICONS.lock}</div>` : ''}
         ${u ? `<button class="btn-icon photo-fav ${isFav ? 'is-on' : ''}" data-fav="${r.id}">${isFav ? ICONS.heartFill : ICONS.heart}</button>` : ''}
       </div>
       <div class="body">
         <h3>${escapeHtml(r.title)}</h3>
         <div class="tags">
-          ${r.categories.slice(0, 3).map(c => `<span class="tag ${c.type === 'cuisine' ? 'tag-accent' : ''}">${escapeHtml(c.name)}</span>`).join('')}
+          ${r.categories.slice(0, 3).map(c => `<span class="tag">${escapeHtml(c.name)}</span>`).join('')}
         </div>
         <div class="meta">
           <span>${ICONS.clock} ${r.cooking_time} мин</span>
@@ -997,32 +997,32 @@ views.recipeDetail = async (main, { id }) => {
 
   const renderPage = () => {
     main.innerHTML = `
-      <div class="page-head">
-        <div class="left">
-          <button class="btn btn-ghost btn-sm" id="back-btn">${ICONS.arrowLeft}<span>Назад</span></button>
-          <h1 class="t-display" style="margin-top:8px">${escapeHtml(r.title)}</h1>
-          <div class="detail-meta">
-            <span>${ICONS.clock} ${r.cooking_time} мин</span><span class="dot"></span>
-            <span>${ICONS.flame} ${diffLabel(r.difficulty)}</span><span class="dot"></span>
-            <span>${ICONS.user} ${escapeHtml(author?.display_name || '—')}</span><span class="dot"></span>
-            <span class="rating-inline">${ICONS.star}<span>${avg ? avg.toFixed(1) : '—'}</span></span>
-            ${!r.is_public ? `<span class="dot"></span><span class="tag tag-private">${ICONS.lock}<span>Приватный</span></span>` : ''}
-          </div>
-          <div class="tags" style="margin-top:10px">${r.categories.map(c => `<span class="tag ${c.type==='cuisine'?'tag-accent':''}">${escapeHtml(c.name)}</span>`).join('')}</div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${u ? `<button class="btn ${isFav?'btn-primary':'btn-ghost'}" id="fav-btn">${isFav?ICONS.heartFill:ICONS.heart}<span>${isFav?'В избранном':'В избранное'}</span></button>` : ''}
-          ${canEdit ? `<a class="btn btn-ghost" href="#/recipes/${r.id}/edit">${ICONS.edit}<span>Редактировать</span></a>` : ''}
-          ${canEdit ? `<button class="btn btn-danger" id="delete-btn">${ICONS.trash}<span>Удалить</span></button>` : ''}
+      <div class="detail-bar">
+        <button class="btn btn-ghost btn-sm back-btn" id="back-btn">${ICONS.arrowLeft}<span>Назад</span></button>
+        <span class="title">${escapeHtml(r.title)}</span>
+        <span class="spacer"></span>
+        <span class="meta">
+          <span>${ICONS.clock}${r.cooking_time} мин</span><span class="sep"></span>
+          <span>${ICONS.flame}${diffLabel(r.difficulty)}</span><span class="sep"></span>
+          <span class="rating"><span class="star">${ICONS.star}</span>${avg ? avg.toFixed(1) : '—'}</span><span class="sep"></span>
+          <span>${ICONS.user}${escapeHtml(author?.display_name || '—')}</span>
+          ${!r.is_public ? `<span class="sep"></span><span class="tag tag-private">${ICONS.lock}<span>Приватный</span></span>` : ''}
+        </span>
+      </div>
+      <div class="detail-toolbar">
+        <div class="detail-tags">${r.categories.map(c => `<span class="tag">${escapeHtml(c.name)}</span>`).join('')}</div>
+        <div class="detail-actions">
+          ${u ? `<button class="btn ${isFav?'btn-primary':'btn-ghost'} btn-sm" id="fav-btn">${isFav?ICONS.heartFill:ICONS.heart}<span>${isFav?'В избранном':'В избранное'}</span></button>` : ''}
+          ${canEdit ? `<a class="btn btn-ghost btn-sm" href="#/recipes/${r.id}/edit">${ICONS.edit}<span>Редактировать</span></a>` : ''}
+          ${canEdit ? `<button class="btn btn-danger btn-sm" id="delete-btn">${ICONS.trash}<span>Удалить</span></button>` : ''}
         </div>
       </div>
       <div class="detail-grid">
         <div class="gallery">
           <div class="main-photo">${recipePhoto(r.id, r.title)}</div>
-          <p class="t-small" style="color:var(--fg-secondary);font-size:15px">${escapeHtml(r.description || '')}</p>
-          <h3 class="t-subheading" style="margin-top:14px">Шаги</h3>
-          <ol class="instructions">${(r.instructions || []).map((s, i) => `
-            <li class="instruction-step"><div class="num">${i+1}</div><p>${escapeHtml(s)}</p></li>`).join('')}</ol>
+          <p class="t-small" style="color:var(--fg-secondary);font-size:15px;margin-top:6px">${escapeHtml(r.description || '')}</p>
+          <h3 class="t-subheading" style="margin-top:14px">Шаги приготовления</h3>
+          <div class="instructions-text">${escapeHtml(Array.isArray(r.instructions) ? r.instructions.join('\n\n') : (r.instructions || ''))}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:24px">
           <div class="card card-pad-lg">
@@ -1134,18 +1134,15 @@ views.recipeForm = async (main, { id } = {}) => {
   if (r && r.author_id !== u.id && u.role !== 'admin') { toast('Нет прав', 'error'); go('#/recipes/' + id); return; }
   const draft = r ? JSON.parse(JSON.stringify(r)) : {
     title: '', description: '', cooking_time: 30, difficulty: 'easy', servings: 2,
-    is_public: true, categories: [], ingredients: [], instructions: ['']
+    is_public: true, categories: [], ingredients: [], instructions: ''
   };
+  // normalize legacy array form
+  if (Array.isArray(draft.instructions)) draft.instructions = draft.instructions.join('\n\n');
 
   const renderForm = () => {
     main.innerHTML = `
-      <div class="page-head">
-        <div class="left">
-          <span class="eyebrow">${ICONS.edit}<span>${r ? 'Редактирование' : 'Новый рецепт'}</span></span>
-          <h1 class="t-display">${r ? 'Обновите рецепт' : 'Поделитесь блюдом'}</h1>
-        </div>
-      </div>
       <form id="recipe-form" class="card card-pad-lg" style="display:flex;flex-direction:column;gap:18px">
+        <h1 class="t-subheading">${r ? 'Редактирование рецепта' : 'Новый рецепт'}</h1>
         <div class="field"><label>Название</label><input class="input" name="title" required maxlength="200" value="${escapeHtml(draft.title)}" /></div>
         <div class="field"><label>Описание</label><textarea class="textarea" name="description" maxlength="2000">${escapeHtml(draft.description || '')}</textarea></div>
         <div class="field-row">
@@ -1174,8 +1171,7 @@ views.recipeForm = async (main, { id } = {}) => {
         </div>
         <div class="field">
           <label>Шаги приготовления</label>
-          <div id="step-rows" style="display:flex;flex-direction:column;gap:8px"></div>
-          <button type="button" class="btn btn-ghost btn-sm" id="step-add" style="margin-top:8px;align-self:flex-start">${ICONS.plus}<span>Добавить шаг</span></button>
+          <textarea class="textarea" id="instructions-input" name="instructions" style="min-height:180px" maxlength="10000" placeholder="Опишите процесс приготовления в свободной форме">${escapeHtml(draft.instructions || '')}</textarea>
         </div>
         <div class="form-actions">
           <a class="btn btn-ghost" href="#/recipes${r?'/'+r.id:''}">Отмена</a>
@@ -1242,23 +1238,7 @@ views.recipeForm = async (main, { id } = {}) => {
       renderIngs();
     };
 
-    // Steps
-    const stepRows = main.querySelector('#step-rows');
-    const renderSteps = () => {
-      stepRows.innerHTML = draft.instructions.map((s, idx) => `
-        <div class="step-row" data-idx="${idx}">
-          <div class="num">${idx+1}</div>
-          <textarea class="textarea" style="min-height:60px">${escapeHtml(s)}</textarea>
-          <button type="button" class="remove" style="display:grid;place-items:center;width:36px;height:36px;border-radius:var(--radius-pill);color:var(--fg-muted)">${ICONS.x}</button>
-        </div>`).join('');
-      stepRows.querySelectorAll('.step-row').forEach(row => {
-        const idx = +row.dataset.idx;
-        row.querySelector('textarea').onchange = e => { draft.instructions[idx] = e.target.value; };
-        row.querySelector('button').onclick = () => { draft.instructions.splice(idx, 1); renderSteps(); };
-      });
-    };
-    renderSteps();
-    main.querySelector('#step-add').onclick = () => { draft.instructions.push(''); renderSteps(); };
+    main.querySelector('#instructions-input').oninput = (e) => { draft.instructions = e.target.value; };
 
     main.querySelector('#recipe-form').onsubmit = async (e) => {
       e.preventDefault();
@@ -1272,7 +1252,7 @@ views.recipeForm = async (main, { id } = {}) => {
         is_public: fd.get('is_public') === 'on',
         categories: draft.categories,
         ingredients: draft.ingredients.filter(i => i.ingredient_id && i.amount > 0),
-        instructions: draft.instructions.map(s => s.trim()).filter(Boolean),
+        instructions: (draft.instructions || '').trim(),
       };
       try {
         const saved = r ? await fakeApi.updateRecipe(r.id, payload) : await fakeApi.createRecipe(payload);
@@ -1295,14 +1275,11 @@ views.planner = async (main) => {
 
   const render = () => {
     main.innerHTML = `
-      <div class="page-head">
-        <div class="left">
-          <span class="eyebrow">${ICONS.calendar}<span>Планировщик</span></span>
-          <h1 class="t-display">Меню на <span class="t-gradient">неделю</span></h1>
-        </div>
+      <div class="page-heading">
+        <h1>Меню на <span class="t-gradient">неделю</span></h1>
         <div style="display:flex;gap:8px">
-          <a class="btn btn-ghost" href="#/shopping-list">${ICONS.cart}<span>Список покупок</span></a>
-          <button class="btn btn-danger" id="clear-all">${ICONS.trash}<span>Очистить</span></button>
+          <a class="btn btn-ghost btn-sm" href="#/shopping-list">${ICONS.cart}<span>Список покупок</span></a>
+          <button class="btn btn-danger btn-sm" id="clear-all">${ICONS.trash}<span>Очистить</span></button>
         </div>
       </div>
       <div class="planner">
@@ -1429,14 +1406,11 @@ views.planner = async (main) => {
 views.shoppingList = async (main) => {
   const u = currentUser();
   if (!u) { openLoginModal(); main.innerHTML = ''; return; }
-  main.innerHTML = `<div class="page-head">
-    <div class="left">
-      <span class="eyebrow">${ICONS.cart}<span>Список покупок</span></span>
-      <h1 class="t-display">Список <span class="t-gradient">покупок</span></h1>
-    </div>
+  main.innerHTML = `<div class="page-heading">
+    <h1>Список <span class="t-gradient">покупок</span></h1>
     <div style="display:flex;gap:8px">
-      <button class="btn btn-ghost" id="copy-btn">${ICONS.copy}<span>Скопировать</span></button>
-      <button class="btn btn-primary" id="print-btn">${ICONS.print}<span>Распечатать</span></button>
+      <button class="btn btn-ghost btn-sm" id="copy-btn">${ICONS.copy}<span>Скопировать</span></button>
+      <button class="btn btn-primary btn-sm" id="print-btn">${ICONS.print}<span>Распечатать</span></button>
     </div>
   </div>
   <div id="sl-area"><div class="skeleton" style="height:200px"></div></div>`;
@@ -1474,12 +1448,9 @@ views.ingredients = async (main) => {
   let q = '', category = '', authorId = '';
   const u = currentUser();
   const render = async () => {
-    main.innerHTML = `<div class="page-head">
-      <div class="left">
-        <span class="eyebrow">${ICONS.leaf}<span>Каталог ингредиентов</span></span>
-        <h1 class="t-display">Ингредиенты</h1>
-      </div>
-      ${u ? `<button class="btn btn-primary" id="add-btn">${ICONS.plus}<span>Новый ингредиент</span></button>` : ''}
+    main.innerHTML = `<div class="page-heading">
+      <h1>Ингредиенты</h1>
+      ${u ? `<button class="btn btn-primary btn-sm" id="add-btn">${ICONS.plus}<span>Новый ингредиент</span></button>` : ''}
     </div>
     <div class="toolbar">
       <div class="search-wrap"><span class="search-icon">${ICONS.search}</span><input class="search-input" id="i-q" placeholder="Найти ингредиент…" value="${escapeHtml(q)}" /></div>
@@ -1520,8 +1491,8 @@ views.ingredients = async (main) => {
             <span class="t-micro">по умолч.: ${i.default_amount} ${escapeHtml(i.unit)}${!i.is_system && i.author_id ? ' · ' + escapeHtml(state.users.find(u => u.id === i.author_id)?.display_name || '') : ''}</span>
           </div>
           <div style="display:flex;gap:6px;justify-self:end">
-            ${canEditIng(i) ? `<button class="btn btn-ghost btn-sm" data-edit="${i.id}">${ICONS.edit}</button>` : ''}
-            ${canDeleteIng(i) ? `<button class="btn btn-danger btn-sm" data-del="${i.id}">${ICONS.trash}</button>` : ''}
+            ${canEditIng(i) ? `<button class="btn-icon-sm" data-edit="${i.id}" title="Редактировать">${ICONS.edit}</button>` : ''}
+            ${canDeleteIng(i) ? `<button class="btn-icon-sm is-danger" data-del="${i.id}" title="Удалить">${ICONS.trash}</button>` : ''}
           </div>
           <span></span>
         </div>`).join('')}
@@ -1585,12 +1556,9 @@ views.categories = async (main) => {
   const render = () => {
     const groups = {};
     state.categories.forEach(c => { (groups[c.type] = groups[c.type] || []).push(c); });
-    main.innerHTML = `<div class="page-head">
-      <div class="left">
-        <span class="eyebrow">${ICONS.layers}<span>Категории</span></span>
-        <h1 class="t-display">Категории рецептов</h1>
-      </div>
-      <button class="btn btn-primary" id="add-cat">${ICONS.plus}<span>Новая категория</span></button>
+    main.innerHTML = `<div class="page-heading">
+      <h1>Категории рецептов</h1>
+      <button class="btn btn-primary btn-sm" id="add-cat">${ICONS.plus}<span>Новая категория</span></button>
     </div>
     ${Object.keys(CATEGORY_TYPES).map(t => `
       <div class="card card-pad-lg" style="margin-bottom:16px">
@@ -1643,11 +1611,8 @@ const chartInstances = [];
 views.dashboard = async (main) => {
   chartInstances.forEach(c => c.destroy && c.destroy()); chartInstances.length = 0;
   const u = currentUser();
-  main.innerHTML = `<div class="page-head">
-    <div class="left">
-      <span class="eyebrow">${ICONS.chart}<span>Дашборд</span></span>
-      <h1 class="t-display">Статистика <span class="t-gradient">проекта</span></h1>
-    </div>
+  main.innerHTML = `<div class="page-heading">
+    <h1>Статистика <span class="t-gradient">проекта</span></h1>
   </div>
   <div id="dash-area"><div class="skeleton" style="height:120px;margin-bottom:16px"></div><div class="skeleton" style="height:300px"></div></div>`;
   let stats;
