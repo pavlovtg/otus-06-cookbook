@@ -2,21 +2,27 @@
 
 ## Текущая задача
 
-**Обновление стандарта структуры репозитория** (11.06.2026)
+Завершена реализация change `recipes-crud` — полный CRUD рецептов.
 
-## Что сделано в этой сессии
+## Что сделано
 
-- Создан Storybook-проект в `docs/design/storybook/` (React 19 + Storybook 8 + Vite).
-- Порт `docs/design/mockup/` (single-file SPA) в React-компоненты 1:1 по стилю:
-  - `src/styles.css`, `src/motion.css` — копия из mockup (единственный источник стилей).
-  - `src/icons.tsx`, `src/photo.tsx`, `src/mocks.ts` — иконки, плейсхолдер-фото, seed-данные.
-  - `src/components/` — примитивы: Button, Input, Tag, SearchInput, Segmented, Pagination, Modal, Toast, Skeleton.
-  - `src/domain/` — доменные: RecipeCard, StarsRating, ServingsControl, IngredientList, CommentItem, Header, Planner, ShoppingList.
-  - `src/dash/` — Kpi, BarChart (SVG), TopList, PlanFill.
-- Истории по группам: `Foundation/*` (токены, иконки), `Primitives/*` (Button, Forms, Navigation, Feedback), `Domain/*` (RecipeCard, Recipe, Header, Planner, Dashboard). Каждая группа имеет ★ Playground с интерактивом (drag-and-drop планировщика, избранное на карточках, рейтинг звёздами, тосты).
-- `pnpm build-storybook` → `storybook-static/` собирается без ошибок (8.12 s).
-- README с инструкцией запуска и планом интеграции в `apps/web`.
+### Backend (.NET)
+- Расширен агрегат `Recipe`: `CookingTime`, `Difficulty` (enum), `Servings`, `Instructions`
+- EF Core миграция `20260612000000_AddRecipeFields`
+- CRUD-методы в репозитории, сервисе, контроллере
+- Интеграционные тесты: 38/38 проходят
+
+### Frontend (Next.js)
+- Zod-схемы: `RecipeDtoSchema`, `RecipeRequestSchema`, `DifficultySchema`
+- BFF: `getRecipe`, `createRecipe`, `updateRecipe`, `deleteRecipe`
+- UI: CSS из Storybook, компоненты `RecipeCard`, `RecipeForm`
+- Страницы: `/`, `/recipes/[id]`, `/recipes/new`, `/recipes/[id]/edit`
+- Unit-тесты: 16/16 проходят
+
+### Тесты
+- E2E API: `tests/e2e/test_recipes_api.py` — 9 тестов
+- UI Playwright: `tests/ui/test_recipes.py` — 8 тестов
 
 ## Следующий шаг
 
-Перенести компоненты из `docs/design/storybook/src/` в `apps/web/components/` и подключить реальные BFF-вызовы.
+Архивировать change `recipes-crud` командой `/opsx:archive`.

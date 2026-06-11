@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Recipes.Adapters.Postgresql;
+using Recipes.Adapters.Web;
 using Recipes.Application;
 using Recipes.Application.Ports;
 using Recipes.Infrastructure;
@@ -13,6 +14,7 @@ builder.Services.AddControllers()
         manager.FeatureProviders.Add(new InternalControllersFeatureProvider());
     });
 builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddDbContext<RecipeRepository>(options =>
     options.UseNpgsql(

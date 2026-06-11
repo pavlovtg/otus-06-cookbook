@@ -60,6 +60,12 @@
 | AR-0031: CI — стратегия триггеров | Push → умный запуск по затронутым компонентам; PR в main → полный прогон; e2e/ui-test только при изменении кода или compose | [AR-0031](docs/architecture/rules/general/AR-0031-ci-trigger-strategy.md) | general |
 | AR-0032: Docker Compose — конфигурация через env-переменные | Все параметры docker-compose выносятся в `.env`; формат `${VAR:?ERR}`; `container_name` из `COMPOSE_NAME`; `ASPNETCORE_URLS` через `DEFAULT_HTTP_PORT`; `.env` коммитится | [AR-0032](docs/architecture/rules/general/AR-0032-docker-compose-env-config.md) | general |
 | AR-0033: Параметризация nginx-конфига через nginx templates | nginx-конфиг параметризуется через `.template`-файл в `/etc/nginx/templates/`; nginx-образ прогоняет `envsubst` при старте | [AR-0033](docs/architecture/rules/general/AR-0033-nginx-templates-config.md) | general |
+| AR-0034: Доменная валидация через типизированные исключения | Вся бизнес-валидация — в домене; контроллер явно перехватывает доменные исключения и формирует `400 Bad Request` с `application/problem+json` | [AR-0034](docs/architecture/rules/dotnet/AR-0034-domain-validation-typed-exceptions.md) | dotnet |
+| AR-0035: Один глобальный fallback IExceptionHandler для непредвиденных ошибок | Ровно один `IExceptionHandler` как fallback → `500 Internal Server Error`; доменные исключения через него не проходят | [AR-0035](docs/architecture/rules/dotnet/AR-0035-single-global-exception-handler.md) | dotnet |
+| AR-0036: Доменные исключения самодостаточны и не принимают строку сообщения | Каждое доменное исключение — отдельный класс с конструктором без параметров; контекст — через `readonly`-поля; `base(message)` запрещён | [AR-0036](docs/architecture/rules/dotnet/AR-0036-self-contained-domain-exceptions.md) | dotnet |
+| AR-0037: Репозитории реализуют IUnitOfWorkRepository; коммит — из Application | Репозитории накапливают изменения, не фиксируют их; Application-сервис явно вызывает `CommitAsync` в конце каждого метода, изменяющего состояние | [AR-0037](docs/architecture/rules/dotnet/AR-0037-unit-of-work-repository.md) | dotnet |
+| AR-0038: Один тип — один файл | Каждый тип (класс, интерфейс, enum, record, struct) — в отдельном файле; имя файла совпадает с именем типа | [AR-0038](docs/architecture/rules/dotnet/AR-0038-one-type-one-file.md) | dotnet |
+| AR-0039: Ограничения полей агрегата — константы в домене | Все ограничения полей (длины, диапазоны) объявляются как `const` в `<Aggregate>Constraints` в Domain; валидация и схема данных ссылаются на эти константы | [AR-0039](docs/architecture/rules/dotnet/AR-0039-domain-constraints-as-constants.md) | dotnet |
 
 ## Стандарты
 
@@ -100,7 +106,7 @@
 | ADR-0015: Next.js как frontend meta-framework | Next.js App Router + RSC как стек frontend и хост BFF | [ADR-0015](docs/adr/frontend/ADR-0015-nextjs-frontend-meta-framework.md) | frontend |
 | ADR-0016: React + TypeScript как UI-стек | React + TypeScript strict как UI-стек | [ADR-0016](docs/adr/frontend/ADR-0016-react-typescript-frontend.md) | frontend |
 | ADR-0017: BFF как логический серверный слой | BFF — модули внутри Next.js, не отдельный процесс | [ADR-0017](docs/adr/frontend/ADR-0017-bff-logical-layer.md) | frontend |
-| ADR-0018: Tailwind CSS + shadcn/ui | Система стилей и базовых компонентов UI | [ADR-0018](docs/adr/frontend/ADR-0018-tailwind-shadcn.md) | frontend |
+| ADR-0018: Tailwind CSS + shadcn/ui *(заменён ADR-0031)* | Система стилей и базовых компонентов UI — заменена чистым CSS из Storybook | [ADR-0018](docs/adr/archive/ADR-0018-tailwind-shadcn.md) | frontend |
 | ADR-0019: Zod как валидация схем | Единая библиотека валидации и источник TS-типов | [ADR-0019](docs/adr/frontend/ADR-0019-zod-schema-validation.md) | frontend |
 | ADR-0020: Nginx как edge reverse proxy | Edge reverse proxy перед Next.js и YARP с кэшем статики | [ADR-0020](docs/adr/general/ADR-0020-nginx-as-edge-reverse-proxy.md) | general |
 | ADR-0021: Auth-service как отдельный сервис | JWT выпускается выделенным сервисом auth-service за YARP | [ADR-0021](docs/adr/rest-api/ADR-0021-dedicated-auth-service.md) | rest-api |
@@ -113,6 +119,8 @@
 | ADR-0028: Сетевая изоляция сервисов в Docker Compose | Сервисы разбиваются на `frontend-net` и `backend-net` по принципу безопасности; api-gateway в обеих сетях | [ADR-0028](docs/adr/general/ADR-0028-docker-compose-network-isolation.md) | general |
 | ADR-0029: Health-check API обязателен для каждого микросервиса | Каждый микросервис реализует `GET /api/health/v1`; путь соответствует REST URI-шаблону | [ADR-0029](docs/adr/general/ADR-0029-health-check-api.md) | general |
 | ADR-0030: Стратегия CI | Два режима CI: push → умный запуск по затронутым компонентам; PR в main → полный прогон с блокировкой merge | [ADR-0030](docs/adr/general/ADR-0030-ci-strategy.md) | general |
+| ADR-0031: Чистый CSS из Storybook как система стилей фронтенда | Заменяет ADR-0018; `docs/design/storybook/src/styles.css` — единственный источник стилей; Tailwind и shadcn/ui не используются | [ADR-0031](docs/adr/frontend/ADR-0031-storybook-css-as-frontend-style-system.md) | frontend |
+| ADR-0032: Application-слой управляет транзакциями явно | Управление транзакцией — ответственность Application-слоя; репозитории накапливают изменения, но не фиксируют их самостоятельно | [ADR-0032](docs/adr/dotnet/ADR-0032-application-manages-transactions.md) | dotnet |
 
 ## Диаграммы
 
