@@ -1,3 +1,5 @@
+import re
+
 from playwright.sync_api import Page, expect
 
 
@@ -37,7 +39,7 @@ def test_recipe_card_click_navigates_to_detail(page: Page, base_url: str) -> Non
     card = page.locator(".recipe-card").first
     card.click()
 
-    expect(page).to_have_url(lambda url: "/recipes/" in url)
+    expect(page).to_have_url(re.compile(r"/recipes/"))
     expect(page.locator(".detail-bar")).to_be_visible()
 
 
@@ -74,7 +76,7 @@ def test_create_recipe_success(page: Page, base_url: str) -> None:
 
     page.click("button[type=submit]")
 
-    expect(page).to_have_url(lambda url: "/recipes/" in url and "/new" not in url)
+    expect(page).to_have_url(re.compile(r"/recipes/(?!new)"))
     expect(page.locator(".detail-bar .title")).to_contain_text(VALID_RECIPE["title"])
 
 
@@ -111,7 +113,7 @@ def test_delete_recipe_cancel(page: Page, base_url: str) -> None:
     page.goto(base_url)
     page.locator(".recipe-card").first.click()
 
-    page.locator("button", has_text="Удалить").click()
+    page.locator(".detail-bar button", has_text="Удалить").click()
 
     expect(page.locator(".modal-backdrop.is-open")).to_be_visible()
 
