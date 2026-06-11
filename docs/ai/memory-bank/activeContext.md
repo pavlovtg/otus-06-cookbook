@@ -33,6 +33,7 @@
 ## Исправлено
 
 Баг: `duplicate key` при повторном запуске docker-compose.
+
 - Убран `entity.HasData(SeedData.Recipes)` из `RecipeRepository.OnModelCreating`
 - Убраны `InsertData`/`DeleteData` из миграции `AddRecipeFields`
 - Обновлён `RecipeRepositoryModelSnapshot` (без seed)
