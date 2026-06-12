@@ -73,7 +73,11 @@ services:
       ASPNETCORE_URLS: ${ASPNETCORE_URLS:?NO_ASPNETCORE_URLS}
       Logging__LogLevel__Microsoft.EntityFrameworkCore.Database: ${DEFAULT_EF_DATABASE_LOG_LEVEL:?NO_DEFAULT_EF_DATABASE_LOG_LEVEL}
       Logging__LogLevel__Microsoft.AspNetCore: ${DEFAULT_MICROSOFT_ASPNETCORE_LOG_LEVEL:?NO_DEFAULT_MICROSOFT_ASPNETCORE_LOG_LEVEL}
-      ConnectionStrings__Recipes: Host=${POSTGRESQL_HOST:?NO_POSTGRESQL_HOST};Database=${POSTGRES_DB:?NO_POSTGRES_DB};Username=${POSTGRES_USER:?NO_POSTGRES_USER};Password=${POSTGRES_PASSWORD:?NO_POSTGRES_PASSWORD}
+      DatabaseConnection__Host: ${POSTGRESQL_HOST:?NO_POSTGRESQL_HOST}
+      DatabaseConnection__Port: ${POSTGRESQL_PORT:?NO_POSTGRESQL_PORT}
+      DatabaseConnection__Database: ${POSTGRES_DB:?NO_POSTGRES_DB}
+      DatabaseConnection__Username: ${POSTGRES_USER:?NO_POSTGRES_USER}
+      DatabaseConnection__Password: ${POSTGRES_PASSWORD:?NO_POSTGRES_PASSWORD}
     networks:
       - backend-net
     healthcheck:

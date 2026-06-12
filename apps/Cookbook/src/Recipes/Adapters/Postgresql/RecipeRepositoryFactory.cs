@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Recipes.Adapters.Postgresql;
 
-internal sealed class RecipesDbContextFactory : IDesignTimeDbContextFactory<RecipeRepository>
+internal sealed class RecipeRepositoryFactory : IDesignTimeDbContextFactory<RecipeRepository>
 {
     public RecipeRepository CreateDbContext(string[] args)
     {

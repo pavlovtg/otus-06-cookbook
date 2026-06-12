@@ -1,11 +1,9 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Recipes.Adapters.Postgresql;
 using Recipes.Adapters.Web;
 using Recipes.Application;
 using Recipes.Application.Ports;
 using Recipes.Infrastructure;
-using Shared.Hosting;
+using Shared.Hosting.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,10 +15,7 @@ builder.Services.AddControllers()
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
-builder.Services.AddDbContext<RecipeRepository>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("Recipes"),
-        o => o.MigrationsHistoryTable(HistoryRepository.DefaultTableName, RecipeRepository.DefaultSchema)));
+builder.Services.AddDatabase(builder.Configuration);
 
 builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();

@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Shared.Hosting;
+namespace Shared.Hosting.Database;
 
 public static class HostMigrationExtensions
 {

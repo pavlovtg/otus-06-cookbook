@@ -6,10 +6,12 @@
 
 ## Что сделано в этой задаче
 
-Исправлен баг: `System.ArgumentException: Must specify valid information for parsing in the string` при старте сервиса.
+Обновлена конфигурация docker-compose для использования секции `DatabaseConnection`.
 
-- Причина: миграция `AddRecipeFields` добавляла колонку `difficulty` с `defaultValue: ""`, старые строки получали пустую строку, `Enum.Parse<Difficulty>("")` падал.
-- Исправление: `defaultValue: ""` → `defaultValue: "easy"` в `20260612000000_AddRecipeFields.cs`.
+- `.env` — добавлена переменная `POSTGRESQL_PORT=5432`
+- `docker-compose.yml` → сервис `recipes`:
+  - убрана `ConnectionStrings__Recipes`
+  - добавлены `DatabaseConnection__Host/Port/Database/Username/Password` через переменные `.env`
 
 ## Следующий шаг
 
