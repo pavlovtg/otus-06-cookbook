@@ -6,12 +6,11 @@
 
 ## Что сделано в этой задаче
 
-Обновлена конфигурация docker-compose для использования секции `DatabaseConnection`.
+Создан `RecipeMicroserviceHost` для microservice-тестов.
 
-- `.env` — добавлена переменная `POSTGRESQL_PORT=5432`
-- `docker-compose.yml` → сервис `recipes`:
-  - убрана `ConnectionStrings__Recipes`
-  - добавлены `DatabaseConnection__Host/Port/Database/Username/Password` через переменные `.env`
+- Создан `Microservice/RecipeMicroserviceHost.cs`: наследует `WebApplicationFactory<Program>`, принимает connection string, конфигурирует `DatabaseConnection` через JSON-стрим, содержит `EnsureServer()` с polling health-check
+- Обновлён `RecipesCrudTests.cs`: `WebApplicationFactory<Program>` заменён на `RecipeMicroserviceHost`
+- Сборка: succeeded, 0 warnings
 
 ## Следующий шаг
 

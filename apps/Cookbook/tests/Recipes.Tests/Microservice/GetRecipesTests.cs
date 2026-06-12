@@ -1,8 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using DotNet.Testcontainers.Builders;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Configuration;
 using Recipes.Adapters.Web.Dto;
 using Testcontainers.PostgreSql;
 using Xunit;
@@ -16,29 +14,19 @@ public sealed class GetRecipesTests : IAsyncLifetime
         .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
         .Build();
 
-    private WebApplicationFactory<Program>? _factory;
+    private RecipeMicroserviceHost? _host;
 
     public async Task InitializeAsync()
     {
         await _postgres.StartAsync();
 
-        _factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureAppConfiguration((_, config) =>
-                {
-                    config.AddInMemoryCollection(new Dictionary<string, string?>
-                    {
-                        ["ConnectionStrings:Recipes"] = _postgres.GetConnectionString()
-                    });
-                });
-            });
+        _host = new RecipeMicroserviceHost(_postgres.GetConnectionString()).EnsureServer();
     }
 
     public async Task DisposeAsync()
     {
-        if (_factory is not null)
-            await _factory.DisposeAsync();
+        if (_host is not null)
+            await _host.DisposeAsync();
 
         await _postgres.DisposeAsync();
     }
@@ -46,7 +34,7 @@ public sealed class GetRecipesTests : IAsyncLifetime
     [Fact]
     public async Task HealthCheck_Returns200()
     {
-        var client = _factory!.CreateClient();
+        var client = _host!.CreateClient();
 
         var response = await client.GetAsync("/api/v1/health");
 
@@ -56,7 +44,7 @@ public sealed class GetRecipesTests : IAsyncLifetime
     [Fact]
     public async Task GetRecipes_Returns200_WithNonEmptyArray()
     {
-        var client = _factory!.CreateClient();
+        var client = _host!.CreateClient();
 
         var response = await client.GetAsync("/api/v1/recipes");
 
