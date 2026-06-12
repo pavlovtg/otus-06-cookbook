@@ -33,10 +33,13 @@ docs/
 │   └── storybook/    # Storybook компонентов для разработчиков
 └── standards/        # стандарты реализации
 apps/                 # приложения (сервисы, фронтенд и т.д.)
+├── Backend.slnx      # единый .NET solution для всех backend-проектов
 ├── <BoundedContext>/ # backend bounded context (.NET)
-│   ├── <BoundedContext>.slnx
 │   ├── src/          # исходники сервисов bounded context
 │   └── tests/        # тестовые проекты bounded context
+├── Shared/           # общие .NET-библиотеки (bounded context)
+│   ├── src/          # Shared.Database, Shared.Hosting, Shared.Testing
+│   └── tests/        # тесты shared-библиотек
 └── web/              # frontend + BFF (Next.js, TypeScript) — см. стандарт frontend-project-structure
 infrastructure/
 └── docker-compose/   # конфигурационные файлы сервисов для docker compose
