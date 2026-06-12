@@ -10,7 +10,7 @@ internal static class RecipeSeeder
             if (exists is null)
                 await db.Recipes.AddAsync(recipe, cancellationToken);
             else
-                db.Recipes.Update(recipe);
+                exists.Update(recipe.Title, recipe.Description, recipe.CookingTime, recipe.Difficulty, recipe.Servings, recipe.Instructions);
         }
 
         await db.SaveChangesAsync(cancellationToken);
