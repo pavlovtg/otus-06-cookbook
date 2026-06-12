@@ -45,7 +45,7 @@ public partial class AddRecipeFields : Migration
             type: "character varying(20)",
             maxLength: 20,
             nullable: false,
-            defaultValue: "");
+            defaultValue: "easy");
 
         migrationBuilder.AddColumn<string>(
             name: "instructions",

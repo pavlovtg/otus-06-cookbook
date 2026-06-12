@@ -6,12 +6,10 @@
 
 ## Что сделано в этой задаче
 
-Написаны интеграционные тесты репозитория (AR-0056):
+Исправлен баг: `System.ArgumentException: Must specify valid information for parsing in the string` при старте сервиса.
 
-- `Shared.Testing/Database/RepositoryFactory.cs` — хелпер изоляции DbContext
-- `Integration/Adapters/Postgresql/RecipeRepositoryTests.cs` — 6 тестов (Create/GetById/GetAll/Update/Delete)
-- Обновлены версии пакетов EF Core до 10.0.4 / Npgsql до 10.0.2 во всех проектах
-- AR-0040 — удалён FluentAssertions
+- Причина: миграция `AddRecipeFields` добавляла колонку `difficulty` с `defaultValue: ""`, старые строки получали пустую строку, `Enum.Parse<Difficulty>("")` падал.
+- Исправление: `defaultValue: ""` → `defaultValue: "easy"` в `20260612000000_AddRecipeFields.cs`.
 
 ## Следующий шаг
 
