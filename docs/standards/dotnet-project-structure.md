@@ -57,26 +57,36 @@ Namespace должен соответствовать пути папок: `<Ser
 
 ## Тесты
 
+Источник: ADR-0033
+
 Тестовые проекты размещаются под `apps/<BoundedContext>/tests/<Service>.Tests/<Service>.Tests.csproj`.
 
-### Размещение файлов тестов
+Тесты разбиваются по папкам: `Unit/`, `Integration/`, `Microservice/`.
 
-**Unit-тесты** зеркалируют путь тестируемого класса внутри тестовой сборки:
+### Unit-тесты
+
+Папка `Unit/` зеркалирует структуру тестируемой сборки:
 
 ```text
 src/<Service>/Domain/Recipe.cs
-→ tests/<Service>.Tests/Domain/RecipeTests.cs
+→ tests/<Service>.Tests/Unit/Domain/RecipeTests.cs
 
 src/<Service>/Application/RecipeService.cs
-→ tests/<Service>.Tests/Application/RecipeServiceTests.cs
+→ tests/<Service>.Tests/Unit/Application/RecipeServiceTests.cs
 ```
 
-**Интеграционные тесты адаптеров** зеркалируют путь адаптера внутри тестовой сборки:
+### Интеграционные тесты
+
+Папка `Integration/` зеркалирует структуру основной сборки:
 
 ```text
 src/<Service>/Adapters/Postgresql/RecipeRepository.cs
-→ tests/<Service>.Tests/Adapters/Postgresql/RecipeRepositoryTests.cs
+→ tests/<Service>.Tests/Integration/Adapters/Postgresql/RecipeRepositoryTests.cs
 
 src/<Service>/Adapters/Web/RecipesController.cs
-→ tests/<Service>.Tests/Adapters/Web/RecipesControllerTests.cs
+→ tests/<Service>.Tests/Integration/Adapters/Web/RecipesControllerTests.cs
 ```
+
+### Microservice-тесты
+
+Папка `Microservice/` не имеет фиксированной структуры — тесты организуются по сценариям.

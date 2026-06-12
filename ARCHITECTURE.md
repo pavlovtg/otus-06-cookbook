@@ -54,7 +54,7 @@
 | AR-0022: Internal-контроллеры регистрируются через ControllerFeatureProvider | Контроллеры остаются `internal`; регистрируются через кастомный `ControllerFeatureProvider` в `ApplicationPartManager` | [AR-0022](docs/architecture/rules/dotnet/AR-0022-internal-controllers-feature-provider.md) | dotnet |
 | AR-0023: Запрет проверок environment и провайдера в production-коде | `MigrateAsync()` всегда без условий; InMemory запрещён в тестах; тесты используют Testcontainers | [AR-0023](docs/architecture/rules/dotnet/AR-0023-no-environment-checks-in-production.md) | dotnet |
 | AR-0024: HTTP-зависимости в тестах мокируются через WireMock.Net | Интеграционные тесты .NET-сервисов используют WireMock.Net; адрес переопределяется через `AddInMemoryCollection`; тест верифицирует запрос к mock | [AR-0024](docs/architecture/rules/dotnet/AR-0024-wiremock-for-http-mocking.md) | dotnet |
-| AR-0025: Каждый микросервис реализует `GET /api/health/v1` | Health-check эндпоинт обязателен; путь соответствует REST URI-шаблону; используется в `docker-compose.yml` для `depends_on: service_healthy` | [AR-0025](docs/architecture/rules/rest-api/AR-0025-health-check-endpoint.md) | rest-api |
+| AR-0025: Каждый микросервис реализует `GET /api/v1/health` | Health-check эндпоинт обязателен; путь соответствует REST URI-шаблону; используется в `docker-compose.yml` для `depends_on: service_healthy` | [AR-0025](docs/architecture/rules/rest-api/AR-0025-health-check-endpoint.md) | rest-api |
 | AR-0026: Сетевая изоляция в Docker Compose по принципу безопасности | `frontend-net` и `backend-net`; api-gateway в обеих сетях; только reverse-proxy публикует порты на хост | [AR-0026](docs/architecture/rules/general/AR-0026-docker-compose-network-isolation.md) | general |
 | AR-0030: CI toolchain — фиксированный набор инструментов | Каждый стек использует строго определённый линтер и тест-раннер: dotnet format, next lint, ruff, markdownlint-cli2, Playwright | [AR-0030](docs/architecture/rules/general/AR-0030-ci-toolchain.md) | general |
 | AR-0031: CI — стратегия триггеров | Push → умный запуск по затронутым компонентам; PR в main → полный прогон; e2e/ui-test только при изменении кода или compose | [AR-0031](docs/architecture/rules/general/AR-0031-ci-trigger-strategy.md) | general |
@@ -66,6 +66,13 @@
 | AR-0037: Репозитории реализуют IUnitOfWorkRepository; коммит — из Application | Репозитории накапливают изменения, не фиксируют их; Application-сервис явно вызывает `CommitAsync` в конце каждого метода, изменяющего состояние | [AR-0037](docs/architecture/rules/dotnet/AR-0037-unit-of-work-repository.md) | dotnet |
 | AR-0038: Один тип — один файл | Каждый тип (класс, интерфейс, enum, record, struct) — в отдельном файле; имя файла совпадает с именем типа | [AR-0038](docs/architecture/rules/dotnet/AR-0038-one-type-one-file.md) | dotnet |
 | AR-0039: Ограничения полей агрегата — константы в домене | Все ограничения полей (длины, диапазоны) объявляются как `const` в `<Aggregate>Constraints` в Domain; валидация и схема данных ссылаются на эти константы | [AR-0039](docs/architecture/rules/dotnet/AR-0039-domain-constraints-as-constants.md) | dotnet |
+| AR-0040: Инструменты тестирования .NET | xUnit + FluentAssertions + NSubstitute (unit); Testcontainers (integration DB); WebApplicationFactory + Testcontainers + WireMock.Net (microservice); Coverlet coverage ≥ 80% | [AR-0040](docs/architecture/rules/dotnet/AR-0040-dotnet-testing-tools.md) | dotnet |
+| AR-0041: Структура тестовых проектов .NET | Один проект `<Service>.Tests`; папки `Unit/` (зеркало сборки), `Integration/` (зеркало сборки), `Microservice/` (по сценариям) | [AR-0041](docs/architecture/rules/dotnet/AR-0041-dotnet-test-project-structure.md) | dotnet |
+| AR-0042: Изоляция Microservice-тестов | Каждый тест — собственный Testcontainers-экземпляр БД; HTTP-зависимости через WireMock.Net; нет зависимости от `docker compose` | [AR-0042](docs/architecture/rules/dotnet/AR-0042-microservice-test-isolation.md) | dotnet |
+| AR-0043: Инструменты тестирования frontend | Unit/component: Vitest + @testing-library/react; E2E UI: Playwright; coverage v8 ≥ 80% | [AR-0043](docs/architecture/rules/frontend/AR-0043-frontend-testing-tools.md) | frontend |
+| AR-0044: Область тестирования frontend | Unit: Zod-схемы, утилиты, BFF с мокированным fetch; component: рендер/события/состояния; сторонний код и визуальная регрессия не тестируются | [AR-0044](docs/architecture/rules/frontend/AR-0044-frontend-test-scope.md) | frontend |
+| AR-0045: Инструменты E2E API тестов | pytest + httpx в `tests/e2e/`; сценарии из `openspec/specs/`; запуск против `docker compose up` | [AR-0045](docs/architecture/rules/general/AR-0045-e2e-api-test-tools.md) | general |
+| AR-0046: Инструменты UI E2E тестов | Playwright в `tests/ui/`; важнейшие пользовательские flows от браузера до БД; запуск против `docker compose up` | [AR-0046](docs/architecture/rules/general/AR-0046-ui-e2e-test-tools.md) | general |
 
 ## Стандарты
 
@@ -121,6 +128,7 @@
 | ADR-0030: Стратегия CI | Два режима CI: push → умный запуск по затронутым компонентам; PR в main → полный прогон с блокировкой merge | [ADR-0030](docs/adr/general/ADR-0030-ci-strategy.md) | general |
 | ADR-0031: Чистый CSS из Storybook как система стилей фронтенда | Заменяет ADR-0018; `docs/design/storybook/src/styles.css` — единственный источник стилей; Tailwind и shadcn/ui не используются | [ADR-0031](docs/adr/frontend/ADR-0031-storybook-css-as-frontend-style-system.md) | frontend |
 | ADR-0032: Application-слой управляет транзакциями явно | Управление транзакцией — ответственность Application-слоя; репозитории накапливают изменения, но не фиксируют их самостоятельно | [ADR-0032](docs/adr/dotnet/ADR-0032-application-manages-transactions.md) | dotnet |
+| ADR-0033: Стратегия тестирования | Семиуровневая пирамида тестирования: unit, integration (DB/FS/classic), microservice, e2e API, UI e2e; coverage ≥ 80%; тесты пишутся сразу после кода | [ADR-0033](docs/adr/general/ADR-0033-testing-strategy.md) | general |
 
 ## Диаграммы
 

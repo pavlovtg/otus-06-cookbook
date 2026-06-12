@@ -9,9 +9,9 @@ services:
     volumes:
       - ./infrastructure/docker-compose/reverse-proxy/nginx.conf.template:/etc/nginx/templates/default.conf.template
     environment:
-      - GATEWAY_URL=${GATEWAY_URL:?NO_GATEWAY_URL}
-      - REVERSE_PROXY_INTERNAL_PORT=${REVERSE_PROXY_INTERNAL_PORT:?NO_REVERSE_PROXY_INTERNAL_PORT}
-      - WEB_URL=${WEB_URL:?NO_WEB_URL}
+      GATEWAY_URL: ${GATEWAY_URL:?NO_GATEWAY_URL}
+      REVERSE_PROXY_INTERNAL_PORT: ${REVERSE_PROXY_INTERNAL_PORT:?NO_REVERSE_PROXY_INTERNAL_PORT}
+      WEB_URL: ${WEB_URL:?NO_WEB_URL}
     networks:
       - frontend-net
     depends_on:
@@ -31,7 +31,7 @@ services:
       context: apps/web
       dockerfile: Dockerfile
     environment:
-      - GATEWAY_URL=${GATEWAY_URL:?NO_GATEWAY_URL}
+      GATEWAY_URL: ${GATEWAY_URL:?NO_GATEWAY_URL}
     networks:
       - frontend-net
     healthcheck:
@@ -49,8 +49,9 @@ services:
       context: apps/ApiGateway
       dockerfile: Dockerfile
     environment:
-      - ASPNETCORE_URLS=${ASPNETCORE_URLS:?NO_ASPNETCORE_URLS}
-      - ReverseProxy__Clusters__recipes-cluster__Destinations__recipes__Address=${RECIPES_URL:?NO_RECIPES_URL}/
+      ASPNETCORE_URLS: ${ASPNETCORE_URLS:?NO_ASPNETCORE_URLS}
+      Logging__LogLevel__Microsoft.AspNetCore: ${DEFAULT_MICROSOFT_ASPNETCORE_LOG_LEVEL:?NO_DEFAULT_MICROSOFT_ASPNETCORE_LOG_LEVEL}
+      ReverseProxy__Clusters__recipes-cluster__Destinations__recipes__Address: ${RECIPES_URL:?NO_RECIPES_URL}/
     networks:
       - frontend-net
       - backend-net
@@ -69,8 +70,10 @@ services:
       context: apps/Cookbook
       dockerfile: Dockerfile
     environment:
-      - ASPNETCORE_URLS=${ASPNETCORE_URLS:?NO_ASPNETCORE_URLS}
-      - ConnectionStrings__Recipes=Host=${POSTGRESQL_HOST:?NO_POSTGRESQL_HOST};Database=${POSTGRES_DB:?NO_POSTGRES_DB};Username=${POSTGRES_USER:?NO_POSTGRES_USER};Password=${POSTGRES_PASSWORD:?NO_POSTGRES_PASSWORD}
+      ASPNETCORE_URLS: ${ASPNETCORE_URLS:?NO_ASPNETCORE_URLS}
+      Logging__LogLevel__Microsoft.EntityFrameworkCore.Database: ${DEFAULT_EF_DATABASE_LOG_LEVEL:?NO_DEFAULT_EF_DATABASE_LOG_LEVEL}
+      Logging__LogLevel__Microsoft.AspNetCore: ${DEFAULT_MICROSOFT_ASPNETCORE_LOG_LEVEL:?NO_DEFAULT_MICROSOFT_ASPNETCORE_LOG_LEVEL}
+      ConnectionStrings__Recipes: Host=${POSTGRESQL_HOST:?NO_POSTGRESQL_HOST};Database=${POSTGRES_DB:?NO_POSTGRES_DB};Username=${POSTGRES_USER:?NO_POSTGRES_USER};Password=${POSTGRES_PASSWORD:?NO_POSTGRES_PASSWORD}
     networks:
       - backend-net
     healthcheck:
@@ -86,9 +89,9 @@ services:
     container_name: ${POSTGRESQL_CONTAINER_NAME:?NO_POSTGRESQL_CONTAINER_NAME}
     image: postgres:16-alpine
     environment:
-      - POSTGRES_DB=${POSTGRES_DB:?NO_POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER:?NO_POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?NO_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?NO_POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:?NO_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?NO_POSTGRES_PASSWORD}
     volumes:
       - postgresql_data:/var/lib/postgresql/data
     networks:
