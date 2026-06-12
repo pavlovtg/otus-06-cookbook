@@ -21,6 +21,8 @@
 - Локальные CI-скрипты: `scripts/jobs/` (10 job-скриптов) + `scripts/` (lint/test/build/run-ci)
 - HTML-прототип MVP: `docs/design/mockup/index.html` + `styles.css` (single-file SPA, fakeApi, все сценарии MVP)
 - AR-0041 применён к Recipes.Tests и ApiGateway.Tests: файлы разложены по `Unit/`, `Integration/`, `Microservice/`
+- AR-0047…AR-0056: 10 AR для репозиториев .NET/DDD (структура папок, DbContext, async, коллекции, EF конфигурация, миграции, seeding, тесты)
+- `HostMigrationExtensions` в `Shared.Hosting`: хелпер `MigrateDatabaseAsync<TProgram, TContext>`
 
 ## В работе
 

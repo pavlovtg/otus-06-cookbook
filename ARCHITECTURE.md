@@ -73,6 +73,16 @@
 | AR-0044: Область тестирования frontend | Unit: Zod-схемы, утилиты, BFF с мокированным fetch; component: рендер/события/состояния; сторонний код и визуальная регрессия не тестируются | [AR-0044](docs/architecture/rules/frontend/AR-0044-frontend-test-scope.md) | frontend |
 | AR-0045: Инструменты E2E API тестов | pytest + httpx в `tests/e2e/`; сценарии из `openspec/specs/`; запуск против `docker compose up` | [AR-0045](docs/architecture/rules/general/AR-0045-e2e-api-test-tools.md) | general |
 | AR-0046: Инструменты UI E2E тестов | Playwright в `tests/ui/`; важнейшие пользовательские flows от браузера до БД; запуск против `docker compose up` | [AR-0046](docs/architecture/rules/general/AR-0046-ui-e2e-test-tools.md) | general |
+| AR-0047: Структура папок адаптера БД | Репозитории в `Adapters/<Database>/`; подпапки по bounded context если их несколько; внутри — `Configurations/`, `Migrations/`, `<BC>Repository.cs` | [AR-0047](docs/architecture/rules/dotnet/AR-0047-adapter-folder-structure.md) | dotnet |
+| AR-0048: 1 bounded context → 1 DbContext → 1 репозиторий | `<BoundedContext>Repository` наследует `DbContext`; один BC — один контекст — один репозиторий | [AR-0048](docs/architecture/rules/dotnet/AR-0048-one-bc-one-dbcontext-one-repository.md) | dotnet |
+| AR-0049: Асинхронные методы репозитория с CancellationToken | Все методы интерфейсов репозиториев асинхронны; каждый принимает `CancellationToken` последним параметром | [AR-0049](docs/architecture/rules/dotnet/AR-0049-repository-async-cancellation-token.md) | dotnet |
+| AR-0050: Возвращаемые коллекции репозитория — IEnumerable или IAsyncEnumerable | Интерфейс репозитория возвращает `IEnumerable<T>` или `IAsyncEnumerable<T>`; конкретные типы коллекций запрещены | [AR-0050](docs/architecture/rules/dotnet/AR-0050-repository-return-enumerable.md) | dotnet |
+| AR-0051: Конфигурация модели EF Core через IEntityTypeConfiguration | Конфигурация каждой сущности — отдельный класс в `Configurations/`; inline в `OnModelCreating` запрещён | [AR-0051](docs/architecture/rules/dotnet/AR-0051-ef-entity-type-configuration.md) | dotnet |
+| AR-0052: Миграции EF Core располагаются в папке Migrations | Все миграции — в `Migrations/` внутри папки адаптера; хранение в отдельном проекте запрещено | [AR-0052](docs/architecture/rules/dotnet/AR-0052-ef-migrations-folder.md) | dotnet |
+| AR-0053: Запрет HasData для seed-данных | `HasData` запрещён в любом месте конфигурации модели | [AR-0053](docs/architecture/rules/dotnet/AR-0053-no-has-data.md) | dotnet |
+| AR-0054: Загрузка начальных данных через отдельный класс-загрузчик по принципу Upsert | Seeding — отдельный класс-загрузчик после миграций; upsert по существующим данным; API репозитория или SQL | [AR-0054](docs/architecture/rules/dotnet/AR-0054-seeding-upsert.md) | dotnet |
+| AR-0055: Миграция схемы при старте приложения через MigrateDatabaseAsync | Миграция до поднятия эндпоинтов через хелпер `MigrateDatabaseAsync<TProgram, TContext>` из `Shared.Hosting` | [AR-0055](docs/architecture/rules/dotnet/AR-0055-migrate-on-startup.md) | dotnet |
+| AR-0056: Изоляция DbContext в тестах репозитория | Каждый тест — новый инстанс `DbContext`; запись и чтение в одном тесте — разные инстансы | [AR-0056](docs/architecture/rules/dotnet/AR-0056-repository-test-dbcontext-isolation.md) | dotnet |
 
 ## Стандарты
 

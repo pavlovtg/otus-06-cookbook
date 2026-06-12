@@ -6,12 +6,12 @@
 
 ## Что сделано в этой задаче
 
-Исправление `TESTRUNABORT` в `Shared.Testing`:
+Зафиксированы AR для репозиториев .NET/DDD и реализован хелпер миграции:
 
-- `apps/Shared/src/Shared.Testing/Shared.Testing.csproj` — обновлена версия `Microsoft.AspNetCore.Mvc.Testing` до `10.0.0`, добавлен `<IsTestProject>false</IsTestProject>`
-- `apps/Cookbook/tests/Recipes.Tests/Recipes.Tests.csproj` — обновлена версия `Microsoft.AspNetCore.Mvc.Testing` до `10.0.0`
-- `apps/ApiGateway/tests/ApiGateway.Tests/ApiGateway.Tests.csproj` — обновлена версия `Microsoft.AspNetCore.Mvc.Testing` до `10.0.0`
-- `apps/Shared/tests/Shared.Testing.Tests/PlaceholderTests.cs` — добавлен placeholder-тест `Placeholder_Pass`
+- `apps/Shared/src/Shared.Hosting/HostMigrationExtensions.cs` — хелпер `MigrateDatabaseAsync<TProgram, TContext>`
+- `apps/Shared/src/Shared.Hosting/Shared.Hosting.csproj` — добавлен пакет `Microsoft.EntityFrameworkCore 10.0.0`
+- AR-0047…AR-0056 — 10 новых AR в `docs/architecture/rules/dotnet/`
+- `ARCHITECTURE.md` — обновлена таблица AR
 
 ## Следующий шаг
 
