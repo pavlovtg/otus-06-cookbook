@@ -28,7 +28,7 @@
 
 ## Выполнено (последнее)
 
-- Реструктуризация .NET: единый `apps/Backend.slnx`, bounded context `apps/Shared/` (Shared.Database, Shared.Hosting, Shared.Testing + тесты), ProjectReference в сервисных и тестовых проектах, CI-скрипты обновлены.
+- Оптимизация Docker build context: добавлены `apps/Cookbook/.dockerignore` и `apps/ApiGateway/.dockerignore` (исключают `bin/`, `obj/`, `TestResults/`, `tests/`).
 
 ## Запланировано
 

@@ -2,12 +2,13 @@
 
 ## Текущая задача
 
-Исправление health check пути у web-сервиса.
+Нет активных задач.
 
 ## Что сделано в этой задаче
 
-- `apps/web/app/api/health/v1/route.ts` → перемещён в `apps/web/app/api/v1/health/route.ts`
-- Путь `/api/v1/health` теперь соответствует ADR-0029 и `WEB_HEALTH_URL` в `.env`
+Оптимизация Docker build context для .NET-сервисов:
+- `apps/Cookbook/.dockerignore` — исключает `bin/`, `obj/`, `TestResults/`, `tests/`
+- `apps/ApiGateway/.dockerignore` — исключает `bin/`, `obj/`, `TestResults/`, `tests/`
 
 ## Следующий шаг
 
