@@ -25,6 +25,10 @@
 
 Нет.
 
+## Выполнено (последнее)
+
+- AR-0041 применён к Recipes.Tests и ApiGateway.Tests: файлы разложены по `Unit/`, `Integration/`, `Microservice/`; namespace'ы обновлены; сборки проходят без ошибок.
+
 ## Запланировано
 
 - UI-тесты (Playwright) — `tests/ui/` (job зарезервирован в CI с `if: false`)
