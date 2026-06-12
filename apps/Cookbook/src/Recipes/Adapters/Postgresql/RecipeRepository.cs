@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
+using Recipes.Adapters.Postgresql.Configurations;
 using Recipes.Application.Ports;
 using Recipes.Domain;
 
@@ -16,50 +17,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(DefaultSchema);
-
-        modelBuilder.Entity<Recipe>(entity =>
-        {
-            entity.ToTable("recipes");
-
-            entity.HasKey(r => r.Id);
-
-            entity.Property(r => r.Id)
-                .HasColumnName("id")
-                .HasConversion(
-                    id => id.Value,
-                    value => RecipeId.From(value));
-
-            entity.Property(r => r.Title)
-                .HasColumnName("title")
-                .HasMaxLength(RecipeConstraints.TitleMaxLength)
-                .IsRequired();
-
-            entity.Property(r => r.Description)
-                .HasColumnName("description")
-                .HasMaxLength(RecipeConstraints.DescriptionMaxLength)
-                .IsRequired();
-
-            entity.Property(r => r.CookingTime)
-                .HasColumnName("cooking_time")
-                .IsRequired();
-
-            entity.Property(r => r.Difficulty)
-                .HasColumnName("difficulty")
-                .HasMaxLength(RecipeConstraints.DifficultyMaxLength)
-                .IsRequired()
-                .HasConversion(
-                    d => d.ToString().ToLowerInvariant(),
-                    s => Enum.Parse<Difficulty>(s, ignoreCase: true));
-
-            entity.Property(r => r.Servings)
-                .HasColumnName("servings")
-                .IsRequired();
-
-            entity.Property(r => r.Instructions)
-                .HasColumnName("instructions")
-                .HasMaxLength(RecipeConstraints.InstructionsMaxLength)
-                .IsRequired();
-        });
+        modelBuilder.ApplyConfiguration(new RecipeConfiguration());
     }
 
     public async IAsyncEnumerable<Recipe> GetAllAsync(

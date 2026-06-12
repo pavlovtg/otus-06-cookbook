@@ -5,6 +5,7 @@ using Recipes.Adapters.Web;
 using Recipes.Application;
 using Recipes.Application.Ports;
 using Recipes.Infrastructure;
+using Shared.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,11 +31,11 @@ var app = builder.Build();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
+await app.MigrateDatabaseAsync<Program, RecipeRepository>();
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<RecipeRepository>();
-    await db.Database.MigrateAsync();
-
     if (!await db.Recipes.AnyAsync())
     {
         db.Recipes.AddRange(SeedData.Recipes);
