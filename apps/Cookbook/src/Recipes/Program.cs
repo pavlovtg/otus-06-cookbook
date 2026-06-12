@@ -36,11 +36,7 @@ await app.MigrateDatabaseAsync<Program, RecipeRepository>();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<RecipeRepository>();
-    if (!await db.Recipes.AnyAsync())
-    {
-        db.Recipes.AddRange(SeedData.Recipes);
-        await db.SaveChangesAsync();
-    }
+    await RecipeSeeder.SeedAsync(db);
 }
 
 app.MapHealthChecks("/api/v1/health");

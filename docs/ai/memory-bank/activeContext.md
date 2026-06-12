@@ -6,9 +6,10 @@
 
 ## Что сделано в этой задаче
 
-Применён AR-0055 к `Program.cs`:
+Применены AR-0054 к адаптеру Postgresql:
 
-- `Program.cs` — прямой вызов `db.Database.MigrateAsync()` заменён на `app.MigrateDatabaseAsync<Program, RecipeRepository>()` из `Shared.Hosting`
+- `RecipeSeeder.cs` — новый класс-загрузчик с upsert-логикой (AR-0054)
+- `Program.cs` — inline-сидинг заменён на вызов `RecipeSeeder.SeedAsync(db)` (AR-0054)
 
 ## Следующий шаг
 
