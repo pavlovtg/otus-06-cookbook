@@ -46,8 +46,8 @@ services:
   api-gateway:
     container_name: ${API_GATEWAY_CONTAINER_NAME:?NO_API_GATEWAY_CONTAINER_NAME}
     build:
-      context: apps/ApiGateway
-      dockerfile: Dockerfile
+      context: apps
+      dockerfile: ApiGateway/Dockerfile
     environment:
       ASPNETCORE_URLS: ${ASPNETCORE_URLS:?NO_ASPNETCORE_URLS}
       Logging__LogLevel__Microsoft.AspNetCore: ${DEFAULT_MICROSOFT_ASPNETCORE_LOG_LEVEL:?NO_DEFAULT_MICROSOFT_ASPNETCORE_LOG_LEVEL}
@@ -67,8 +67,8 @@ services:
   recipes:
     container_name: ${RECIPES_CONTAINER_NAME:?NO_RECIPES_CONTAINER_NAME}
     build:
-      context: apps/Cookbook
-      dockerfile: Dockerfile
+      context: apps
+      dockerfile: Cookbook/Dockerfile
     environment:
       ASPNETCORE_URLS: ${ASPNETCORE_URLS:?NO_ASPNETCORE_URLS}
       Logging__LogLevel__Microsoft.EntityFrameworkCore.Database: ${DEFAULT_EF_DATABASE_LOG_LEVEL:?NO_DEFAULT_EF_DATABASE_LOG_LEVEL}

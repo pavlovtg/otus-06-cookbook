@@ -20,6 +20,7 @@
   - `.editorconfig` — C# правила стиля
 - Локальные CI-скрипты: `scripts/jobs/` (10 job-скриптов) + `scripts/` (lint/test/build/run-ci)
 - HTML-прототип MVP: `docs/design/mockup/index.html` + `styles.css` (single-file SPA, fakeApi, все сценарии MVP)
+- AR-0041 применён к Recipes.Tests и ApiGateway.Tests: файлы разложены по `Unit/`, `Integration/`, `Microservice/`
 
 ## В работе
 
@@ -27,7 +28,7 @@
 
 ## Выполнено (последнее)
 
-- AR-0041 применён к Recipes.Tests и ApiGateway.Tests: файлы разложены по `Unit/`, `Integration/`, `Microservice/`; namespace'ы обновлены; сборки проходят без ошибок.
+- Реструктуризация .NET: единый `apps/Backend.slnx`, bounded context `apps/Shared/` (Shared.Database, Shared.Hosting, Shared.Testing + тесты), ProjectReference в сервисных и тестовых проектах, CI-скрипты обновлены.
 
 ## Запланировано
 

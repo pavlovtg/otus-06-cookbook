@@ -1,0 +1,15 @@
+<Solution>
+  <!-- ApiGateway -->
+  <Project Path="ApiGateway/src/ApiGateway/ApiGateway.csproj" />
+  <Project Path="ApiGateway/tests/ApiGateway.Tests/ApiGateway.Tests.csproj" />
+  <!-- Cookbook -->
+  <Project Path="Cookbook/src/Recipes/Recipes.csproj" />
+  <Project Path="Cookbook/tests/Recipes.Tests/Recipes.Tests.csproj" />
+  <!-- Shared -->
+  <Project Path="Shared/src/Shared.Database/Shared.Database.csproj" />
+  <Project Path="Shared/src/Shared.Hosting/Shared.Hosting.csproj" />
+  <Project Path="Shared/src/Shared.Testing/Shared.Testing.csproj" />
+  <Project Path="Shared/tests/Shared.Database.Tests/Shared.Database.Tests.csproj" />
+  <Project Path="Shared/tests/Shared.Hosting.Tests/Shared.Hosting.Tests.csproj" />
+  <Project Path="Shared/tests/Shared.Testing.Tests/Shared.Testing.Tests.csproj" />
+</Solution>

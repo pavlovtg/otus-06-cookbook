@@ -17,8 +17,7 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      cookbook: ${{ steps.filter.outputs.cookbook }}
-      apigateway: ${{ steps.filter.outputs.apigateway }}
+      backend: ${{ steps.filter.outputs.backend }}
       web: ${{ steps.filter.outputs.web }}
       markdown: ${{ steps.filter.outputs.markdown }}
       python: ${{ steps.filter.outputs.python }}
@@ -30,10 +29,10 @@ jobs:
         id: filter
         with:
           filters: |
-            cookbook:
-              - 'apps/Cookbook/**'
-            apigateway:
+            backend:
               - 'apps/ApiGateway/**'
+              - 'apps/Cookbook/**'
+              - 'apps/Shared/**'
             web:
               - 'apps/web/**'
             markdown:
@@ -53,29 +52,17 @@ jobs:
               - 'tests/ui/**'
 
   # ─── Lint ─────────────────────────────────────────────────────────────────
-  lint-cookbook:
+  lint-backend:
     needs: changes
-    if: needs.changes.outputs.cookbook == 'true'
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
       - uses: actions/setup-dotnet@v4.3.1
         with:
           dotnet-version: '10.0.x'
-      - name: Lint C# (Cookbook)
-        run: dotnet format --verify-no-changes apps/Cookbook/Cookbook.slnx
-
-  lint-apigateway:
-    needs: changes
-    if: needs.changes.outputs.apigateway == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4.2.2
-      - uses: actions/setup-dotnet@v4.3.1
-        with:
-          dotnet-version: '10.0.x'
-      - name: Lint C# (ApiGateway)
-        run: dotnet format --verify-no-changes apps/ApiGateway/ApiGateway.slnx
+      - name: Lint C# (Backend)
+        run: dotnet format --verify-no-changes apps/Backend.slnx
 
   lint-web:
     needs: changes
@@ -123,29 +110,17 @@ jobs:
         run: ruff check tests/e2e/ tests/ui/
 
   # ─── Test ─────────────────────────────────────────────────────────────────
-  test-cookbook:
+  test-backend:
     needs: changes
-    if: needs.changes.outputs.cookbook == 'true'
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
       - uses: actions/setup-dotnet@v4.3.1
         with:
           dotnet-version: '10.0.x'
-      - name: Test (Cookbook)
-        run: dotnet test apps/Cookbook/Cookbook.slnx
-
-  test-apigateway:
-    needs: changes
-    if: needs.changes.outputs.apigateway == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4.2.2
-      - uses: actions/setup-dotnet@v4.3.1
-        with:
-          dotnet-version: '10.0.x'
-      - name: Test (ApiGateway)
-        run: dotnet test apps/ApiGateway/ApiGateway.slnx
+      - name: Test (Backend)
+        run: dotnet test apps/Backend.slnx
 
   test-web:
     needs: changes
@@ -171,28 +146,28 @@ jobs:
 
   # ─── Build ────────────────────────────────────────────────────────────────
   build-cookbook:
-    needs: [lint-cookbook, test-cookbook]
+    needs: [lint-backend, test-backend]
     if: |
       always() &&
-      needs.lint-cookbook.result == 'success' &&
-      needs.test-cookbook.result == 'success'
+      needs.lint-backend.result == 'success' &&
+      needs.test-backend.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
       - name: Build Docker image (Cookbook)
-        run: docker build apps/Cookbook
+        run: docker build -f apps/Cookbook/Dockerfile apps/
 
   build-apigateway:
-    needs: [lint-apigateway, test-apigateway]
+    needs: [lint-backend, test-backend]
     if: |
       always() &&
-      needs.lint-apigateway.result == 'success' &&
-      needs.test-apigateway.result == 'success'
+      needs.lint-backend.result == 'success' &&
+      needs.test-backend.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
       - name: Build Docker image (ApiGateway)
-        run: docker build apps/ApiGateway
+        run: docker build -f apps/ApiGateway/Dockerfile apps/
 
   build-web:
     needs: [lint-web, test-web]
@@ -215,8 +190,7 @@ jobs:
     if: |
       always() &&
       needs.changes.outputs.e2e == 'true' ||
-      needs.changes.outputs.cookbook == 'true' ||
-      needs.changes.outputs.apigateway == 'true' ||
+      needs.changes.outputs.backend == 'true' ||
       needs.changes.outputs.web == 'true' &&
       contains(fromJSON('["success", "skipped"]'), needs.build-cookbook.result) &&
       contains(fromJSON('["success", "skipped"]'), needs.build-apigateway.result) &&
@@ -254,8 +228,7 @@ jobs:
     if: |
       always() &&
       needs.changes.outputs.ui == 'true' ||
-      needs.changes.outputs.cookbook == 'true' ||
-      needs.changes.outputs.apigateway == 'true' ||
+      needs.changes.outputs.backend == 'true' ||
       needs.changes.outputs.web == 'true' &&
       contains(fromJSON('["success", "skipped"]'), needs.build-cookbook.result) &&
       contains(fromJSON('["success", "skipped"]'), needs.build-apigateway.result) &&

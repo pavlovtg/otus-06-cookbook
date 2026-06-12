@@ -9,24 +9,24 @@
 
 ```text
 apps/
-└── <BoundedContext>/
-    ├── <BoundedContext>.slnx
+├── Backend.slnx              # единый solution для всех .NET-проектов
+├── <BoundedContext>/
+│   ├── src/
+│   │   └── <Service>/
+│   │       └── <Service>.csproj
+│   └── tests/
+│       └── <Service>.Tests/
+│           └── <Service>.Tests.csproj
+└── Shared/                   # общие библиотеки (bounded context)
     ├── src/
-    │   ├── <Service>/
-    │   │   └── <Service>.csproj
-    │   └── <AnotherService>/
-    │       └── <AnotherService>.csproj
     └── tests/
-        ├── <Service>.Tests/
-        │   └── <Service>.Tests.csproj
-        └── <AnotherService>.Tests/
-            └── <AnotherService>.Tests.csproj
 ```
 
 - `<BoundedContext>` — bounded context (в терминах DDD), группирует связанные сервисы. Имя в PascalCase.
 - `<Service>` — отдельный сервис или утилита внутри bounded context. Имя в PascalCase.
-- `<BoundedContext>.slnx` — solution-файл нового формата, содержит все проекты bounded context (и `src/`, и `tests/`).
+- `Backend.slnx` — единый solution-файл нового формата, содержит все .NET-проекты монорепо.
 - Исходники сервисов — только под `src/`. Тесты — только под `tests/`.
+- Общий код, переиспользуемый несколькими сервисами, размещается в `Shared/` и подключается через `ProjectReference`.
 
 ## Один проект — один сервис
 

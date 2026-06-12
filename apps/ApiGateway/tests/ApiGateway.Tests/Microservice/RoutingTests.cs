@@ -6,7 +6,7 @@ using WireMock.ResponseBuilders;
 using WireMock.Server;
 using Xunit;
 
-namespace ApiGateway.Tests;
+namespace ApiGateway.Tests.Microservice;
 
 public sealed class RoutingTests : IDisposable
 {
