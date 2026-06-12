@@ -7,7 +7,7 @@ using Recipes.Domain.Exceptions;
 namespace Recipes.Adapters.Web;
 
 [ApiController]
-[Route("api/recipes/v1")]
+[Route("api/v1/recipes")]
 internal sealed class RecipesController : ControllerBase
 {
     private readonly IRecipeService _recipeService;

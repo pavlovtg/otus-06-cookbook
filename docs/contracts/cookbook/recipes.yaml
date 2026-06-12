@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: API сервиса рецептов (bounded context cookbook)
 paths:
-  /api/recipes/v1:
+  /api/v1/recipes:
     get:
       summary: Получить список рецептов
       operationId: getRecipes
@@ -55,7 +55,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
-  /api/recipes/v1/{id}:
+  /api/v1/recipes/{id}:
     get:
       summary: Получить рецепт по идентификатору
       operationId: getRecipeById
@@ -263,4 +263,4 @@ components:
         instance:
           type: string
           description: URI-ссылка, идентифицирующая конкретный экземпляр проблемы
-          example: /api/recipes/v1
+          example: /api/v1/recipes

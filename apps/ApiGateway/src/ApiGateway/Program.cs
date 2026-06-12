@@ -6,7 +6,7 @@ builder.Services.AddReverseProxy()
 
 var app = builder.Build();
 
-app.MapHealthChecks("/api/health/v1");
+app.MapHealthChecks("/api/v1/health");
 app.MapReverseProxy();
 
 await app.RunAsync();

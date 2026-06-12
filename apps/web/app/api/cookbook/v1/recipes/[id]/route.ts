@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const GATEWAY_URL = process.env["GATEWAY_URL"] ?? "http://api-gateway";
 const upstream = (id: string) =>
-  `${GATEWAY_URL}/api/cookbook/recipes/v1/${id}`;
+  `${GATEWAY_URL}/api/cookbook/v1/recipes/${id}`;
 
 interface Params {
   params: Promise<{ id: string }>;

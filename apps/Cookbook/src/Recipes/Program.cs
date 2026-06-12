@@ -42,7 +42,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.MapHealthChecks("/api/health/v1");
+app.MapHealthChecks("/api/v1/health");
 app.MapControllers();
 
 await app.RunAsync();

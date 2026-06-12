@@ -48,7 +48,7 @@ public sealed class GetRecipesTests : IAsyncLifetime
     {
         var client = _factory!.CreateClient();
 
-        var response = await client.GetAsync("/api/health/v1");
+        var response = await client.GetAsync("/api/v1/health");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
@@ -58,7 +58,7 @@ public sealed class GetRecipesTests : IAsyncLifetime
     {
         var client = _factory!.CreateClient();
 
-        var response = await client.GetAsync("/api/recipes/v1");
+        var response = await client.GetAsync("/api/v1/recipes");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 

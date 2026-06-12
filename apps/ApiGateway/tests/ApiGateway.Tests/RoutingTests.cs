@@ -18,7 +18,7 @@ public sealed class RoutingTests : IDisposable
         _upstream = WireMockServer.Start();
 
         _upstream
-            .Given(Request.Create().WithPath("/api/recipes/v1").UsingGet())
+            .Given(Request.Create().WithPath("/api/v1/recipes").UsingGet())
             .RespondWith(Response.Create()
                 .WithStatusCode(200)
                 .WithHeader("Content-Type", "application/json")
@@ -43,7 +43,7 @@ public sealed class RoutingTests : IDisposable
     {
         var client = _factory.CreateClient();
 
-        var response = await client.GetAsync("/api/health/v1");
+        var response = await client.GetAsync("/api/v1/health");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
@@ -66,18 +66,18 @@ public sealed class RoutingTests : IDisposable
             AllowAutoRedirect = false
         });
 
-        var response = await client.GetAsync("/api/cookbook/recipes/v1");
+        var response = await client.GetAsync("/api/cookbook/v1/recipes");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        // Проверяем что WireMock получил запрос с трансформированным путём /api/recipes/v1
+        // Проверяем что WireMock получил запрос с трансформированным путём /api/v1/recipes
         var logEntries = _upstream.LogEntries.ToList();
         Assert.Single(logEntries);
         var requestMessage = logEntries[0].RequestMessage;
         Assert.NotNull(requestMessage);
         var path = requestMessage.Path;
         Assert.NotNull(path);
-        Assert.Equal("/api/recipes/v1", path);
+        Assert.Equal("/api/v1/recipes", path);
     }
 
     public void Dispose()

@@ -2,7 +2,7 @@ import httpx
 import uuid
 
 
-BASE = "/api/cookbook/recipes/v1"
+BASE = "/api/cookbook/v1/recipes"
 
 VALID_RECIPE = {
     "title": "Тестовый борщ",
