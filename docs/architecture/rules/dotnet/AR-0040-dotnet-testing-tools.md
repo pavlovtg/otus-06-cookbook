@@ -4,7 +4,7 @@
 
 ## Правило
 
-- Unit-тесты: xUnit + FluentAssertions; test-doubles — NSubstitute.
+- Unit-тесты: xUnit; test-doubles — NSubstitute.
 - Integration (DB): xUnit + Testcontainers (PostgreSQL).
 - Integration (FileSystem): xUnit; временные директории через `Path.GetTempPath()`.
 - Microservice-тесты: xUnit + `WebApplicationFactory` + Testcontainers + WireMock.Net.

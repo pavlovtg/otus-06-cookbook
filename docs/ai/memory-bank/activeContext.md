@@ -6,10 +6,12 @@
 
 ## Что сделано в этой задаче
 
-Применены AR-0054 к адаптеру Postgresql:
+Написаны интеграционные тесты репозитория (AR-0056):
 
-- `RecipeSeeder.cs` — новый класс-загрузчик с upsert-логикой (AR-0054)
-- `Program.cs` — inline-сидинг заменён на вызов `RecipeSeeder.SeedAsync(db)` (AR-0054)
+- `Shared.Testing/Database/RepositoryFactory.cs` — хелпер изоляции DbContext
+- `Integration/Adapters/Postgresql/RecipeRepositoryTests.cs` — 6 тестов (Create/GetById/GetAll/Update/Delete)
+- Обновлены версии пакетов EF Core до 10.0.4 / Npgsql до 10.0.2 во всех проектах
+- AR-0040 — удалён FluentAssertions
 
 ## Следующий шаг
 
