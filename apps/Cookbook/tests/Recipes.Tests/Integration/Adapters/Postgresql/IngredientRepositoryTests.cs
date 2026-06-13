@@ -94,7 +94,7 @@ public sealed class IngredientRepositoryTests : IAsyncLifetime
 
         await using var readCtx = _factory.Create();
         var all = new List<Ingredient>();
-        await foreach (var i in readCtx.GetAllAsync(titleFilter: null, categoryFilter: null))
+        await foreach (var i in readCtx.GetIngredientsAsync(titleFilter: null, categoryFilter: null))
             all.Add(i);
 
         Assert.Contains(all, i => i.Id == i1.Id);
@@ -116,7 +116,7 @@ public sealed class IngredientRepositoryTests : IAsyncLifetime
 
         await using var readCtx = _factory.Create();
         var all = new List<Ingredient>();
-        await foreach (var i in readCtx.GetAllAsync(titleFilter: "морк"))
+        await foreach (var i in readCtx.GetIngredientsAsync(titleFilter: "морк"))
             all.Add(i);
 
         Assert.Contains(all, i => i.Id == morkov.Id);
@@ -138,7 +138,7 @@ public sealed class IngredientRepositoryTests : IAsyncLifetime
 
         await using var readCtx = _factory.Create();
         var all = new List<Ingredient>();
-        await foreach (var i in readCtx.GetAllAsync(categoryFilter: IngredientCategory.Vegetables))
+        await foreach (var i in readCtx.GetIngredientsAsync(categoryFilter: IngredientCategory.Vegetables))
             all.Add(i);
 
         Assert.Contains(all, i => i.Id == vegetable.Id);

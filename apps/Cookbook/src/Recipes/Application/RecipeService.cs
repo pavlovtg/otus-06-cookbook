@@ -14,10 +14,10 @@ internal sealed class RecipeService : IRecipeService
         _repository = repository;
     }
 
-    public async IAsyncEnumerable<Recipe> GetAllAsync(
+    public async IAsyncEnumerable<Recipe> GetRecipesAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var recipe in _repository.GetAllAsync(cancellationToken))
+        await foreach (var recipe in _repository.GetRecipesAsync(cancellationToken))
             yield return recipe;
     }
 

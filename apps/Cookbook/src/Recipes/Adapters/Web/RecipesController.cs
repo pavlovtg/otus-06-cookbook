@@ -19,7 +19,7 @@ internal sealed class RecipesController : ControllerBase
 
     [HttpGet]
     public IAsyncEnumerable<RecipeDto> GetRecipes(CancellationToken cancellationToken)
-        => _recipeService.GetAllAsync(cancellationToken).Select(ToDto);
+        => _recipeService.GetRecipesAsync(cancellationToken).Select(ToDto);
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetRecipe(Guid id, CancellationToken cancellationToken)

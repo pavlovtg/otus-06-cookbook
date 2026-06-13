@@ -4,7 +4,7 @@ namespace Recipes.Application.Ports;
 
 internal interface IIngredientService
 {
-    IAsyncEnumerable<Ingredient> GetAllAsync(
+    IAsyncEnumerable<Ingredient> GetIngredientsAsync(
         string? titleFilter = null,
         IngredientCategory? categoryFilter = null,
         CancellationToken cancellationToken = default);

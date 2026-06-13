@@ -14,12 +14,12 @@ internal sealed class IngredientService : IIngredientService
         _repository = repository;
     }
 
-    public async IAsyncEnumerable<Ingredient> GetAllAsync(
+    public async IAsyncEnumerable<Ingredient> GetIngredientsAsync(
         string? titleFilter = null,
         IngredientCategory? categoryFilter = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var ingredient in _repository.GetAllAsync(titleFilter, categoryFilter, cancellationToken))
+        await foreach (var ingredient in _repository.GetIngredientsAsync(titleFilter, categoryFilter, cancellationToken))
             yield return ingredient;
     }
 

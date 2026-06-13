@@ -22,7 +22,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         modelBuilder.ApplyConfiguration(new IngredientConfiguration());
     }
 
-    public async IAsyncEnumerable<Recipe> GetAllAsync(
+    public async IAsyncEnumerable<Recipe> GetRecipesAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var recipe in Recipes
@@ -64,7 +64,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
 
     // ── IIngredientRepository ────────────────────────────────────────────────
 
-    public async IAsyncEnumerable<Ingredient> GetAllAsync(
+    public async IAsyncEnumerable<Ingredient> GetIngredientsAsync(
         string? titleFilter = null,
         IngredientCategory? categoryFilter = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)

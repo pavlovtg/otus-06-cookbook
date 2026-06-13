@@ -34,7 +34,7 @@ internal sealed class IngredientsController : ControllerBase
         }
 
         var ingredients = new List<IngredientDto>();
-        await foreach (var ingredient in _ingredientService.GetAllAsync(title, categoryFilter, cancellationToken))
+        await foreach (var ingredient in _ingredientService.GetIngredientsAsync(title, categoryFilter, cancellationToken))
             ingredients.Add(ToDto(ingredient));
 
         return Ok(ingredients);
