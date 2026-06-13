@@ -71,6 +71,7 @@ export function IngredientModal({ ingredient, trigger }: Props) {
         await createIngredient(result.data);
       }
       setOpen(false);
+      setLoading(false);
       router.refresh();
     } catch {
       setLoading(false);
