@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Recipes.Adapters.Web.Dto;
+using Recipes.Adapters.Web.Mapping;
 using Recipes.Application.Ports;
 using Recipes.Domain;
 using Recipes.Domain.Exceptions;
