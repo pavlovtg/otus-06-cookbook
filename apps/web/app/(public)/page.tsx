@@ -1,4 +1,5 @@
 import Link from "next/link";
+import logger from "@/lib/logger";
 import { getRecipes } from "@/lib/bff/recipes";
 import { RecipeCard } from "@/components/features/RecipeCard";
 import type { RecipeDto } from "@/lib/schemas/recipe";
@@ -7,7 +8,8 @@ export default async function HomePage() {
   let recipes: RecipeDto[] = [];
   try {
     recipes = await getRecipes();
-  } catch {
+  } catch (err) {
+    logger.error({ err }, "Failed to load recipes");
     recipes = [];
   }
 
