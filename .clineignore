@@ -67,3 +67,6 @@ vitest.config.*.timestamp*
 
 # pnpm
 .pnpm-store/
+
+# TypeScript
+*.tsbuildinfo
