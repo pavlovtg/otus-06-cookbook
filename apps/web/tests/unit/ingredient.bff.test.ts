@@ -34,18 +34,24 @@ afterEach(() => {
 describe("getIngredients", () => {
   it("возвращает список ингредиентов", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
-      new Response(JSON.stringify([mockIngredient]), { status: 200 })
+      new Response(
+        JSON.stringify({ items: [mockIngredient], total: 1, page: 1, pageSize: 20 }),
+        { status: 200 }
+      )
     );
 
     const result = await getIngredients();
 
-    expect(result).toHaveLength(1);
-    expect(result[0]?.title).toBe("Морковь");
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]?.title).toBe("Морковь");
   });
 
   it("передаёт фильтр по названию в query-параметр", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
-      new Response(JSON.stringify([]), { status: 200 })
+      new Response(
+        JSON.stringify({ items: [], total: 0, page: 1, pageSize: 20 }),
+        { status: 200 }
+      )
     );
 
     await getIngredients({ title: "морк" });
@@ -56,7 +62,10 @@ describe("getIngredients", () => {
 
   it("передаёт фильтр по категории в query-параметр", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
-      new Response(JSON.stringify([]), { status: 200 })
+      new Response(
+        JSON.stringify({ items: [], total: 0, page: 1, pageSize: 20 }),
+        { status: 200 }
+      )
     );
 
     await getIngredients({ category: "vegetables" });
