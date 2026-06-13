@@ -27,7 +27,7 @@ export function DeleteRecipeButton({ id }: Props) {
 
   return (
     <>
-      <button className="btn btn-danger btn-sm" onClick={() => setOpen(true)}>
+      <button className="btn btn-danger btn-sm" data-testid="delete-recipe-trigger" onClick={() => setOpen(true)}>
         Удалить
       </button>
 

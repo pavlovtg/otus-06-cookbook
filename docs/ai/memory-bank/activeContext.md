@@ -6,11 +6,12 @@
 
 ## Что сделано в этой задаче
 
-Создан `RecipeMicroserviceHost` для microservice-тестов.
+Исправлен падающий UI-тест `test_delete_recipe_cancel`.
 
-- Создан `Microservice/RecipeMicroserviceHost.cs`: наследует `WebApplicationFactory<Program>`, принимает connection string, конфигурирует `DatabaseConnection` через JSON-стрим, содержит `EnsureServer()` с polling health-check
-- Обновлён `RecipesCrudTests.cs`: `WebApplicationFactory<Program>` заменён на `RecipeMicroserviceHost`
-- Сборка: succeeded, 0 warnings
+- `DeleteRecipeButton.tsx`: добавлен `data-testid="delete-recipe-trigger"` на кнопку-триггер удаления
+- `tests/ui/test_recipes.py`: селектор `.detail-toolbar button` с `has_text="Удалить"` заменён на `[data-testid='delete-recipe-trigger']`
+
+Причина: в `.detail-toolbar` рендерились два `<button>Удалить</button>` — триггер и кнопка подтверждения в модале, что нарушало strict-режим Playwright.
 
 ## Следующий шаг
 
