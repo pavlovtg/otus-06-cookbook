@@ -5,5 +5,5 @@ internal sealed record IngredientDto(
     string Title,
     string Unit,
     float DefaultAmount,
-    string Category,
+    IngredientCategoryDto Category,
     bool IsSystem);

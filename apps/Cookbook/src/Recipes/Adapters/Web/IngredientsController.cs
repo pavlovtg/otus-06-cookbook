@@ -27,10 +27,10 @@ internal sealed class IngredientsController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(category))
         {
-            if (!Enum.TryParse<IngredientCategory>(category, ignoreCase: true, out var parsed))
+            if (!Enum.TryParse<IngredientCategoryDto>(category, ignoreCase: true, out var parsed))
                 return BadRequest(ProblemDetailsFor($"Invalid category value: '{category}'."));
 
-            categoryFilter = parsed;
+            categoryFilter = parsed.ToDomain();
         }
 
         var ingredients = new List<IngredientDto>();
@@ -59,14 +59,14 @@ internal sealed class IngredientsController : ControllerBase
     {
         try
         {
-            if (!Enum.TryParse<IngredientCategory>(request.Category, ignoreCase: true, out var category))
+            if (!Enum.TryParse<IngredientCategoryDto>(request.Category, ignoreCase: true, out var categoryDto))
                 return BadRequest(ProblemDetailsFor($"Invalid category value: '{request.Category}'."));
 
             var ingredient = await _ingredientService.CreateAsync(
                 request.Title,
                 request.Unit,
                 request.DefaultAmount,
-                category,
+                categoryDto.ToDomain(),
                 cancellationToken);
 
             return CreatedAtAction(nameof(GetIngredient), new { id = ingredient.Id.Value }, ToDto(ingredient));
@@ -82,7 +82,7 @@ internal sealed class IngredientsController : ControllerBase
     {
         try
         {
-            if (!Enum.TryParse<IngredientCategory>(request.Category, ignoreCase: true, out var category))
+            if (!Enum.TryParse<IngredientCategoryDto>(request.Category, ignoreCase: true, out var categoryDto))
                 return BadRequest(ProblemDetailsFor($"Invalid category value: '{request.Category}'."));
 
             await _ingredientService.UpdateAsync(
@@ -90,7 +90,7 @@ internal sealed class IngredientsController : ControllerBase
                 request.Title,
                 request.Unit,
                 request.DefaultAmount,
-                category,
+                categoryDto.ToDomain(),
                 cancellationToken);
 
             return NoContent();
@@ -120,7 +120,7 @@ internal sealed class IngredientsController : ControllerBase
         ingredient.Title,
         ingredient.Unit,
         ingredient.DefaultAmount,
-        ingredient.Category.ToString().ToLowerInvariant(),
+        ingredient.Category.ToDto(),
         ingredient.IsSystem);
 
     private ProblemDetails ProblemDetailsFor(IngredientDomainException ex) =>
