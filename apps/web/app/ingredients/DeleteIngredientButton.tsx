@@ -36,9 +36,9 @@ export function DeleteIngredientButton({ id, title }: Props) {
         Удалить
       </button>
 
-      {createPortal(
+      {open && createPortal(
         <div
-          className={`modal-backdrop${open ? " is-open" : ""}`}
+          className="modal-backdrop is-open"
           onClick={() => setOpen(false)}
         >
           <div className="modal" onClick={(e) => e.stopPropagation()}>

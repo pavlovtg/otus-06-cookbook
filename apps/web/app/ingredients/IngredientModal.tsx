@@ -81,9 +81,9 @@ export function IngredientModal({ ingredient, trigger }: Props) {
     <>
       <span onClick={handleOpen}>{trigger}</span>
 
-      {createPortal(
+      {open && createPortal(
         <div
-          className={`modal-backdrop${open ? " is-open" : ""}`}
+          className="modal-backdrop is-open"
           onClick={() => setOpen(false)}
         >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
