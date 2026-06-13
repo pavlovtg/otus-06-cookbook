@@ -2,6 +2,7 @@ import { getIngredients } from "@/lib/bff/ingredients";
 import {
   IngredientCategory,
   IngredientCategoryLabels,
+  type Ingredient,
 } from "@/lib/schemas/ingredient";
 import { IngredientModal } from "./IngredientModal";
 import { DeleteIngredientButton } from "./DeleteIngredientButton";
@@ -17,10 +18,18 @@ export default async function IngredientsPage({ searchParams }: Props) {
     ? (category as (typeof IngredientCategory.options)[number])
     : undefined;
 
-  const ingredients = await getIngredients({
-    title: title || undefined,
-    category: categoryValue,
-  });
+  let ingredients: Ingredient[] = [];
+  let fetchError: string | null = null;
+
+  try {
+    ingredients = await getIngredients({
+      title: title || undefined,
+      category: categoryValue,
+    });
+  } catch (err) {
+    fetchError =
+      err instanceof Error ? err.message : "Не удалось загрузить ингредиенты.";
+  }
 
   return (
     <>
@@ -69,7 +78,22 @@ export default async function IngredientsPage({ searchParams }: Props) {
         </form>
       </div>
 
-      {ingredients.length === 0 ? (
+      {fetchError ? (
+        <div className="state">
+          <div
+            className="state-eyebrow"
+            style={{
+              color: "var(--danger)",
+              boxShadow: "inset 0 0 0 1px rgba(244,114,114,0.3)",
+            }}
+          >
+            Ошибка загрузки
+          </div>
+          <p className="t-small" style={{ maxWidth: 400 }}>
+            {fetchError}
+          </p>
+        </div>
+      ) : ingredients.length === 0 ? (
         <div className="state">
           <div className="state-eyebrow">Не найдено</div>
           <p className="t-small">Попробуйте изменить фильтры.</p>
