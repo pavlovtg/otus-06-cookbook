@@ -1,0 +1,1701 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cookbook — MVP-макет</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+</head>
+<body data-role="guest">
+  <div class="app">
+    <header class="header">
+      <div class="header-inner">
+        <a class="brand" href="#/recipes">
+          <span class="brand-mark">C</span>
+          <span>Cookbook</span>
+        </a>
+        <nav class="nav" id="nav"></nav>
+        <div id="user-slot"></div>
+      </div>
+    </header>
+    <main class="main" id="main"></main>
+  </div>
+
+  <div class="modal-backdrop" id="modal-root"></div>
+  <div class="toast-stack" id="toast-stack"></div>
+
+<script>
+/* ============================================================
+   Cookbook MVP Mockup — single-file SPA
+   ============================================================ */
+
+/* --------- ICONS (inline SVG) ----------------------------- */
+const ICONS = {
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  flame: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3c0 4 5 5 5 10a5 5 0 1 1-10 0c0-2 1-3 2-4 0 2 1 2 2 1 0-3-1-4 1-7Z"/></svg>',
+  user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>',
+  heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10Z"/></svg>',
+  heartFill: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10Z"/></svg>',
+  star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6.5 7.1.7-5.3 4.8 1.6 7-6.3-3.7-6.3 3.7 1.6-7L2 9.2l7.1-.7Z"/></svg>',
+  starO: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="m12 2 2.9 6.5 7.1.7-5.3 4.8 1.6 7-6.3-3.7-6.3 3.7 1.6-7L2 9.2l7.1-.7Z"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  minus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>',
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m6 6 12 12M6 18 18 6"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>',
+  edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 20h4l10-10-4-4L4 16zM14 6l4 4"/></svg>',
+  arrowLeft: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M19 12H5m6-6-6 6 6 6"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/></svg>',
+  print: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M8 14h8v7H8z"/></svg>',
+  book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5a2 2 0 0 1 2-2h13v17H6a2 2 0 0 0-2 2zM4 5v15"/></svg>',
+  calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>',
+  cart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 4h2l3 13h11l2-9H6"/><circle cx="10" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg>',
+  leaf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 20c0-9 6-14 16-14 0 10-5 16-14 16-1 0-2-1-2-2zM4 20l8-8"/></svg>',
+  layers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m12 3 9 5-9 5-9-5zM3 13l9 5 9-5M3 17l9 5 9-5"/></svg>',
+  chart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V8a4 4 0 1 1 8 0v3"/></svg>',
+  trend: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m4 17 6-6 4 4 6-8M14 7h6v6"/></svg>',
+};
+
+/* --------- PHOTO PLACEHOLDER (deterministic gradient) ----- */
+function recipePhoto(seed, title) {
+  const hues = [
+    ['#7d79e7', '#a279e6'],
+    ['#ff6cb2', '#9968ff'],
+    ['#ffaf56', '#ff6cb2'],
+    ['#76d9a3', '#7d79e7'],
+    ['#9968ff', '#7d79e7'],
+    ['#ffaf56', '#9968ff'],
+    ['#a279e6', '#ff6cb2'],
+    ['#76d9a3', '#9968ff'],
+  ];
+  const h = hues[Math.abs(hash(seed)) % hues.length];
+  const initials = (title || '?').split(/\s+/).slice(0, 2).map(s => s[0] || '').join('').toUpperCase();
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <linearGradient id="g${hash(seed)}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="${h[0]}"/>
+        <stop offset="100%" stop-color="${h[1]}"/>
+      </linearGradient>
+      <radialGradient id="r${hash(seed)}" cx="80%" cy="20%" r="60%">
+        <stop offset="0%" stop-color="rgba(255,255,255,0.35)"/>
+        <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+      </radialGradient>
+    </defs>
+    <rect width="320" height="200" fill="url(#g${hash(seed)})"/>
+    <rect width="320" height="200" fill="url(#r${hash(seed)})"/>
+    <text x="50%" y="55%" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-family="Inter, sans-serif" font-weight="500" font-size="56" letter-spacing="-2">${escapeHtml(initials)}</text>
+  </svg>`;
+}
+function hash(s) { s = String(s); let h = 0; for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i); return h; }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* --------- SEED DATA -------------------------------------- */
+const CATEGORY_TYPES = {
+  meal_role: 'Роль в приёме пищи',
+  cooking_method: 'Способ приготовления',
+  main_ingredient: 'Основной ингредиент',
+  cuisine: 'Национальная кухня',
+  meal_time: 'Время употребления',
+  dietary: 'Диетические особенности',
+  serving_form: 'Форма подачи',
+};
+const SEED_CATEGORIES = [
+  ...['Закуски холодные','Закуски горячие','Первые блюда','Вторые блюда','Гарниры','Салаты','Десерты','Напитки','Соусы и заправки'].map(n => ({name:n, type:'meal_role'})),
+  ...['Варёные','Жареные','Запечённые','Тушёные','На пару','Гриль','Маринованные','Сырые'].map(n => ({name:n, type:'cooking_method'})),
+  ...['Мясные','Рыбные','Из морепродуктов','Птичьи','Овощные','Грибные','Яичные','Молочные','Зерновые','Бобовые','Фруктовые'].map(n => ({name:n, type:'main_ingredient'})),
+  ...['Итальянская','Французская','Японская','Китайская','Индийская','Мексиканская','Русская','Грузинская','Тайская'].map(n => ({name:n, type:'cuisine'})),
+  ...['Завтраки','Бранчи','Обеды','Ужины','Перекусы','Праздничные блюда'].map(n => ({name:n, type:'meal_time'})),
+  ...['Вегетарианские','Веганские','Безглютеновые','Низкоуглеводные','Кето','Постные'].map(n => ({name:n, type:'dietary'})),
+  ...['Супы','Запеканки','Пироги','Пиццы','Сэндвичи','Паста','Каши','Блины','Торты'].map(n => ({name:n, type:'serving_form'})),
+].map((c, i) => ({ id: 'c' + (i + 1), description: '', ...c }));
+
+const INGREDIENT_CATEGORIES = [
+  'Овощи','Фрукты и ягоды','Мясо и птица','Рыба и морепродукты','Молочные продукты и яйца',
+  'Крупы и зерновые','Бобовые','Орехи и семена','Масла и жиры','Специи и приправы',
+  'Соусы и пасты','Выпечка и сладости','Другое'
+];
+
+const SEED_INGREDIENTS_RAW = [
+  ['Картофель','шт',1,'Овощи'], ['Лук репчатый','шт',1,'Овощи'], ['Морковь','шт',1,'Овощи'],
+  ['Чеснок','зуб',2,'Овощи'], ['Помидор','шт',2,'Овощи'], ['Огурец','шт',2,'Овощи'],
+  ['Перец болгарский','шт',1,'Овощи'], ['Капуста белокочанная','г',300,'Овощи'], ['Кабачок','шт',1,'Овощи'],
+  ['Шпинат','г',100,'Овощи'], ['Базилик','г',20,'Овощи'],
+  ['Яблоко','шт',2,'Фрукты и ягоды'], ['Лимон','шт',1,'Фрукты и ягоды'], ['Клубника','г',200,'Фрукты и ягоды'],
+  ['Банан','шт',2,'Фрукты и ягоды'],
+  ['Куриная грудка','г',500,'Мясо и птица'], ['Куриные крылья','г',600,'Мясо и птица'], ['Говяжий фарш','г',400,'Мясо и птица'],
+  ['Свинина','г',500,'Мясо и птица'], ['Бекон','г',150,'Мясо и птица'],
+  ['Лосось','г',300,'Рыба и морепродукты'], ['Креветки','г',200,'Рыба и морепродукты'], ['Тунец консервированный','г',150,'Рыба и морепродукты'],
+  ['Яйцо куриное','шт',2,'Молочные продукты и яйца'], ['Молоко','мл',250,'Молочные продукты и яйца'],
+  ['Сливочное масло','г',50,'Молочные продукты и яйца'], ['Сыр пармезан','г',60,'Молочные продукты и яйца'],
+  ['Сыр моцарелла','г',150,'Молочные продукты и яйца'], ['Сметана','г',100,'Молочные продукты и яйца'],
+  ['Творог','г',200,'Молочные продукты и яйца'], ['Йогурт натуральный','г',150,'Молочные продукты и яйца'],
+  ['Рис','г',200,'Крупы и зерновые'], ['Гречка','г',200,'Крупы и зерновые'], ['Овсянка','г',80,'Крупы и зерновые'],
+  ['Спагетти','г',200,'Крупы и зерновые'], ['Мука пшеничная','г',300,'Крупы и зерновые'],
+  ['Чечевица','г',150,'Бобовые'], ['Нут','г',150,'Бобовые'], ['Фасоль','г',150,'Бобовые'],
+  ['Грецкий орех','г',50,'Орехи и семена'], ['Миндаль','г',50,'Орехи и семена'], ['Семена кунжута','г',20,'Орехи и семена'],
+  ['Оливковое масло','мл',30,'Масла и жиры'], ['Подсолнечное масло','мл',30,'Масла и жиры'],
+  ['Соль','г',5,'Специи и приправы'], ['Чёрный перец','г',2,'Специи и приправы'], ['Паприка','г',3,'Специи и приправы'],
+  ['Орегано','г',2,'Специи и приправы'], ['Розмарин','г',2,'Специи и приправы'],
+  ['Соевый соус','мл',30,'Соусы и пасты'], ['Томатная паста','г',60,'Соусы и пасты'], ['Майонез','г',40,'Соусы и пасты'],
+  ['Сахар','г',50,'Выпечка и сладости'], ['Мёд','г',30,'Выпечка и сладости'], ['Шоколад тёмный','г',100,'Выпечка и сладости'],
+];
+const SEED_INGREDIENTS = SEED_INGREDIENTS_RAW.map((r, i) => ({
+  id: 'i' + (i + 1), title: r[0], unit: r[1], default_amount: r[2], category: r[3], is_system: true, author_id: null
+}));
+
+function pickCats(state, names) {
+  return names.map(n => state.categories.find(c => c.name === n)).filter(Boolean);
+}
+function ing(state, name, amount) {
+  const found = state.ingredients.find(i => i.title === name);
+  return found ? { ingredient_id: found.id, amount } : null;
+}
+function build(state) {
+  const u1 = state.users[0].id, u2 = state.users[1].id, ua = state.users[2].id;
+  const recipes = [
+    ['Карбонара','Классическая римская паста с гуанчиале и желтком',20,'everyday',4,['Спагетти 200г','Бекон 150г','Яйцо куриное 2','Сыр пармезан 60г','Чёрный перец 2г','Соль 5г'],['Спагетти отварить в подсолёной воде до al dente.','Бекон обжарить до хруста.','Яйца взбить с пармезаном и перцем.','Смешать горячие спагетти с беконом, снять с огня и влить смесь.'],['Вторые блюда','Жареные','Мясные','Итальянская','Ужины','Паста'],u1,true],
+    ['Борщ украинский','Свекольный суп с томатной пастой и сметаной',90,'everyday',6,['Свинина 500г','Картофель 1','Лук репчатый 1','Морковь 1','Капуста белокочанная 300г','Томатная паста 60г','Сметана 100г','Чеснок 2','Соль 5г'],['Сварить мясной бульон.','Спассеровать овощи.','Добавить капусту и картофель, варить 20 минут.','Заправить пассеровкой, чесноком, дать настояться.'],['Первые блюда','Варёные','Мясные','Русская','Обеды','Супы'],u2,true],
+    ['Шакшука','Яйца, тушёные в томатном соусе с перцем',25,'easy',2,['Помидор 2','Перец болгарский 1','Лук репчатый 1','Чеснок 2','Яйцо куриное 2','Оливковое масло 30мл','Паприка 3г','Соль 5г'],['Обжарить лук и перец.','Добавить помидоры и паприку, тушить 10 минут.','Сделать углубления, разбить яйца, накрыть крышкой.'],['Завтраки','Тушёные','Овощные','Вегетарианские'],u1,true],
+    ['Овсянка с бананом','Завтрак на молоке с бананом и мёдом',10,'easy',1,['Овсянка 80г','Молоко 250мл','Банан 1','Мёд 30г','Грецкий орех 30г'],['Залить овсянку молоком и варить 5 минут.','Подать с нарезанным бананом, орехами и мёдом.'],['Завтраки','Варёные','Зерновые','Каши','Вегетарианские'],u2,true],
+    ['Цезарь с курицей','Салат с гриль-курицей и пармезаном',30,'everyday',2,['Куриная грудка 300г','Сыр пармезан 50г','Оливковое масло 20мл','Чеснок 1','Соль 5г','Чёрный перец 2г'],['Куриную грудку обжарить с обеих сторон.','Нарезать листовой салат и смешать с заправкой.','Добавить курицу, пармезан и сухарики.'],['Салаты','Гриль','Птичьи','Обеды'],u1,true],
+    ['Маргарита','Тонкая пицца с моцареллой и базиликом',40,'festive',2,['Мука пшеничная 250г','Помидор 2','Сыр моцарелла 150г','Базилик 20г','Оливковое масло 20мл','Соль 5г'],['Замесить тесто и дать подойти 30 минут.','Раскатать, выложить помидоры и моцареллу.','Запекать 8 минут на максимальной температуре.','Посыпать базиликом.'],['Вторые блюда','Запечённые','Овощные','Итальянская','Ужины','Пиццы','Вегетарианские'],u2,true],
+    ['Куриный суп с лапшой','Лёгкий бульон с овощами и домашней лапшой',60,'everyday',4,['Куриная грудка 400г','Морковь 1','Лук репчатый 1','Картофель 1','Спагетти 100г','Соль 5г','Чёрный перец 2г'],['Сварить курицу с овощами.','Достать курицу, нарезать, добавить лапшу.','Варить лапшу 5 минут, вернуть курицу.'],['Первые блюда','Варёные','Птичьи','Обеды','Супы'],u1,true],
+    ['Сырники','Творожные оладьи на завтрак',25,'easy',3,['Творог 400г','Яйцо куриное 1','Мука пшеничная 60г','Сахар 30г','Сметана 100г'],['Смешать творог, яйцо, муку и сахар.','Сформировать сырники.','Обжарить на масле до золотистой корочки.'],['Завтраки','Жареные','Молочные','Русская','Вегетарианские'],u2,true],
+    ['Ризотто с грибами','Рис арборио со сливочными грибами',45,'festive',3,['Рис 250г','Лук репчатый 1','Сыр пармезан 50г','Сливочное масло 50г','Оливковое масло 20мл','Соль 5г'],['Обжарить лук, добавить рис, томить 2 минуты.','Подливать тёплый бульон порциями.','В конце добавить пармезан и масло.'],['Вторые блюда','Тушёные','Зерновые','Итальянская','Ужины','Вегетарианские'],u1,true],
+    ['Том ям','Острый тайский суп с креветками',35,'festive',2,['Креветки 200г','Лимон 1','Чеснок 2','Соль 5г','Оливковое масло 20мл'],['Сварить ароматный бульон.','Добавить креветки и варить 5 минут.','Заправить соком лимона.'],['Первые блюда','Варёные','Из морепродуктов','Тайская','Обеды','Супы'],u2,true],
+    ['Шоколадный фондан','Десерт с жидким центром',25,'restaurant',4,['Шоколад тёмный 200г','Сливочное масло 100г','Яйцо куриное 3','Сахар 80г','Мука пшеничная 40г'],['Растопить шоколад с маслом.','Взбить яйца с сахаром.','Соединить, добавить муку.','Выпекать 10 минут при 200°C.'],['Десерты','Запечённые','Французская','Праздничные блюда','Торты','Вегетарианские'],u1,true],
+    ['Греческий салат','Свежий салат с фетой и оливками',15,'easy',2,['Помидор 3','Огурец 2','Перец болгарский 1','Лук репчатый 1','Оливковое масло 30мл','Соль 5г','Орегано 2г'],['Нарезать овощи крупными кубиками.','Заправить маслом и орегано.','Перемешать аккуратно.'],['Салаты','Сырые','Овощные','Вегетарианские'],u2,true],
+    ['Лазанья','Слоёная запеканка с фаршем и бешамелем',90,'festive',6,['Говяжий фарш 400г','Помидор 3','Лук репчатый 1','Мука пшеничная 80г','Молоко 500мл','Сливочное масло 60г','Сыр пармезан 80г','Соль 5г'],['Приготовить рагу из фарша и помидоров.','Сделать бешамель из масла, муки и молока.','Слой за слоем выложить и запечь 40 минут.'],['Вторые блюда','Запечённые','Мясные','Итальянская','Праздничные блюда','Запеканки'],u1,true],
+    ['Хумус','Паста из нута с тахини',20,'easy',4,['Нут 300г','Чеснок 2','Лимон 1','Оливковое масло 30мл','Соль 5г','Семена кунжута 20г'],['Замочить нут на ночь, отварить.','Взбить блендером с маслом и лимоном.'],['Закуски холодные','Варёные','Бобовые','Веганские','Постные'],u2,true],
+    ['Стейк рибай','Сочный стейк с травами',20,'restaurant',2,['Свинина 500г','Оливковое масло 20мл','Розмарин 2г','Соль 5г','Чёрный перец 2г'],['Дать мясу нагреться до комнатной температуры.','Жарить по 3 минуты с каждой стороны.','Дать отдохнуть 5 минут.'],['Вторые блюда','Гриль','Мясные','Ужины','Праздничные блюда'],u1,true],
+    ['Печёный лосось','Лосось с лимоном и розмарином',30,'everyday',2,['Лосось 400г','Лимон 1','Розмарин 2г','Оливковое масло 20мл','Соль 5г'],['Выложить лосось на пергамент.','Сбрызнуть маслом, посыпать травами.','Запекать 18 минут при 200°C.'],['Вторые блюда','Запечённые','Рыбные','Ужины','Низкоуглеводные'],u2,true],
+    ['Гречка с грибами','Простой будничный гарнир',30,'easy',3,['Гречка 250г','Лук репчатый 1','Оливковое масло 20мл','Соль 5г'],['Обжарить лук.','Добавить гречку и воду, варить под крышкой 20 минут.'],['Гарниры','Варёные','Грибные','Русская','Постные','Веганские','Каши'],u1,false],
+    ['Тирамису','Классический итальянский десерт',180,'festive',6,['Творог 500г','Яйцо куриное 3','Сахар 100г','Шоколад тёмный 100г'],['Взбить желтки с сахаром.','Смешать с творогом и белками.','Выложить слоями, посыпать шоколадом.','Охладить 3 часа.'],['Десерты','Сырые','Молочные','Итальянская','Праздничные блюда'],u2,true],
+    ['Овощное рагу','Тушёные сезонные овощи',45,'easy',4,['Кабачок 2','Помидор 3','Перец болгарский 1','Лук репчатый 1','Чеснок 2','Оливковое масло 30мл','Соль 5г'],['Нарезать овощи кубиками.','Тушить под крышкой 25 минут.'],['Вторые блюда','Тушёные','Овощные','Веганские','Постные'],u1,true],
+    ['Куриные крылья BBQ','Запечённые крылья в маринаде',60,'everyday',3,['Куриные крылья 800г','Соевый соус 50мл','Мёд 30г','Чеснок 2','Паприка 3г'],['Замариновать крылья на час.','Запекать при 200°C 35 минут.'],['Вторые блюда','Запечённые','Птичьи','Ужины'],u2,true],
+    ['Оливье','Классический праздничный салат',45,'everyday',6,['Картофель 4','Морковь 2','Яйцо куриное 4','Огурец 3','Майонез 200г','Соль 5г'],['Отварить овощи и яйца.','Нарезать кубиками.','Заправить майонезом.'],['Салаты','Варёные','Овощные','Русская','Праздничные блюда'],u1,true],
+    ['Капкейки ванильные','Маленькие пирожные на сливочном масле',40,'everyday',12,['Мука пшеничная 200г','Сахар 150г','Сливочное масло 100г','Яйцо куриное 2','Молоко 100мл'],['Взбить масло с сахаром.','Добавить яйца, муку и молоко.','Выпекать 18 минут при 180°C.'],['Десерты','Запечённые','Молочные','Вегетарианские'],u2,true],
+    ['Гаспачо','Холодный томатный суп',20,'easy',4,['Помидор 6','Огурец 1','Перец болгарский 1','Чеснок 1','Оливковое масло 30мл','Соль 5г'],['Все ингредиенты пробить в блендере.','Охладить 2 часа.'],['Первые блюда','Сырые','Овощные','Веганские','Супы'],u1,true],
+    ['Куриный плов','Рассыпчатый плов с курицей',60,'everyday',4,['Куриная грудка 500г','Рис 300г','Морковь 2','Лук репчатый 2','Чеснок 2','Подсолнечное масло 30мл','Соль 5г','Паприка 3г'],['Обжарить лук с морковью и курицей.','Засыпать рис, залить водой.','Тушить 30 минут под крышкой.'],['Вторые блюда','Тушёные','Птичьи','Зерновые','Обеды'],u2,true],
+    ['Авокадо-тост','Тост с авокадо и яйцом-пашот',15,'easy',2,['Мука пшеничная 80г','Яйцо куриное 2','Лимон 1','Оливковое масло 10мл','Соль 5г','Чёрный перец 2г'],['Поджарить хлеб.','Размять авокадо с лимоном.','Сверху выложить яйцо-пашот.'],['Завтраки','Жареные','Овощные','Бранчи','Вегетарианские','Сэндвичи'],u1,true],
+    ['Морковный пирог','Влажный пряный пирог',75,'everyday',8,['Морковь 4','Мука пшеничная 250г','Сахар 150г','Яйцо куриное 3','Подсолнечное масло 100мл','Грецкий орех 50г'],['Натереть морковь.','Смешать все ингредиенты.','Выпекать 50 минут при 180°C.'],['Десерты','Запечённые','Овощные','Пироги','Вегетарианские'],u2,true],
+  ];
+  return recipes.map((r, i) => {
+    const ings = r[5].map(s => {
+      const m = s.match(/^(.+?)\s+([\d.]+)(\D*)$/);
+      const name = (m ? m[1] : s).trim();
+      const amount = m ? parseFloat(m[2]) : 100;
+      const found = state.ingredients.find(x => x.title === name);
+      return found ? { ingredient_id: found.id, amount } : null;
+    }).filter(Boolean);
+    const inst = r[6];
+    return {
+      id: 'r' + (i + 1),
+      title: r[0], description: r[1], cooking_time: r[2], difficulty: r[3], servings: r[4],
+      ingredients: ings, instructions: inst.join('\n\n'), categories: pickCats(state, r[7]),
+      author_id: r[8], is_public: r[9], photos: []
+    };
+  });
+}
+
+const COMMENT_SAMPLES = [
+  'Готовил по этому рецепту вчера — семья в восторге!',
+  'Очень вкусно, но я бы добавил чуть больше специй.',
+  'Идеально для воскресного ужина.',
+  'Делал в первый раз — получилось не очень. Перепробую.',
+  'Простой и быстрый рецепт, спасибо!',
+  'Заменил один из ингредиентов и тоже отлично вышло.',
+  'Прекрасный результат, фото не передаёт всю красоту блюда.',
+  'Готовила на праздник — гости остались довольны.',
+  'Время приготовления указано точно.',
+  'Уровень сложности соответствует моим ожиданиям.',
+  'Слишком сладко на мой вкус, в следующий раз сахара меньше.',
+  'Хорошее соотношение времени и результата.',
+  'Любимый рецепт уже на месяц вперёд.',
+  'Спасибо автору — детальные инструкции.',
+  'Замечательно! Сделал из того, что было дома.',
+  'Очень фотогенично, советую друзьям.',
+  'Перебор по соли, остальное супер.',
+  'Получилось с первого раза — это о чём-то говорит.',
+  'Готовил для семьи из 4 человек, всем хватило.',
+  'Уверен, что вернусь к этому рецепту ещё не раз.',
+];
+
+const DAY_LABELS = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const MEAL_LABELS = { breakfast: 'Завтрак', lunch: 'Обед', dinner: 'Ужин' };
+const MEAL_KEYS = ['breakfast','lunch','dinner'];
+
+/* --------- STATE ----------------------------------------- */
+const LS_KEY = 'cookbook:state';
+let state;
+const sessionState = { token: null, viewState: { recipesPage: 1, recipesQuery: '', recipesScroll: 0, recipesMode: 'all', recipesSort: 'rating' } };
+
+function loadState() {
+  const saved = localStorage.getItem(LS_KEY);
+  if (saved) {
+    try { state = JSON.parse(saved); return; } catch {}
+  }
+  state = seedState();
+  saveState();
+}
+function saveState() {
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+}
+function seedState() {
+  const s = {
+    users: [
+      { id: 'u1', email: 'user1@cookbook.test', display_name: 'Анна Воронова', password: 'demo1234', role: 'user' },
+      { id: 'u2', email: 'user2@cookbook.test', display_name: 'Кирилл Соколов', password: 'demo1234', role: 'user' },
+      { id: 'u3', email: 'admin@cookbook.test', display_name: 'Админ',          password: 'demo1234', role: 'admin' },
+    ],
+    categories: SEED_CATEGORIES,
+    ingredients: SEED_INGREDIENTS,
+    recipes: [],
+    comments: [],
+    ratings: [],
+    favorites: [],
+    mealPlans: {},
+  };
+  s.recipes = build(s);
+  // ratings
+  s.recipes.forEach((r, idx) => {
+    [s.users[0].id, s.users[1].id, s.users[2].id].forEach((uid, ui) => {
+      if ((idx + ui) % 3 !== 0) {
+        s.ratings.push({ recipe_id: r.id, user_id: uid, value: 3 + ((idx + ui) % 3) });
+      }
+    });
+  });
+  // comments — 22 distributed
+  let ci = 0;
+  for (let i = 0; i < 22; i++) {
+    const r = s.recipes[i % s.recipes.length];
+    const author = s.users[i % 3];
+    if (s.comments.find(c => c.recipe_id === r.id && c.author_id === author.id)) continue;
+    s.comments.push({
+      id: 'cm' + (ci + 1),
+      recipe_id: r.id,
+      author_id: author.id,
+      text: COMMENT_SAMPLES[ci % COMMENT_SAMPLES.length],
+      created_at: new Date(Date.now() - (i + 1) * 86400000 * 2).toISOString(),
+    });
+    ci++;
+  }
+  // favorites
+  s.favorites.push({ user_id: 'u1', recipe_id: 'r1' });
+  s.favorites.push({ user_id: 'u1', recipe_id: 'r5' });
+  s.favorites.push({ user_id: 'u1', recipe_id: 'r9' });
+  s.favorites.push({ user_id: 'u2', recipe_id: 'r2' });
+  s.favorites.push({ user_id: 'u2', recipe_id: 'r10' });
+  // meal plan for u1
+  const plan = {};
+  for (let d = 0; d < 7; d++) for (const m of MEAL_KEYS) plan[`${d}_${m}`] = [];
+  plan['0_breakfast'] = [{ recipe_id: 'r4', servings: 1 }];
+  plan['0_lunch']     = [{ recipe_id: 'r7', servings: 2 }];
+  plan['0_dinner']    = [{ recipe_id: 'r1', servings: 4 }];
+  plan['1_breakfast'] = [{ recipe_id: 'r3', servings: 2 }];
+  plan['1_lunch']     = [{ recipe_id: 'r2', servings: 4 }];
+  plan['1_dinner']    = [{ recipe_id: 'r6', servings: 2 }];
+  plan['2_breakfast'] = [{ recipe_id: 'r25', servings: 2 }];
+  plan['2_dinner']    = [{ recipe_id: 'r5', servings: 2 }];
+  plan['3_lunch']     = [{ recipe_id: 'r9', servings: 3 }];
+  plan['3_dinner']    = [{ recipe_id: 'r16', servings: 2 }];
+  plan['4_dinner']    = [{ recipe_id: 'r19', servings: 4 }];
+  plan['5_breakfast'] = [{ recipe_id: 'r8', servings: 3 }];
+  plan['5_dinner']    = [{ recipe_id: 'r13', servings: 4 }];
+  plan['6_lunch']     = [{ recipe_id: 'r24', servings: 4 }];
+  s.mealPlans['u1'] = plan;
+  return s;
+}
+
+/* --------- AUTH ------------------------------------------ */
+function fakeJwt(user) {
+  return btoa(JSON.stringify({ uid: user.id, role: user.role, exp: Date.now() + 86400000 * 30 }));
+}
+function parseToken(t) {
+  try { return JSON.parse(atob(t)); } catch { return null; }
+}
+function currentUser() {
+  const t = sessionState.token || localStorage.getItem('cookbook:token');
+  if (!t) return null;
+  const data = parseToken(t);
+  if (!data || data.exp < Date.now()) return null;
+  return state.users.find(u => u.id === data.uid) || null;
+}
+function setRoleAttr() {
+  const u = currentUser();
+  document.body.dataset.role = u ? u.role : 'guest';
+}
+
+/* --------- FAKE API -------------------------------------- */
+const delay = (min = 150, max = 400) => new Promise(res => setTimeout(res, Math.floor(min + Math.random() * (max - min))));
+function requireAuth() {
+  const u = currentUser();
+  if (!u) throw { code: 401, message: 'Требуется авторизация' };
+  return u;
+}
+function requireRole(role) {
+  const u = requireAuth();
+  if (role === 'admin' && u.role !== 'admin') throw { code: 403, message: 'Недостаточно прав' };
+  return u;
+}
+
+const fakeApi = {
+  async login(email, password) {
+    await delay();
+    const u = state.users.find(x => x.email === email);
+    if (!u || u.password !== password) throw { code: 401, message: 'Неверный email или пароль' };
+    sessionState.token = fakeJwt(u);
+    localStorage.setItem('cookbook:token', sessionState.token);
+    return { user: u, token: sessionState.token };
+  },
+  async register(email, display_name, password) {
+    await delay();
+    if (state.users.find(u => u.email === email)) throw { code: 409, message: 'Email уже зарегистрирован' };
+    const u = { id: 'u' + (state.users.length + 1), email, display_name, password, role: 'user' };
+    state.users.push(u); saveState();
+    sessionState.token = fakeJwt(u);
+    localStorage.setItem('cookbook:token', sessionState.token);
+    return { user: u, token: sessionState.token };
+  },
+  async logout() {
+    await delay(80, 160);
+    sessionState.token = null;
+    localStorage.removeItem('cookbook:token');
+  },
+
+  async getRecipes({ q = '', mode = 'all', sort = 'rating', page = 1, perPage = 100 } = {}) {
+    await delay();
+    const u = currentUser();
+    let list = state.recipes.filter(r => {
+      if (!r.is_public && (!u || (u.id !== r.author_id && u.role !== 'admin'))) return false;
+      return true;
+    });
+    if (mode === 'favorites') {
+      if (!u) throw { code: 401, message: 'Авторизуйтесь, чтобы открыть избранное' };
+      const favs = new Set(state.favorites.filter(f => f.user_id === u.id).map(f => f.recipe_id));
+      list = list.filter(r => favs.has(r.id));
+    } else if (mode === 'mine') {
+      if (!u) throw { code: 401, message: 'Авторизуйтесь' };
+      list = list.filter(r => r.author_id === u.id);
+    }
+    const words = (q || '').toLowerCase().trim().split(/\s+/).filter(Boolean);
+    if (words.length) {
+      list = list.filter(r => {
+        const hay = [r.title, r.description, ...r.categories.map(c => c.name),
+          ...r.ingredients.map(i => state.ingredients.find(x => x.id === i.ingredient_id)?.title || '')]
+          .join(' ').toLowerCase();
+        return words.every(w => hay.includes(w));
+      });
+    }
+    if (sort === 'title') list.sort((a, b) => a.title.localeCompare(b.title, 'ru'));
+    if (sort === 'rating') list.sort((a, b) => avgRating(b.id) - avgRating(a.id));
+    const total = list.length;
+    const offset = (page - 1) * perPage;
+    return { items: list.slice(offset, offset + perPage), total, page, perPage };
+  },
+  async getRecipe(id) {
+    await delay();
+    const r = state.recipes.find(x => x.id === id);
+    if (!r) throw { code: 404, message: 'Рецепт не найден' };
+    const u = currentUser();
+    if (!r.is_public && (!u || (u.id !== r.author_id && u.role !== 'admin'))) throw { code: 403, message: 'Доступ запрещён' };
+    return r;
+  },
+  async createRecipe(payload) {
+    const u = requireAuth();
+    await delay();
+    const r = { id: 'r' + (state.recipes.length + 1 + Math.floor(Math.random() * 1000)), author_id: u.id, photos: [], ...payload };
+    state.recipes.unshift(r); saveState();
+    return r;
+  },
+  async updateRecipe(id, payload) {
+    const u = requireAuth();
+    await delay();
+    const r = state.recipes.find(x => x.id === id);
+    if (!r) throw { code: 404, message: 'Не найдено' };
+    if (r.author_id !== u.id && u.role !== 'admin') throw { code: 403, message: 'Нет прав' };
+    Object.assign(r, payload); saveState();
+    return r;
+  },
+  async deleteRecipe(id) {
+    const u = requireAuth();
+    await delay();
+    const r = state.recipes.find(x => x.id === id);
+    if (!r) throw { code: 404, message: 'Не найдено' };
+    if (r.author_id !== u.id && u.role !== 'admin') throw { code: 403, message: 'Нет прав' };
+    state.recipes = state.recipes.filter(x => x.id !== id);
+    state.comments = state.comments.filter(c => c.recipe_id !== id);
+    state.ratings = state.ratings.filter(rt => rt.recipe_id !== id);
+    state.favorites = state.favorites.filter(f => f.recipe_id !== id);
+    saveState();
+  },
+
+  async toggleFavorite(recipe_id) {
+    const u = requireAuth();
+    await delay(120, 250);
+    const idx = state.favorites.findIndex(f => f.user_id === u.id && f.recipe_id === recipe_id);
+    if (idx >= 0) state.favorites.splice(idx, 1); else state.favorites.push({ user_id: u.id, recipe_id });
+    saveState();
+    return idx < 0;
+  },
+  async rateRecipe(recipe_id, value) {
+    const u = requireAuth();
+    await delay(120, 250);
+    const existing = state.ratings.find(r => r.recipe_id === recipe_id && r.user_id === u.id);
+    if (existing) existing.value = value; else state.ratings.push({ recipe_id, user_id: u.id, value });
+    saveState();
+  },
+
+  async addComment(recipe_id, text) {
+    const u = requireAuth();
+    await delay();
+    if (state.comments.find(c => c.recipe_id === recipe_id && c.author_id === u.id)) throw { code: 409, message: 'Вы уже оставили комментарий' };
+    if (!text || text.length < 1 || text.length > 2000) throw { code: 400, message: 'От 1 до 2000 символов' };
+    const c = { id: 'cm' + Date.now(), recipe_id, author_id: u.id, text, created_at: new Date().toISOString() };
+    state.comments.push(c); saveState();
+    return c;
+  },
+  async deleteComment(id) {
+    const u = requireAuth();
+    await delay(120, 250);
+    const c = state.comments.find(x => x.id === id);
+    if (!c) throw { code: 404, message: 'Не найдено' };
+    const r = state.recipes.find(x => x.id === c.recipe_id);
+    if (c.author_id !== u.id && (!r || r.author_id !== u.id) && u.role !== 'admin') throw { code: 403, message: 'Нет прав' };
+    state.comments = state.comments.filter(x => x.id !== id); saveState();
+  },
+
+  async getMealPlan() {
+    const u = requireAuth();
+    await delay();
+    if (!state.mealPlans[u.id]) {
+      const plan = {};
+      for (let d = 0; d < 7; d++) for (const m of MEAL_KEYS) plan[`${d}_${m}`] = [];
+      state.mealPlans[u.id] = plan; saveState();
+    }
+    return state.mealPlans[u.id];
+  },
+  async updateMealPlan(plan) {
+    const u = requireAuth();
+    await delay(120, 250);
+    state.mealPlans[u.id] = plan; saveState();
+  },
+  async getShoppingList() {
+    const u = requireAuth();
+    await delay();
+    const plan = state.mealPlans[u.id] || {};
+    const acc = new Map();
+    for (const key of Object.keys(plan)) {
+      for (const item of plan[key]) {
+        const r = state.recipes.find(x => x.id === item.recipe_id);
+        if (!r) continue;
+        const scale = item.servings / r.servings;
+        for (const ri of r.ingredients) {
+          const ing = state.ingredients.find(x => x.id === ri.ingredient_id);
+          if (!ing) continue;
+          const k = ing.id;
+          const cur = acc.get(k) || { ingredient: ing, amount: 0 };
+          cur.amount += ri.amount * scale;
+          acc.set(k, cur);
+        }
+      }
+    }
+    const grouped = {};
+    for (const v of acc.values()) {
+      if (!grouped[v.ingredient.category]) grouped[v.ingredient.category] = [];
+      grouped[v.ingredient.category].push(v);
+    }
+    for (const k of Object.keys(grouped)) grouped[k].sort((a, b) => a.ingredient.title.localeCompare(b.ingredient.title, 'ru'));
+    return grouped;
+  },
+
+  async getIngredients({ q = '', category = '', authorId = null } = {}) {
+    await delay();
+    const u = currentUser();
+    let list = state.ingredients;
+    if (q) list = list.filter(i => i.title.toLowerCase().includes(q.toLowerCase()));
+    if (category) list = list.filter(i => i.category === category);
+    if (authorId !== null && authorId !== '') {
+      if (authorId === 'system') list = list.filter(i => i.is_system);
+      else list = list.filter(i => i.author_id === authorId);
+    }
+    if (u && u.role !== 'admin') {
+      list = list.filter(i => i.is_system || i.author_id === u.id);
+    }
+    return list;
+  },
+  async createIngredient(payload) {
+    const u = requireAuth();
+    await delay();
+    const i = { id: 'i' + Date.now(), is_system: u.role === 'admin' ? !!payload.is_system : false, author_id: u.role === 'admin' && payload.is_system ? null : u.id, ...payload };
+    state.ingredients.push(i); saveState();
+    return i;
+  },
+  async updateIngredient(id, payload) {
+    const u = requireAuth();
+    await delay();
+    const i = state.ingredients.find(x => x.id === id);
+    if (!i) throw { code: 404, message: 'Не найдено' };
+    if (i.is_system && u.role !== 'admin') throw { code: 403, message: 'Системный — только админ' };
+    if (!i.is_system && i.author_id !== u.id && u.role !== 'admin') throw { code: 403, message: 'Не ваш ингредиент' };
+    Object.assign(i, payload); saveState();
+    return i;
+  },
+  async deleteIngredient(id) {
+    const u = requireAuth();
+    await delay();
+    const i = state.ingredients.find(x => x.id === id);
+    if (!i) throw { code: 404, message: 'Не найдено' };
+    if (i.is_system && u.role !== 'admin') throw { code: 403, message: 'Только админ' };
+    if (!i.is_system && i.author_id !== u.id && u.role !== 'admin') throw { code: 403, message: 'Только автор' };
+    const used = state.recipes.filter(r => r.ingredients.some(x => x.ingredient_id === id));
+    if (used.length) throw { code: 409, message: 'Используется в рецептах: ' + used.slice(0, 10).map(r => r.title).join(', ') + (used.length > 10 ? ` и ещё ${used.length - 10}` : '') };
+    state.ingredients = state.ingredients.filter(x => x.id !== id); saveState();
+  },
+
+  async getCategories() { await delay(120, 250); return state.categories; },
+  async createCategory(payload) {
+    requireRole('admin'); await delay();
+    const c = { id: 'c' + Date.now(), ...payload };
+    state.categories.push(c); saveState();
+    return c;
+  },
+  async updateCategory(id, payload) {
+    requireRole('admin'); await delay();
+    const c = state.categories.find(x => x.id === id);
+    if (!c) throw { code: 404, message: 'Не найдено' };
+    delete payload.type; // type immutable
+    Object.assign(c, payload); saveState();
+    return c;
+  },
+  async deleteCategory(id) {
+    requireRole('admin'); await delay();
+    if (state.recipes.some(r => r.categories.find(c => c.id === id))) throw { code: 409, message: 'Используется в рецептах' };
+    state.categories = state.categories.filter(x => x.id !== id); saveState();
+  },
+
+  async getDashboardStats() {
+    await delay();
+    const u = currentUser();
+    const all = state.recipes.filter(r => r.is_public || (u && (u.id === r.author_id || u.role === 'admin')));
+    const sortedByRating = [...all].sort((a, b) => avgRating(b.id) - avgRating(a.id));
+    return {
+      totalRecipes: all.length,
+      totalUsers: state.users.length,
+      totalComments: state.comments.length,
+      myRecipes: u ? all.filter(r => r.author_id === u.id).length : 0,
+      myComments: u ? state.comments.filter(c => c.author_id === u.id).length : 0,
+      top10: sortedByRating.slice(0, 10).map(r => ({ id: r.id, title: r.title, rating: avgRating(r.id) })),
+      topFav: u ? sortedByRating
+        .filter(r => state.favorites.some(f => f.user_id === u.id && f.recipe_id === r.id))
+        .slice(0, 10).map(r => ({ id: r.id, title: r.title, rating: avgRating(r.id) })) : [],
+      byMainIng: tally(all, 'main_ingredient'),
+      byCuisine: tally(all, 'cuisine'),
+      topUsersByRating: topUsersBy(state.ratings.map(r => r.user_id)),
+      topUsersByComments: topUsersBy(state.comments.map(c => c.author_id)),
+      planFill: u && state.mealPlans[u.id] ? Object.fromEntries(Object.entries(state.mealPlans[u.id]).map(([k, v]) => [k, v.length > 0])) : {},
+    };
+  },
+};
+
+function avgRating(recipeId) {
+  const arr = state.ratings.filter(r => r.recipe_id === recipeId);
+  if (!arr.length) return 0;
+  return arr.reduce((s, r) => s + r.value, 0) / arr.length;
+}
+function myRating(recipeId) {
+  const u = currentUser(); if (!u) return 0;
+  const r = state.ratings.find(x => x.recipe_id === recipeId && x.user_id === u.id);
+  return r ? r.value : 0;
+}
+function tally(recipes, type) {
+  const m = new Map();
+  recipes.forEach(r => r.categories.filter(c => c.type === type).forEach(c => m.set(c.name, (m.get(c.name) || 0) + 1)));
+  return [...m.entries()].sort((a, b) => b[1] - a[1]);
+}
+function topUsersBy(arr) {
+  const m = new Map();
+  arr.forEach(uid => m.set(uid, (m.get(uid) || 0) + 1));
+  return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10)
+    .map(([uid, n]) => ({ name: state.users.find(u => u.id === uid)?.display_name || '—', count: n }));
+}
+
+/* --------- ROUTER ---------------------------------------- */
+const routes = [
+  { re: /^#\/recipes\/new$/, view: 'recipeForm' },
+  { re: /^#\/recipes\/([^/]+)\/edit$/, view: 'recipeForm', extract: m => ({ id: m[1] }) },
+  { re: /^#\/recipes\/([^/]+)$/, view: 'recipeDetail', extract: m => ({ id: m[1] }) },
+  { re: /^#\/recipes$/, view: 'recipesList' },
+  { re: /^#\/planner$/, view: 'planner' },
+  { re: /^#\/shopping-list$/, view: 'shoppingList' },
+  { re: /^#\/ingredients$/, view: 'ingredients', guard: 'user' },
+  { re: /^#\/categories$/, view: 'categories' },
+  { re: /^#\/dashboard$/, view: 'dashboard' },
+  { re: /^#\/login$/, view: 'login' },
+  { re: /^#\/register$/, view: 'register' },
+];
+
+function go(hash) { if (location.hash !== hash) location.hash = hash; else handleRoute(); }
+function handleRoute() {
+  const hash = location.hash || '#/recipes';
+  for (const r of routes) {
+    const m = hash.match(r.re);
+    if (m) {
+      if (r.guard === 'user' && !currentUser()) { toast('Войдите, чтобы открыть раздел', 'error'); openLoginModal(); go('#/recipes'); return; }
+      if (r.guard === 'admin' && (!currentUser() || currentUser().role !== 'admin')) { toast('Только для администратора', 'error'); go('#/recipes'); return; }
+      renderView(r.view, r.extract ? r.extract(m) : {}); return;
+    }
+  }
+  renderView('recipesList', {});
+}
+window.addEventListener('hashchange', handleRoute);
+
+/* --------- TOAST + MODAL --------------------------------- */
+function toast(msg, kind = '') {
+  const stack = document.getElementById('toast-stack');
+  const el = document.createElement('div');
+  el.className = 'toast' + (kind ? ' toast-' + kind : '');
+  el.innerHTML = `<span class="dotty"></span><span>${escapeHtml(msg)}</span>`;
+  stack.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('is-show'));
+  setTimeout(() => { el.classList.remove('is-show'); setTimeout(() => el.remove(), 350); }, 3200);
+}
+
+let modalCloseCb = null;
+function openModal(html, onClose) {
+  const root = document.getElementById('modal-root');
+  root.innerHTML = `<div class="modal">${html}</div>`;
+  modalCloseCb = onClose || null;
+  requestAnimationFrame(() => root.classList.add('is-open'));
+  root.onclick = (e) => { if (e.target === root) closeModal(); };
+}
+function closeModal() {
+  const root = document.getElementById('modal-root');
+  root.classList.remove('is-open');
+  setTimeout(() => { root.innerHTML = ''; if (modalCloseCb) modalCloseCb(); modalCloseCb = null; }, 200);
+}
+function handleApiError(e) {
+  console.warn(e);
+  if (e && e.code === 401) { toast(e.message || 'Требуется вход', 'error'); openLoginModal(); return; }
+  if (e && e.code === 403) { toast(e.message || 'Нет прав', 'error'); return; }
+  if (e && e.code === 404) { toast(e.message || 'Не найдено', 'error'); return; }
+  toast(e?.message || 'Ошибка', 'error');
+}
+
+/* --------- NAV / HEADER ---------------------------------- */
+function renderHeader() {
+  const u = currentUser();
+  const items = [
+    { hash: '#/recipes', label: 'Рецепты', icon: ICONS.book, exact: true },
+    { hash: '#/planner', label: 'Планировщик', icon: ICONS.calendar, requires: 'user' },
+    { hash: '#/shopping-list', label: 'Список покупок', icon: ICONS.cart, requires: 'user' },
+    { hash: '#/ingredients', label: 'Ингредиенты', icon: ICONS.leaf, requires: 'user' },
+    { hash: '#/categories', label: 'Категории', icon: ICONS.layers, requires: 'admin' },
+    { hash: '#/dashboard', label: 'Дашборд', icon: ICONS.chart },
+  ];
+  const nav = document.getElementById('nav');
+  nav.innerHTML = items.map(i => {
+    if (i.requires === 'user' && !u) return '';
+    if (i.requires === 'admin' && (!u || u.role !== 'admin')) return '';
+    const hash = location.hash || '#/recipes';
+    const active = (i.exact ? (hash === i.hash || hash === '' || hash.startsWith('#/recipes')) : hash.startsWith(i.hash)) ? 'is-active' : '';
+    return `<a class="${active}" href="${i.hash}" data-requires="${i.requires||''}">${i.icon}<span>${i.label}</span></a>`;
+  }).join('');
+  const slot = document.getElementById('user-slot');
+  if (u) {
+    slot.innerHTML = `
+      <div class="user-chip">
+        <span class="avatar">${escapeHtml((u.display_name || '?').slice(0, 1))}</span>
+        <span>${escapeHtml(u.display_name)}</span>
+        ${u.role === 'admin' ? '<span class="role-tag">admin</span>' : ''}
+        <button class="btn btn-ghost btn-sm" id="logout-btn">Выйти</button>
+      </div>`;
+    document.getElementById('logout-btn').onclick = async () => {
+      await fakeApi.logout(); setRoleAttr(); renderHeader(); toast('Вы вышли', 'success'); handleRoute();
+    };
+  } else {
+    slot.innerHTML = `
+      <div style="display:flex;gap:8px;">
+        <a href="#/login" class="btn btn-ghost btn-sm">Войти</a>
+        <a href="#/register" class="btn btn-primary btn-sm">Регистрация</a>
+      </div>`;
+  }
+}
+
+/* --------- VIEWS ----------------------------------------- */
+function renderView(name, props) {
+  setRoleAttr(); renderHeader();
+  const main = document.getElementById('main');
+  views[name] ? views[name](main, props) : main.innerHTML = '<div class="state"><div class="state-eyebrow">Страница не найдена</div></div>';
+}
+
+const views = {};
+
+/* ---- LOGIN ---------------------------------------------- */
+views.login = (main) => {
+  main.innerHTML = `
+    <div class="auth-shell">
+      <div class="auth-card">
+        <div>
+          <h1>С возвращением.</h1>
+          <p class="sub">Войдите, чтобы продолжить готовить.</p>
+        </div>
+        <form id="login-form" class="modal-body" autocomplete="off">
+          <div class="field">
+            <label>Email</label>
+            <input class="input" type="email" name="email" required value="user1@cookbook.test" />
+          </div>
+          <div class="field">
+            <label>Пароль</label>
+            <input class="input" type="password" name="password" required minlength="8" value="demo1234" />
+          </div>
+          <button class="btn btn-primary" type="submit">Войти</button>
+        </form>
+        <div class="auth-quick">
+          <span class="label">Демо-аккаунты</span>
+          <div class="accounts">
+            <button type="button" data-email="user1@cookbook.test">user1</button>
+            <button type="button" data-email="user2@cookbook.test">user2</button>
+            <button type="button" data-email="admin@cookbook.test">admin</button>
+          </div>
+        </div>
+        <div class="switch">Нет аккаунта? <a href="#/register">Зарегистрироваться</a></div>
+      </div>
+    </div>`;
+  main.querySelectorAll('.auth-quick button').forEach(b => b.onclick = () => {
+    main.querySelector('[name=email]').value = b.dataset.email;
+    main.querySelector('[name=password]').value = 'demo1234';
+  });
+  main.querySelector('#login-form').onsubmit = async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    try {
+      await fakeApi.login(fd.get('email'), fd.get('password'));
+      toast('Вход выполнен', 'success'); setRoleAttr(); renderHeader(); go('#/recipes');
+    } catch (err) { handleApiError(err); }
+  };
+};
+
+views.register = (main) => {
+  main.innerHTML = `
+    <div class="auth-shell">
+      <div class="auth-card">
+        <div>
+          <h1>Создайте <span class="t-gradient">аккаунт</span>.</h1>
+          <p class="sub">Минимум полей. Всё демо.</p>
+        </div>
+        <form id="reg-form" class="modal-body" autocomplete="off">
+          <div class="field"><label>Имя</label><input class="input" name="name" minlength="3" maxlength="200" required /></div>
+          <div class="field"><label>Email</label><input class="input" type="email" name="email" required /></div>
+          <div class="field"><label>Пароль</label><input class="input" type="password" name="password" minlength="8" required /></div>
+          <button class="btn btn-primary" type="submit">Создать аккаунт</button>
+        </form>
+        <div class="switch">Уже есть аккаунт? <a href="#/login">Войти</a></div>
+      </div>
+    </div>`;
+  main.querySelector('#reg-form').onsubmit = async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    try {
+      await fakeApi.register(fd.get('email'), fd.get('name'), fd.get('password'));
+      toast('Аккаунт создан', 'success'); setRoleAttr(); renderHeader(); go('#/recipes');
+    } catch (err) { handleApiError(err); }
+  };
+};
+
+function openLoginModal() {
+  openModal(`
+    <div class="modal-head"><h2>Требуется вход</h2><button class="modal-close" onclick="closeModal()">${ICONS.x}</button></div>
+    <p class="t-small" style="margin-bottom:14px">Авторизуйтесь, чтобы продолжить.</p>
+    <form id="modal-login" class="modal-body" autocomplete="off">
+      <div class="field"><label>Email</label><input class="input" type="email" name="email" required value="user1@cookbook.test" /></div>
+      <div class="field"><label>Пароль</label><input class="input" type="password" name="password" required value="demo1234" /></div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeModal()">Отмена</button>
+        <button type="submit" class="btn btn-primary">Войти</button>
+      </div>
+    </form>`);
+  document.getElementById('modal-login').onsubmit = async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    try { await fakeApi.login(fd.get('email'), fd.get('password')); closeModal(); setRoleAttr(); renderHeader(); handleRoute(); toast('Вход выполнен', 'success'); }
+    catch (err) { toast(err.message || 'Не удалось войти', 'error'); }
+  };
+}
+
+/* ---- RECIPES LIST --------------------------------------- */
+views.recipesList = async (main) => {
+  const vs = sessionState.viewState;
+  main.innerHTML = `
+    <div class="layout-with-aside">
+      <aside class="aside">
+        <h1 class="aside-title">Готовим <span class="t-gradient">сегодня</span></h1>
+        <div class="aside-block">
+          <span class="aside-label">Режим</span>
+          <div class="aside-item ${vs.recipesMode === 'all' ? 'is-active' : ''}" data-mode="all"><span>Все рецепты</span></div>
+          <div class="aside-item ${vs.recipesMode === 'favorites' ? 'is-active' : ''}" data-mode="favorites" data-requires="user"><span>Избранное</span></div>
+        </div>
+        <div class="aside-block">
+          <span class="aside-label">Сортировка</span>
+          <div class="aside-item ${vs.recipesSort === 'rating' ? 'is-active' : ''}" data-sort="rating"><span>По рейтингу</span></div>
+          <div class="aside-item ${vs.recipesSort === 'title' ? 'is-active' : ''}" data-sort="title"><span>По алфавиту</span></div>
+        </div>
+      </aside>
+      <div>
+        <div class="toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">${ICONS.search}</span>
+            <input class="search-input" id="search-input" placeholder="Найти рецепты, ингредиенты, категории…" value="${escapeHtml(vs.recipesQuery)}" />
+            <div class="autocomplete" id="autocomplete"></div>
+          </div>
+          <button class="btn btn-primary" id="new-recipe-btn" data-requires="user">${ICONS.plus}<span>Новый рецепт</span></button>
+        </div>
+        <div id="list-area"></div>
+        <div id="pager-area"></div>
+      </div>
+    </div>`;
+
+  // event handlers
+  main.querySelector('#new-recipe-btn').onclick = () => {
+    if (!currentUser()) { openLoginModal(); return; }
+    go('#/recipes/new');
+  };
+  main.querySelectorAll('[data-mode]').forEach(el => el.onclick = () => {
+    if (el.dataset.mode === 'favorites' && !currentUser()) { openLoginModal(); return; }
+    vs.recipesMode = el.dataset.mode; vs.recipesPage = 1; views.recipesList(main);
+  });
+  main.querySelectorAll('[data-sort]').forEach(el => el.onclick = () => { vs.recipesSort = el.dataset.sort; views.recipesList(main); });
+
+  const searchInput = main.querySelector('#search-input');
+  const ac = main.querySelector('#autocomplete');
+  let acTimer;
+  searchInput.oninput = (e) => {
+    vs.recipesQuery = e.target.value; vs.recipesPage = 1;
+    showAutocomplete(e.target.value, ac, searchInput);
+    clearTimeout(acTimer);
+    acTimer = setTimeout(() => loadList(), 250);
+  };
+  searchInput.onfocus = () => showAutocomplete(searchInput.value, ac, searchInput);
+  searchInput.onblur = () => setTimeout(() => ac.classList.remove('is-open'), 150);
+
+  async function loadList() {
+    const listArea = main.querySelector('#list-area');
+    listArea.innerHTML = `<div class="recipes-grid">${Array.from({length: 6}).map(() => '<div class="skeleton skeleton-card"></div>').join('')}</div>`;
+    try {
+      const { items, total, page, perPage } = await fakeApi.getRecipes({
+        q: vs.recipesQuery, mode: vs.recipesMode, sort: vs.recipesSort, page: vs.recipesPage, perPage: 10
+      });
+      if (!items.length) {
+        listArea.innerHTML = `<div class="state">
+          <div class="state-eyebrow">${vs.recipesMode === 'favorites' ? 'В избранном пусто' : 'Ничего не нашли'}</div>
+          <div class="t-display">${vs.recipesMode === 'favorites' ? 'Сохраните любимое' : 'Попробуйте другой запрос'}</div>
+          <p class="t-small">${vs.recipesMode === 'favorites' ? 'Откройте карточку рецепта и нажмите сердечко.' : 'Поиск ищет по названию, описанию, категориям и ингредиентам.'}</p>
+        </div>`;
+        main.querySelector('#pager-area').innerHTML = '';
+        return;
+      }
+      listArea.innerHTML = `<div class="recipes-grid">${items.map(renderRecipeCard).join('')}</div>`;
+      listArea.querySelectorAll('.recipe-card').forEach(card => {
+        card.onclick = (e) => {
+          if (e.target.closest('[data-fav]')) return;
+          go('#/recipes/' + card.dataset.id);
+        };
+      });
+      listArea.querySelectorAll('[data-fav]').forEach(btn => btn.onclick = async (e) => {
+        e.stopPropagation();
+        try { const on = await fakeApi.toggleFavorite(btn.dataset.fav); btn.classList.toggle('is-on', on); btn.innerHTML = on ? ICONS.heartFill : ICONS.heart; toast(on ? 'Добавлено в избранное' : 'Удалено из избранного', 'success'); }
+        catch (err) { handleApiError(err); }
+      });
+      // pagination
+      const pages = Math.ceil(total / perPage);
+      const pager = main.querySelector('#pager-area');
+      if (pages > 1) {
+        pager.innerHTML = `<div class="pagination">
+          <button class="page-btn" ${page === 1 ? 'disabled' : ''} data-page="${page-1}">←</button>
+          ${Array.from({length: pages}).map((_, i) => `<button class="page-btn ${i+1===page?'is-active':''}" data-page="${i+1}">${i+1}</button>`).join('')}
+          <button class="page-btn" ${page === pages ? 'disabled' : ''} data-page="${page+1}">→</button>
+        </div>`;
+        pager.querySelectorAll('[data-page]').forEach(b => b.onclick = () => { vs.recipesPage = +b.dataset.page; loadList(); window.scrollTo({top: 0, behavior: 'smooth'}); });
+      } else pager.innerHTML = '';
+    } catch (err) {
+      listArea.innerHTML = `<div class="state"><div class="state-eyebrow">Ошибка загрузки</div><div class="t-display">Что-то пошло не так</div><p class="t-small">${escapeHtml(err.message || '')}</p><button class="btn btn-primary" id="retry">Повторить</button></div>`;
+      listArea.querySelector('#retry').onclick = loadList;
+    }
+    if (vs.recipesScroll) { window.scrollTo({top: vs.recipesScroll, behavior: 'instant'}); vs.recipesScroll = 0; }
+  }
+  loadList();
+};
+
+function renderRecipeCard(r) {
+  const author = state.users.find(u => u.id === r.author_id);
+  const u = currentUser();
+  const isFav = u && state.favorites.some(f => f.user_id === u.id && f.recipe_id === r.id);
+  const avg = avgRating(r.id);
+  const my = myRating(r.id);
+  return `
+    <div class="card recipe-card card-link" data-id="${r.id}">
+      <div class="photo">${recipePhoto(r.id, r.title)}
+        ${!r.is_public ? `<div class="photo-private" title="Приватный рецепт">${ICONS.lock}</div>` : ''}
+        ${u ? `<button class="btn-icon photo-fav ${isFav ? 'is-on' : ''}" data-fav="${r.id}">${isFav ? ICONS.heartFill : ICONS.heart}</button>` : ''}
+      </div>
+      <div class="body">
+        <h3>${escapeHtml(r.title)}</h3>
+        <div class="tags">
+          ${r.categories.slice(0, 3).map(c => `<span class="tag">${escapeHtml(c.name)}</span>`).join('')}
+        </div>
+        <div class="meta">
+          <span>${ICONS.clock} ${r.cooking_time} мин</span>
+          <span>${ICONS.flame} ${diffLabel(r.difficulty)}</span>
+        </div>
+        <div class="footer">
+          <span class="rating-inline">${ICONS.star}<span>${avg ? avg.toFixed(1) : '—'}</span>${my ? `<span class="my">· вы: ${my}</span>` : ''}</span>
+          <span class="author-inline">${ICONS.user}<span>${escapeHtml(author?.display_name || '—')}</span></span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function diffLabel(d) {
+  return { easy: 'Простой', everyday: 'Повседневный', festive: 'Праздничный', restaurant: 'Ресторанный', signature: 'Авторский' }[d] || d;
+}
+
+function showAutocomplete(q, ac, input) {
+  q = (q || '').trim().toLowerCase();
+  if (!q || q.length < 2) { ac.classList.remove('is-open'); return; }
+  const last = q.split(/\s+/).pop();
+  const cats = state.categories.filter(c => c.name.toLowerCase().includes(last)).slice(0, 6);
+  const ings = state.ingredients.filter(i => i.title.toLowerCase().includes(last)).slice(0, 6);
+  if (!cats.length && !ings.length) { ac.classList.remove('is-open'); return; }
+  ac.innerHTML = [
+    ...cats.map(c => `<div class="autocomplete-item" data-pick="${escapeHtml(c.name)}"><span>${escapeHtml(c.name)}</span><span class="kind">категория</span></div>`),
+    ...ings.map(i => `<div class="autocomplete-item" data-pick="${escapeHtml(i.title)}"><span>${escapeHtml(i.title)}</span><span class="kind">ингредиент</span></div>`)
+  ].join('');
+  ac.classList.add('is-open');
+  ac.querySelectorAll('[data-pick]').forEach(el => el.onmousedown = () => {
+    const words = input.value.split(/\s+/); words.pop(); words.push(el.dataset.pick);
+    input.value = words.join(' ') + ' ';
+    input.dispatchEvent(new Event('input'));
+  });
+}
+
+/* ---- RECIPE DETAIL -------------------------------------- */
+views.recipeDetail = async (main, { id }) => {
+  const u = currentUser();
+  main.innerHTML = `<div class="state"><div class="state-eyebrow">Загружаем</div><div class="skeleton skeleton-card" style="width:100%;max-width:720px"></div></div>`;
+  let r;
+  try { r = await fakeApi.getRecipe(id); } catch (e) { handleApiError(e); main.innerHTML = ''; return; }
+  let servings = r.servings;
+  const author = state.users.find(x => x.id === r.author_id);
+  const avg = avgRating(r.id), my = myRating(r.id);
+  const isFav = u && state.favorites.some(f => f.user_id === u.id && f.recipe_id === r.id);
+  const canEdit = u && (u.id === r.author_id || u.role === 'admin');
+
+  const renderPage = () => {
+    main.innerHTML = `
+      <div class="detail-bar">
+        <button class="btn btn-ghost btn-sm back-btn" id="back-btn">${ICONS.arrowLeft}<span>Назад</span></button>
+        <span class="title">${escapeHtml(r.title)}</span>
+        <span class="spacer"></span>
+        <span class="meta">
+          <span>${ICONS.clock}${r.cooking_time} мин</span><span class="sep"></span>
+          <span>${ICONS.flame}${diffLabel(r.difficulty)}</span><span class="sep"></span>
+          <span class="rating"><span class="star">${ICONS.star}</span>${avg ? avg.toFixed(1) : '—'}</span><span class="sep"></span>
+          <span>${ICONS.user}${escapeHtml(author?.display_name || '—')}</span>
+          ${!r.is_public ? `<span class="sep"></span><span class="tag tag-private">${ICONS.lock}<span>Приватный</span></span>` : ''}
+        </span>
+      </div>
+      <div class="detail-toolbar">
+        <div class="detail-tags">${r.categories.map(c => `<span class="tag">${escapeHtml(c.name)}</span>`).join('')}</div>
+        <div class="detail-actions">
+          ${u ? `<button class="btn ${isFav?'btn-primary':'btn-ghost'} btn-sm" id="fav-btn">${isFav?ICONS.heartFill:ICONS.heart}<span>${isFav?'В избранном':'В избранное'}</span></button>` : ''}
+          ${canEdit ? `<a class="btn btn-ghost btn-sm" href="#/recipes/${r.id}/edit">${ICONS.edit}<span>Редактировать</span></a>` : ''}
+          ${canEdit ? `<button class="btn btn-danger btn-sm" id="delete-btn">${ICONS.trash}<span>Удалить</span></button>` : ''}
+        </div>
+      </div>
+      <div class="detail-grid">
+        <div class="gallery">
+          <div class="main-photo">${recipePhoto(r.id, r.title)}</div>
+          <p class="t-small" style="color:var(--fg-secondary);font-size:15px;margin-top:6px">${escapeHtml(r.description || '')}</p>
+          <h3 class="t-subheading" style="margin-top:14px">Шаги приготовления</h3>
+          <div class="instructions-text">${escapeHtml(Array.isArray(r.instructions) ? r.instructions.join('\n\n') : (r.instructions || ''))}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:24px">
+          <div class="card card-pad-lg">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <h3 class="t-subheading">Ингредиенты</h3>
+              <div class="servings-control">
+                <button id="serv-minus">${ICONS.minus}</button>
+                <span class="value" id="serv-value">${servings}</span>
+                <button id="serv-plus">${ICONS.plus}</button>
+              </div>
+            </div>
+            <div class="ingredients-list" id="ing-list"></div>
+            <p class="t-micro" style="margin-top:10px">на ${servings} порц.</p>
+          </div>
+          <div class="card card-pad-lg">
+            <h3 class="t-subheading" style="margin-bottom:12px">Ваш рейтинг</h3>
+            ${u ? `<div class="rating-widget"><div class="stars" id="rate-stars">${[1,2,3,4,5].map(i => `<button data-v="${i}" class="${i<=my?'is-on':''}">${ICONS.star}</button>`).join('')}</div><span class="t-small" id="rate-info">${my ? `Вы поставили ${my}/5` : 'Поставьте оценку'}</span></div>` : '<p class="t-small">Войдите, чтобы оценить рецепт.</p>'}
+          </div>
+          <div class="card card-pad-lg">
+            <h3 class="t-subheading" style="margin-bottom:12px">Комментарии</h3>
+            <div id="comments-area"></div>
+          </div>
+        </div>
+      </div>`;
+
+    const renderIng = () => {
+      const scale = servings / r.servings;
+      main.querySelector('#serv-value').textContent = servings;
+      main.querySelector('#ing-list').innerHTML = r.ingredients.map(ri => {
+        const ing = state.ingredients.find(x => x.id === ri.ingredient_id);
+        if (!ing) return '';
+        return `<div class="ingredient-row"><span class="name">${escapeHtml(ing.title)}</span><span class="amount">${formatAmount(ri.amount * scale)} ${escapeHtml(ing.unit)}</span></div>`;
+      }).join('');
+    };
+    renderIng();
+    main.querySelector('#serv-plus').onclick = () => { servings = Math.min(99, servings + 1); renderIng(); };
+    main.querySelector('#serv-minus').onclick = () => { servings = Math.max(1, servings - 1); renderIng(); };
+
+    main.querySelector('#back-btn').onclick = () => { sessionState.viewState.recipesScroll = 0; history.length > 1 ? history.back() : go('#/recipes'); };
+
+    const fb = main.querySelector('#fav-btn');
+    if (fb) fb.onclick = async () => {
+      try { const on = await fakeApi.toggleFavorite(r.id); toast(on ? 'В избранном' : 'Удалено', 'success'); views.recipeDetail(main, { id }); } catch (e) { handleApiError(e); }
+    };
+    const db = main.querySelector('#delete-btn');
+    if (db) db.onclick = () => {
+      openModal(`<div class="modal-head"><h2>Удалить рецепт?</h2><button class="modal-close" onclick="closeModal()">${ICONS.x}</button></div>
+        <p class="t-small">«${escapeHtml(r.title)}» будет удалён без возможности восстановления.</p>
+        <div class="form-actions"><button class="btn btn-ghost" onclick="closeModal()">Отмена</button><button class="btn btn-danger" id="confirm-del">Удалить</button></div>`);
+      document.getElementById('confirm-del').onclick = async () => {
+        try { await fakeApi.deleteRecipe(r.id); closeModal(); toast('Рецепт удалён', 'success'); go('#/recipes'); }
+        catch (e) { handleApiError(e); }
+      };
+    };
+    const stars = main.querySelector('#rate-stars');
+    if (stars) stars.querySelectorAll('button').forEach(b => b.onclick = async () => {
+      const v = +b.dataset.v;
+      try { await fakeApi.rateRecipe(r.id, v); toast('Оценка сохранена', 'success'); views.recipeDetail(main, { id }); }
+      catch (e) { handleApiError(e); }
+    });
+
+    renderComments();
+  };
+
+  function renderComments() {
+    const area = main.querySelector('#comments-area');
+    const list = state.comments.filter(c => c.recipe_id === r.id).sort((a, b) => b.created_at.localeCompare(a.created_at));
+    const myComment = u ? list.find(c => c.author_id === u.id) : null;
+    const items = list.map(c => {
+      const author = state.users.find(x => x.id === c.author_id);
+      const canDelete = u && (u.id === c.author_id || u.id === r.author_id || u.role === 'admin');
+      return `<div class="comment"><span class="avatar">${escapeHtml((author?.display_name || '?').slice(0,1))}</span>
+        <div><div class="comment-head"><span class="author">${escapeHtml(author?.display_name || '—')}</span><span class="time">${formatDate(c.created_at)}</span></div>
+        <div class="text">${escapeHtml(c.text)}</div>
+        ${canDelete ? `<div style="margin-top:8px"><button class="btn btn-ghost btn-sm" data-del="${c.id}">${ICONS.trash}<span>Удалить</span></button></div>` : ''}
+        </div></div>`;
+    }).join('') || `<p class="t-small">Пока нет комментариев — будьте первым.</p>`;
+
+    const form = u && !myComment ? `
+      <form id="comment-form" style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+        <textarea class="textarea" maxlength="2000" name="text" required placeholder="Поделитесь впечатлением (до 2000 символов)"></textarea>
+        <div style="display:flex;justify-content:flex-end"><button class="btn btn-primary btn-sm">Отправить</button></div>
+      </form>` : (myComment ? '<p class="t-micro" style="margin-top:10px">Вы уже оставили комментарий — спасибо.</p>' : '<p class="t-micro" style="margin-top:10px">Войдите, чтобы оставить комментарий.</p>');
+
+    area.innerHTML = `<div class="comments-list">${items}</div>${form}`;
+    area.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+      try { await fakeApi.deleteComment(b.dataset.del); toast('Комментарий удалён', 'success'); renderComments(); } catch (e) { handleApiError(e); }
+    });
+    const f = area.querySelector('#comment-form');
+    if (f) f.onsubmit = async (e) => {
+      e.preventDefault();
+      const text = new FormData(e.target).get('text');
+      try { await fakeApi.addComment(r.id, text); toast('Комментарий опубликован', 'success'); renderComments(); }
+      catch (err) { handleApiError(err); }
+    };
+  }
+  renderPage();
+};
+
+function formatAmount(n) { return Math.round(n * 100) / 100; }
+function formatDate(iso) { const d = new Date(iso); return d.toLocaleString('ru', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
+
+/* ---- RECIPE FORM ---------------------------------------- */
+views.recipeForm = async (main, { id } = {}) => {
+  const u = currentUser();
+  if (!u) { openLoginModal(); main.innerHTML = ''; return; }
+  let r = id ? state.recipes.find(x => x.id === id) : null;
+  if (id && !r) { toast('Рецепт не найден', 'error'); go('#/recipes'); return; }
+  if (r && r.author_id !== u.id && u.role !== 'admin') { toast('Нет прав', 'error'); go('#/recipes/' + id); return; }
+  const draft = r ? JSON.parse(JSON.stringify(r)) : {
+    title: '', description: '', cooking_time: 30, difficulty: 'easy', servings: 2,
+    is_public: true, categories: [], ingredients: [], instructions: ''
+  };
+  // normalize legacy array form
+  if (Array.isArray(draft.instructions)) draft.instructions = draft.instructions.join('\n\n');
+
+  const renderForm = () => {
+    main.innerHTML = `
+      <form id="recipe-form" class="card card-pad-lg" style="display:flex;flex-direction:column;gap:18px">
+        <h1 class="t-subheading">${r ? 'Редактирование рецепта' : 'Новый рецепт'}</h1>
+        <div class="field"><label>Название</label><input class="input" name="title" required maxlength="200" value="${escapeHtml(draft.title)}" /></div>
+        <div class="field"><label>Описание</label><textarea class="textarea" name="description" maxlength="2000">${escapeHtml(draft.description || '')}</textarea></div>
+        <div class="field-row">
+          <div class="field"><label>Время (мин)</label><input class="input" name="cooking_time" type="number" min="1" max="9999" required value="${draft.cooking_time}" /></div>
+          <div class="field"><label>Порции</label><input class="input" name="servings" type="number" min="1" max="99" required value="${draft.servings}" /></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Сложность</label><select class="select" name="difficulty">
+            ${['easy','everyday','festive','restaurant','signature'].map(d => `<option value="${d}" ${draft.difficulty===d?'selected':''}>${diffLabel(d)}</option>`).join('')}
+          </select></div>
+          <div class="field"><label>Видимость</label>
+            <label class="checkbox"><input type="checkbox" name="is_public" ${draft.is_public?'checked':''}/> Публичный (виден всем)</label>
+          </div>
+        </div>
+        <div class="field">
+          <label>Категории (не более одной на тип)</label>
+          <div class="tag-input" id="cat-input">
+            <input type="text" id="cat-search" placeholder="${draft.categories.length?'Добавьте ещё…':'Начните вводить категорию…'}" />
+            <div class="autocomplete" id="cat-ac"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Ингредиенты</label>
+          <div id="ing-rows" style="display:flex;flex-direction:column;gap:8px"></div>
+          <button type="button" class="btn btn-ghost btn-sm" id="ing-add" style="margin-top:8px;align-self:flex-start">${ICONS.plus}<span>Добавить ингредиент</span></button>
+        </div>
+        <div class="field">
+          <label>Шаги приготовления</label>
+          <textarea class="textarea" id="instructions-input" name="instructions" style="min-height:180px" maxlength="10000" placeholder="Опишите процесс приготовления в свободной форме">${escapeHtml(draft.instructions || '')}</textarea>
+        </div>
+        <div class="form-actions">
+          <a class="btn btn-ghost" href="#/recipes${r?'/'+r.id:''}">Отмена</a>
+          <button type="submit" class="btn btn-primary">${r ? 'Сохранить' : 'Опубликовать'}</button>
+        </div>
+      </form>`;
+
+    // Categories tag input
+    const catInput = main.querySelector('#cat-input');
+    const catSearch = main.querySelector('#cat-search');
+    const catAc = main.querySelector('#cat-ac');
+    const renderCats = () => {
+      catInput.querySelectorAll('.chip').forEach(c => c.remove());
+      draft.categories.forEach(c => {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.innerHTML = `<span>${escapeHtml(c.name)}</span><button type="button">${ICONS.x}</button>`;
+        chip.querySelector('button').onclick = () => { draft.categories = draft.categories.filter(x => x.id !== c.id); renderCats(); };
+        catInput.insertBefore(chip, catSearch);
+      });
+    };
+    renderCats();
+    catSearch.oninput = () => {
+      const q = catSearch.value.toLowerCase().trim();
+      if (!q) { catAc.classList.remove('is-open'); return; }
+      const list = state.categories.filter(c => c.name.toLowerCase().includes(q)).slice(0, 8);
+      if (!list.length) { catAc.classList.remove('is-open'); return; }
+      catAc.innerHTML = list.map(c => `<div class="autocomplete-item" data-id="${c.id}"><span>${escapeHtml(c.name)}</span><span class="kind">${CATEGORY_TYPES[c.type]}</span></div>`).join('');
+      catAc.classList.add('is-open');
+      catAc.querySelectorAll('[data-id]').forEach(el => el.onmousedown = (ev) => {
+        ev.preventDefault();
+        const cat = state.categories.find(c => c.id === el.dataset.id);
+        draft.categories = draft.categories.filter(c => c.type !== cat.type);
+        draft.categories.push(cat);
+        catSearch.value = ''; catAc.classList.remove('is-open');
+        renderCats();
+      });
+    };
+    catSearch.onblur = () => setTimeout(() => catAc.classList.remove('is-open'), 150);
+
+    // Ingredients
+    const ingRows = main.querySelector('#ing-rows');
+    const renderIngs = () => {
+      ingRows.innerHTML = draft.ingredients.map((ri, idx) => {
+        const ing = state.ingredients.find(x => x.id === ri.ingredient_id);
+        return `<div class="ing-row" data-idx="${idx}">
+          <select class="input">${state.ingredients.filter(i => i.is_system || i.author_id === u.id).map(i => `<option value="${i.id}" ${i.id===ri.ingredient_id?'selected':''}>${escapeHtml(i.title)}</option>`).join('')}</select>
+          <input class="input" type="number" step="0.01" min="0.01" max="100000" value="${ri.amount}" />
+          <span class="t-small">${escapeHtml(ing?.unit || '')}</span>
+          <button type="button" class="remove">${ICONS.x}</button>
+        </div>`;
+      }).join('');
+      ingRows.querySelectorAll('.ing-row').forEach(row => {
+        const idx = +row.dataset.idx;
+        row.querySelector('select').onchange = (e) => { draft.ingredients[idx].ingredient_id = e.target.value; renderIngs(); };
+        row.querySelector('input').onchange = (e) => { draft.ingredients[idx].amount = parseFloat(e.target.value); };
+        row.querySelector('.remove').onclick = () => { draft.ingredients.splice(idx, 1); renderIngs(); };
+      });
+    };
+    renderIngs();
+    main.querySelector('#ing-add').onclick = () => {
+      const first = state.ingredients.find(i => i.is_system || i.author_id === u.id);
+      draft.ingredients.push({ ingredient_id: first?.id, amount: first?.default_amount || 100 });
+      renderIngs();
+    };
+
+    main.querySelector('#instructions-input').oninput = (e) => { draft.instructions = e.target.value; };
+
+    main.querySelector('#recipe-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const payload = {
+        title: fd.get('title').trim(),
+        description: fd.get('description').trim(),
+        cooking_time: parseInt(fd.get('cooking_time')),
+        servings: parseInt(fd.get('servings')),
+        difficulty: fd.get('difficulty'),
+        is_public: fd.get('is_public') === 'on',
+        categories: draft.categories,
+        ingredients: draft.ingredients.filter(i => i.ingredient_id && i.amount > 0),
+        instructions: (draft.instructions || '').trim(),
+      };
+      try {
+        const saved = r ? await fakeApi.updateRecipe(r.id, payload) : await fakeApi.createRecipe(payload);
+        toast(r ? 'Сохранено' : 'Опубликовано', 'success');
+        go('#/recipes/' + saved.id);
+      } catch (err) { handleApiError(err); }
+    };
+  };
+  renderForm();
+};
+
+/* ---- PLANNER ------------------------------------------- */
+let dragRecipeId = null;
+views.planner = async (main) => {
+  const u = currentUser();
+  if (!u) { openLoginModal(); main.innerHTML = '<div class="state"><div class="state-eyebrow">Требуется авторизация</div></div>'; return; }
+  let plan;
+  try { plan = await fakeApi.getMealPlan(); } catch (e) { handleApiError(e); return; }
+  let panelMode = 'all', panelQ = '';
+
+  const render = () => {
+    main.innerHTML = `
+      <div class="page-heading">
+        <h1>Меню на <span class="t-gradient">неделю</span></h1>
+        <div style="display:flex;gap:8px">
+          <a class="btn btn-ghost btn-sm" href="#/shopping-list">${ICONS.cart}<span>Список покупок</span></a>
+          <button class="btn btn-danger btn-sm" id="clear-all">${ICONS.trash}<span>Очистить</span></button>
+        </div>
+      </div>
+      <div class="planner">
+        <div class="planner-panel">
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <div class="segmented" id="planner-mode">
+              <button class="${panelMode==='all'?'is-active':''}" data-mode="all">Все</button>
+              <button class="${panelMode==='favorites'?'is-active':''}" data-mode="favorites">Избранное</button>
+              <button class="${panelMode==='mine'?'is-active':''}" data-mode="mine">Мои</button>
+            </div>
+            <div class="search-wrap" style="flex:1;min-width:200px">
+              <span class="search-icon">${ICONS.search}</span>
+              <input class="search-input" id="panel-q" placeholder="Поиск рецептов…" value="${escapeHtml(panelQ)}" />
+            </div>
+          </div>
+          <div class="scroll" id="panel-list"></div>
+        </div>
+        <div class="planner-grid" id="grid">
+          <div></div>
+          ${DAY_LABELS.map(d => `<div class="planner-head-cell">${d}</div>`).join('')}
+          ${MEAL_KEYS.map(m => `
+            <div class="planner-row-label">${MEAL_LABELS[m]}</div>
+            ${DAY_LABELS.map((_, d) => `<div class="planner-slot" data-key="${d}_${m}"></div>`).join('')}
+          `).join('')}
+        </div>
+      </div>`;
+
+    document.getElementById('clear-all').onclick = () => {
+      openModal(`<div class="modal-head"><h2>Очистить план?</h2><button class="modal-close" onclick="closeModal()">${ICONS.x}</button></div>
+        <p class="t-small">Все слоты будут пусты.</p>
+        <div class="form-actions"><button class="btn btn-ghost" onclick="closeModal()">Отмена</button><button class="btn btn-danger" id="ok">Очистить</button></div>`);
+      document.getElementById('ok').onclick = async () => {
+        for (const k of Object.keys(plan)) plan[k] = [];
+        await fakeApi.updateMealPlan(plan);
+        closeModal(); toast('План очищен', 'success'); render();
+      };
+    };
+
+    document.querySelectorAll('#planner-mode button').forEach(b => b.onclick = () => { panelMode = b.dataset.mode; renderPanel(); document.querySelectorAll('#planner-mode button').forEach(x => x.classList.toggle('is-active', x===b)); });
+    document.getElementById('panel-q').oninput = (e) => { panelQ = e.target.value; renderPanel(); };
+
+    renderPanel();
+    renderGrid();
+  };
+
+  function getPanelRecipes() {
+    const me = currentUser();
+    let list = state.recipes.filter(r => r.is_public || r.author_id === me.id || me.role === 'admin');
+    if (panelMode === 'favorites') {
+      const favs = new Set(state.favorites.filter(f => f.user_id === me.id).map(f => f.recipe_id));
+      list = list.filter(r => favs.has(r.id));
+    } else if (panelMode === 'mine') list = list.filter(r => r.author_id === me.id);
+    if (panelQ) {
+      const words = panelQ.toLowerCase().trim().split(/\s+/);
+      list = list.filter(r => {
+        const hay = (r.title + ' ' + (r.description || '')).toLowerCase();
+        return words.every(w => hay.includes(w));
+      });
+    }
+    return list;
+  }
+
+  function renderPanel() {
+    const list = getPanelRecipes();
+    const panel = document.getElementById('panel-list');
+    if (!list.length) { panel.innerHTML = `<div class="state" style="padding:20px"><p class="t-small">Ничего не найдено</p></div>`; return; }
+    panel.innerHTML = list.map(r => `
+      <div class="planner-recipe" draggable="true" data-id="${r.id}">
+        <div class="photo">${recipePhoto(r.id, r.title)}</div>
+        <div class="name">${escapeHtml(r.title)}</div>
+      </div>`).join('');
+    panel.querySelectorAll('.planner-recipe').forEach(el => {
+      el.ondragstart = (e) => { dragRecipeId = el.dataset.id; e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('text/plain', el.dataset.id); el.style.opacity = 0.5; };
+      el.ondragend = () => { el.style.opacity = 1; dragRecipeId = null; };
+    });
+  }
+  function renderGrid() {
+    document.querySelectorAll('.planner-slot').forEach(slot => {
+      const key = slot.dataset.key;
+      const items = plan[key] || [];
+      slot.classList.remove('is-empty');
+      if (!items.length) { slot.classList.add('is-empty'); slot.innerHTML = `<span>—</span>`; }
+      else slot.innerHTML = items.map((it, idx) => {
+        const r = state.recipes.find(x => x.id === it.recipe_id);
+        if (!r) return '';
+        return `<div class="planner-slot-item">
+          <div class="thumb">${recipePhoto(r.id, r.title)}</div>
+          <div class="info"><span class="name">${escapeHtml(r.title)}</span>
+            <span class="servings-mini">порц.: <input type="number" min="1" max="99" value="${it.servings}" data-key="${key}" data-idx="${idx}" /></span>
+          </div>
+          <button class="remove" data-rmkey="${key}" data-rmidx="${idx}">${ICONS.x}</button>
+        </div>`;
+      }).join('');
+      slot.ondragover = (e) => { e.preventDefault(); slot.classList.add('is-dragover'); };
+      slot.ondragleave = () => slot.classList.remove('is-dragover');
+      slot.ondrop = async (e) => {
+        e.preventDefault(); slot.classList.remove('is-dragover');
+        const id = dragRecipeId || e.dataTransfer.getData('text/plain');
+        if (!id) return;
+        const r = state.recipes.find(x => x.id === id);
+        if (!r) return;
+        plan[key] = [...(plan[key] || []), { recipe_id: id, servings: r.servings }];
+        await fakeApi.updateMealPlan(plan);
+        renderGrid(); toast('Добавлено в план', 'success');
+      };
+    });
+    document.querySelectorAll('input[data-key]').forEach(inp => inp.onchange = async (e) => {
+      const k = inp.dataset.key, i = +inp.dataset.idx;
+      plan[k][i].servings = Math.max(1, Math.min(99, parseInt(e.target.value) || 1));
+      await fakeApi.updateMealPlan(plan);
+      toast('Сохранено', 'success');
+    });
+    document.querySelectorAll('button[data-rmkey]').forEach(btn => btn.onclick = async () => {
+      const k = btn.dataset.rmkey, i = +btn.dataset.rmidx;
+      plan[k].splice(i, 1);
+      await fakeApi.updateMealPlan(plan);
+      renderGrid(); toast('Удалено', 'success');
+    });
+  }
+  render();
+};
+
+/* ---- SHOPPING LIST -------------------------------------- */
+views.shoppingList = async (main) => {
+  const u = currentUser();
+  if (!u) { openLoginModal(); main.innerHTML = ''; return; }
+  main.innerHTML = `<div class="page-heading">
+    <h1>Список <span class="t-gradient">покупок</span></h1>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm" id="copy-btn">${ICONS.copy}<span>Скопировать</span></button>
+      <button class="btn btn-primary btn-sm" id="print-btn">${ICONS.print}<span>Распечатать</span></button>
+    </div>
+  </div>
+  <div id="sl-area"><div class="skeleton" style="height:200px"></div></div>`;
+  let grouped;
+  try { grouped = await fakeApi.getShoppingList(); } catch (e) { handleApiError(e); return; }
+  const area = main.querySelector('#sl-area');
+  const cats = Object.keys(grouped);
+  if (!cats.length) {
+    area.innerHTML = `<div class="state">
+      <div class="state-eyebrow">Пустой план</div>
+      <div class="t-display">Добавьте блюда в планировщик</div>
+      <p class="t-small">Список покупок собирается автоматически из плана меню.</p>
+      <a class="btn btn-primary" href="#/planner">${ICONS.calendar}<span>К планировщику</span></a>
+    </div>`;
+    return;
+  }
+  area.innerHTML = `<div class="shopping-table">${cats.map(cat => `
+    <div class="shopping-group-head">${escapeHtml(cat)}</div>
+    ${grouped[cat].map(row => `<div class="shopping-row">
+      <span>${escapeHtml(row.ingredient.title)}</span>
+      <span class="qty">${formatAmount(row.amount)}</span>
+      <span class="unit">${escapeHtml(row.ingredient.unit)}</span>
+    </div>`).join('')}
+  `).join('')}</div>`;
+  main.querySelector('#copy-btn').onclick = async () => {
+    const text = cats.map(cat => cat + '\n' + grouped[cat].map(r => `  ${r.ingredient.title}  ${formatAmount(r.amount)} ${r.ingredient.unit}`).join('\n')).join('\n\n');
+    try { await navigator.clipboard.writeText(text); toast('Скопировано в буфер', 'success'); }
+    catch { toast('Не удалось скопировать', 'error'); }
+  };
+  main.querySelector('#print-btn').onclick = () => window.print();
+};
+
+/* ---- INGREDIENTS ---------------------------------------- */
+views.ingredients = async (main) => {
+  let q = '', category = '', authorId = '';
+  const u = currentUser();
+  const render = async () => {
+    main.innerHTML = `<div class="page-heading">
+      <h1>Ингредиенты</h1>
+      ${u ? `<button class="btn btn-primary btn-sm" id="add-btn">${ICONS.plus}<span>Новый ингредиент</span></button>` : ''}
+    </div>
+    <div class="toolbar">
+      <div class="search-wrap"><span class="search-icon">${ICONS.search}</span><input class="search-input" id="i-q" placeholder="Найти ингредиент…" value="${escapeHtml(q)}" /></div>
+      <select class="select" id="i-cat" style="max-width:240px">
+        <option value="">Все категории</option>
+        ${INGREDIENT_CATEGORIES.map(c => `<option value="${c}" ${c===category?'selected':''}>${c}</option>`).join('')}
+      </select>
+      ${u && u.role === 'admin' ? `<select class="select" id="i-author" style="max-width:200px">
+        <option value="">Все авторы</option>
+        <option value="system">Системные</option>
+        ${state.users.map(usr => `<option value="${usr.id}" ${authorId===usr.id?'selected':''}>${escapeHtml(usr.display_name)}</option>`).join('')}
+      </select>` : ''}
+    </div>
+    <div id="i-list"></div>`;
+    main.querySelector('#i-q').oninput = (e) => { q = e.target.value; loadList(); };
+    main.querySelector('#i-cat').onchange = (e) => { category = e.target.value; loadList(); };
+    if (u && u.role === 'admin') main.querySelector('#i-author').onchange = (e) => { authorId = e.target.value; loadList(); };
+    const ab = main.querySelector('#add-btn');
+    if (ab) ab.onclick = () => openIngredientForm();
+    loadList();
+  };
+  async function loadList() {
+    const area = main.querySelector('#i-list');
+    area.innerHTML = `<div class="skeleton" style="height:200px"></div>`;
+    try {
+      const list = await fakeApi.getIngredients({ q, category, authorId });
+      if (!list.length) {
+        area.innerHTML = `<div class="state"><div class="state-eyebrow">Не найдено</div><p class="t-small">Попробуйте изменить фильтры.</p></div>`;
+        return;
+      }
+      const groups = {};
+      list.forEach(i => { (groups[i.category] = groups[i.category] || []).push(i); });
+      area.innerHTML = `<div class="shopping-table">${Object.keys(groups).map(cat => `
+        <div class="shopping-group-head">${escapeHtml(cat)}</div>
+        ${groups[cat].map(i => `<div class="shopping-row">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="color:var(--fg-primary)">${escapeHtml(i.title)}${i.is_system ? '' : ` <span class="tag tag-accent">пользовательский</span>`}</span>
+            <span class="t-micro">по умолч.: ${i.default_amount} ${escapeHtml(i.unit)}${!i.is_system && i.author_id ? ' · ' + escapeHtml(state.users.find(u => u.id === i.author_id)?.display_name || '') : ''}</span>
+          </div>
+          <div style="display:flex;gap:6px;justify-self:end">
+            ${canEditIng(i) ? `<button class="btn-icon-sm" data-edit="${i.id}" title="Редактировать">${ICONS.edit}</button>` : ''}
+            ${canDeleteIng(i) ? `<button class="btn-icon-sm is-danger" data-del="${i.id}" title="Удалить">${ICONS.trash}</button>` : ''}
+          </div>
+          <span></span>
+        </div>`).join('')}
+      `).join('')}</div>`;
+      area.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openIngredientForm(b.dataset.edit));
+      area.querySelectorAll('[data-del]').forEach(b => b.onclick = () => deleteIng(b.dataset.del));
+    } catch (e) { handleApiError(e); }
+  }
+  function canEditIng(i) {
+    if (!u) return false;
+    if (i.is_system) return u.role === 'admin';
+    return i.author_id === u.id || u.role === 'admin';
+  }
+  function canDeleteIng(i) { return canEditIng(i); }
+  function openIngredientForm(id) {
+    const existing = id ? state.ingredients.find(x => x.id === id) : null;
+    const draft = existing ? { ...existing } : { title: '', unit: 'г', default_amount: 100, category: 'Овощи', is_system: false };
+    openModal(`<div class="modal-head"><h2>${existing ? 'Редактировать' : 'Новый'} ингредиент</h2><button class="modal-close" onclick="closeModal()">${ICONS.x}</button></div>
+      <form id="ing-form" class="modal-body">
+        <div class="field"><label>Название</label><input class="input" name="title" required minlength="2" maxlength="200" value="${escapeHtml(draft.title)}" /></div>
+        <div class="field-row">
+          <div class="field"><label>Единица</label><input class="input" name="unit" required maxlength="20" value="${escapeHtml(draft.unit)}" /></div>
+          <div class="field"><label>Дефолт. кол-во</label><input class="input" type="number" step="0.01" min="0.01" max="100000" name="default_amount" required value="${draft.default_amount}" /></div>
+        </div>
+        <div class="field"><label>Категория</label><select class="select" name="category">${INGREDIENT_CATEGORIES.map(c => `<option ${c===draft.category?'selected':''}>${c}</option>`).join('')}</select></div>
+        ${u && u.role === 'admin' ? `<label class="checkbox"><input type="checkbox" name="is_system" ${draft.is_system?'checked':''}/> Системный</label>` : ''}
+        <div class="form-actions"><button type="button" class="btn btn-ghost" onclick="closeModal()">Отмена</button><button type="submit" class="btn btn-primary">${existing ? 'Сохранить' : 'Создать'}</button></div>
+      </form>`);
+    document.getElementById('ing-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const payload = {
+        title: fd.get('title').trim(), unit: fd.get('unit').trim(),
+        default_amount: parseFloat(fd.get('default_amount')),
+        category: fd.get('category'), is_system: fd.get('is_system') === 'on'
+      };
+      try {
+        if (existing) await fakeApi.updateIngredient(existing.id, payload);
+        else await fakeApi.createIngredient(payload);
+        closeModal(); toast('Сохранено', 'success'); loadList();
+      } catch (err) { handleApiError(err); }
+    };
+  }
+  async function deleteIng(id) {
+    const i = state.ingredients.find(x => x.id === id);
+    openModal(`<div class="modal-head"><h2>Удалить «${escapeHtml(i.title)}»?</h2><button class="modal-close" onclick="closeModal()">${ICONS.x}</button></div>
+      <p class="t-small">Удалить ингредиент можно только если он не используется в рецептах.</p>
+      <div class="form-actions"><button class="btn btn-ghost" onclick="closeModal()">Отмена</button><button class="btn btn-danger" id="ok">Удалить</button></div>`);
+    document.getElementById('ok').onclick = async () => {
+      try { await fakeApi.deleteIngredient(id); closeModal(); toast('Удалено', 'success'); loadList(); }
+      catch (e) { handleApiError(e); }
+    };
+  }
+  render();
+};
+
+/* ---- CATEGORIES (admin) --------------------------------- */
+views.categories = async (main) => {
+  const u = currentUser();
+  if (!u || u.role !== 'admin') { toast('Только для администратора', 'error'); go('#/recipes'); return; }
+  const render = () => {
+    const groups = {};
+    state.categories.forEach(c => { (groups[c.type] = groups[c.type] || []).push(c); });
+    main.innerHTML = `<div class="page-heading">
+      <h1>Категории рецептов</h1>
+      <button class="btn btn-primary btn-sm" id="add-cat">${ICONS.plus}<span>Новая категория</span></button>
+    </div>
+    ${Object.keys(CATEGORY_TYPES).map(t => `
+      <div class="card card-pad-lg" style="margin-bottom:16px">
+        <h3 class="t-subheading" style="margin-bottom:14px">${CATEGORY_TYPES[t]}</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          ${(groups[t] || []).map(c => `<span class="tag" style="font-size:13px;padding:6px 12px">
+            <span>${escapeHtml(c.name)}</span>
+            <button class="btn-icon" style="width:20px;height:20px;background:transparent;box-shadow:none" data-edit="${c.id}">${ICONS.edit}</button>
+            <button class="btn-icon" style="width:20px;height:20px;background:transparent;box-shadow:none" data-del="${c.id}">${ICONS.x}</button>
+          </span>`).join('') || '<p class="t-small">Категорий нет.</p>'}
+        </div>
+      </div>`).join('')}`;
+    main.querySelector('#add-cat').onclick = () => openCatForm();
+    main.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openCatForm(b.dataset.edit));
+    main.querySelectorAll('[data-del]').forEach(b => b.onclick = () => deleteCat(b.dataset.del));
+  };
+  function openCatForm(id) {
+    const existing = id ? state.categories.find(c => c.id === id) : null;
+    const draft = existing ? { ...existing } : { name: '', description: '', type: 'meal_role' };
+    openModal(`<div class="modal-head"><h2>${existing?'Редактировать':'Новая'} категория</h2><button class="modal-close" onclick="closeModal()">${ICONS.x}</button></div>
+      <form id="cat-form" class="modal-body">
+        <div class="field"><label>Название</label><input class="input" name="name" required value="${escapeHtml(draft.name)}" /></div>
+        <div class="field"><label>Тип</label><select class="select" name="type" ${existing?'disabled':''}>${Object.entries(CATEGORY_TYPES).map(([k,v]) => `<option value="${k}" ${k===draft.type?'selected':''}>${v}</option>`).join('')}</select></div>
+        <div class="field"><label>Описание</label><textarea class="textarea" name="description">${escapeHtml(draft.description||'')}</textarea></div>
+        <div class="form-actions"><button type="button" class="btn btn-ghost" onclick="closeModal()">Отмена</button><button type="submit" class="btn btn-primary">Сохранить</button></div>
+      </form>`);
+    document.getElementById('cat-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const payload = { name: fd.get('name').trim(), description: fd.get('description').trim(), type: fd.get('type') };
+      try { if (existing) await fakeApi.updateCategory(existing.id, payload); else await fakeApi.createCategory(payload); closeModal(); toast('Сохранено', 'success'); render(); }
+      catch (err) { handleApiError(err); }
+    };
+  }
+  function deleteCat(id) {
+    const c = state.categories.find(x => x.id === id);
+    openModal(`<div class="modal-head"><h2>Удалить «${escapeHtml(c.name)}»?</h2><button class="modal-close" onclick="closeModal()">${ICONS.x}</button></div>
+      <p class="t-small">Удалить можно только если категория не используется в рецептах.</p>
+      <div class="form-actions"><button class="btn btn-ghost" onclick="closeModal()">Отмена</button><button class="btn btn-danger" id="ok">Удалить</button></div>`);
+    document.getElementById('ok').onclick = async () => {
+      try { await fakeApi.deleteCategory(id); closeModal(); toast('Удалено', 'success'); render(); }
+      catch (e) { handleApiError(e); }
+    };
+  }
+  render();
+};
+
+/* ---- DASHBOARD ----------------------------------------- */
+const chartInstances = [];
+views.dashboard = async (main) => {
+  chartInstances.forEach(c => c.destroy && c.destroy()); chartInstances.length = 0;
+  const u = currentUser();
+  main.innerHTML = `<div class="page-heading">
+    <h1>Статистика <span class="t-gradient">проекта</span></h1>
+  </div>
+  <div id="dash-area"><div class="skeleton" style="height:120px;margin-bottom:16px"></div><div class="skeleton" style="height:300px"></div></div>`;
+  let stats;
+  try { stats = await fakeApi.getDashboardStats(); } catch (e) { handleApiError(e); return; }
+  const area = main.querySelector('#dash-area');
+
+  const kpis = [{ label: 'Всего рецептов', value: stats.totalRecipes }];
+  if (u) {
+    kpis.push({ label: 'Мои рецепты', value: stats.myRecipes });
+    kpis.push({ label: 'Мои комментарии', value: stats.myComments });
+  }
+  if (u && u.role === 'admin') {
+    kpis.push({ label: 'Пользователей', value: stats.totalUsers });
+    kpis.push({ label: 'Всего комментариев', value: stats.totalComments });
+  }
+
+  area.innerHTML = `
+    <div class="kpi-grid">${kpis.map(k => `<div class="kpi"><span class="label">${k.label}</span><span class="value">${k.value}</span></div>`).join('')}</div>
+    <div class="dash-grid">
+      <div class="dash-block">
+        <h3>Топ-10 по рейтингу</h3>
+        <div class="top-list">${stats.top10.map((r, i) => `<div class="top-list-row"><span class="rank">#${i+1}</span><a class="name" href="#/recipes/${r.id}">${escapeHtml(r.title)}</a><span class="val">${ICONS.star}${r.rating.toFixed(1)}</span></div>`).join('') || '<p class="t-small">Пока нет данных</p>'}</div>
+      </div>
+      ${u ? `<div class="dash-block">
+        <h3>Топ-10 из избранного</h3>
+        <div class="top-list">${stats.topFav.length ? stats.topFav.map((r, i) => `<div class="top-list-row"><span class="rank">#${i+1}</span><a class="name" href="#/recipes/${r.id}">${escapeHtml(r.title)}</a><span class="val">${ICONS.star}${r.rating.toFixed(1)}</span></div>`).join('') : '<p class="t-small">В избранном ещё ничего нет.</p>'}</div>
+      </div>` : ''}
+      <div class="dash-block">
+        <h3>По основному ингредиенту</h3>
+        <div class="dash-chart"><canvas id="chart-main"></canvas></div>
+      </div>
+      <div class="dash-block">
+        <h3>По национальной кухне</h3>
+        <div class="dash-chart"><canvas id="chart-cuisine"></canvas></div>
+      </div>
+      ${u ? `<div class="dash-block">
+        <h3>Заполненность плана меню</h3>
+        <div class="mini-week-grid">${DAY_LABELS.map((d, di) => `<div class="mini-week-day">
+          <span class="day-label">${d}</span>
+          ${MEAL_KEYS.map(m => `<div class="mini-slot ${stats.planFill[`${di}_${m}`] ? 'is-filled' : ''}" title="${MEAL_LABELS[m]}"></div>`).join('')}
+        </div>`).join('')}</div>
+        <p class="t-micro">Фиолетовая плитка — слот заполнен.</p>
+      </div>` : ''}
+      ${u && u.role === 'admin' ? `<div class="dash-block">
+        <h3>Топ-10 пользователей по рейтингам</h3>
+        <div class="top-list">${stats.topUsersByRating.map((r, i) => `<div class="top-list-row"><span class="rank">#${i+1}</span><span class="name">${escapeHtml(r.name)}</span><span class="val">${r.count}</span></div>`).join('') || '<p class="t-small">Пока нет данных</p>'}</div>
+      </div>
+      <div class="dash-block">
+        <h3>Топ-10 пользователей по комментариям</h3>
+        <div class="top-list">${stats.topUsersByComments.map((r, i) => `<div class="top-list-row"><span class="rank">#${i+1}</span><span class="name">${escapeHtml(r.name)}</span><span class="val">${r.count}</span></div>`).join('') || '<p class="t-small">Пока нет данных</p>'}</div>
+      </div>` : ''}
+    </div>`;
+
+  const chartCommon = {
+    type: 'bar',
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#17181c', titleColor: '#fff', bodyColor: '#d4d4d4', borderColor: 'rgba(255,255,255,0.06)', borderWidth: 1 } },
+      scales: {
+        x: { ticks: { color: '#a9a9ac', font: { size: 11 } }, grid: { display: false } },
+        y: { ticks: { color: '#a9a9ac', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.06)' }, beginAtZero: true, precision: 0 }
+      }
+    }
+  };
+  const makeChart = (canvasId, data) => {
+    if (typeof Chart === 'undefined') return;
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+    const grad = ctx.getContext('2d').createLinearGradient(0, 0, 0, 240);
+    grad.addColorStop(0, '#a279e6'); grad.addColorStop(1, '#7d79e7');
+    chartInstances.push(new Chart(ctx, {
+      ...chartCommon,
+      data: { labels: data.map(d => d[0]), datasets: [{ data: data.map(d => d[1]), backgroundColor: grad, borderRadius: 6, maxBarThickness: 28 }] }
+    }));
+  };
+  setTimeout(() => { makeChart('chart-main', stats.byMainIng); makeChart('chart-cuisine', stats.byCuisine); }, 80);
+};
+
+/* --------- BOOTSTRAP ------------------------------------- */
+loadState();
+setRoleAttr();
+if (!location.hash) location.hash = '#/recipes';
+handleRoute();
+</script>
+</body>
+</html>

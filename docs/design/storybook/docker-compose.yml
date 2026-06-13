@@ -1,0 +1,17 @@
+services:
+  storybook:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cookbook-storybook
+    ports:
+      - "6006:6006"
+    volumes:
+      - .:/app
+      - storybook_node_modules:/app/node_modules
+    command: pnpm storybook --host 0.0.0.0 --no-open
+    tty: true
+    stdin_open: true
+
+volumes:
+  storybook_node_modules:

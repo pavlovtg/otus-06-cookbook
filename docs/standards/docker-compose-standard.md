@@ -33,3 +33,4 @@
 - Формат подстановки в `docker-compose.yml` обязателен для всех переменных: `${VAR_NAME:?NO_VAR_NAME}`.
 - `container_name` каждого сервиса собирается из `COMPOSE_NAME` как префикс: `${COMPOSE_NAME}-<service>`.
 - `ASPNETCORE_URLS` для всех .NET-сервисов задаётся единой переменной через `DEFAULT_HTTP_PORT`.
+- Секция `environment` использует map-синтаксис (`KEY: VALUE`); list-синтаксис (`- KEY=VALUE`) запрещён.

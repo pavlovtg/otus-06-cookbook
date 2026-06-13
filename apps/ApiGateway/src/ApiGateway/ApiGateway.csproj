@@ -9,6 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Shared\src\Shared.Database\Shared.Database.csproj" />
+    <ProjectReference Include="..\..\..\Shared\src\Shared.Hosting\Shared.Hosting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Yarp.ReverseProxy" Version="2.3.0" />
   </ItemGroup>
 

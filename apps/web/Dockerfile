@@ -1,13 +1,13 @@
 FROM node:lts-alpine AS deps
 WORKDIR /app
-RUN npm install -g pnpm
+RUN corepack enable pnpm
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 FROM node:lts-alpine AS builder
 WORKDIR /app
 ENV CI=true
-RUN npm install -g pnpm
+RUN corepack enable pnpm
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm build

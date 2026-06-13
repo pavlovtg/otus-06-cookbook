@@ -4,8 +4,8 @@
 #
 # Branch protection rules (настроить в Settings → Branches → main):
 #   - Require status checks to pass before merging
-#   - Добавить все jobs: lint-cookbook, lint-apigateway, lint-web,
-#     lint-markdown, lint-python, test-cookbook, test-apigateway, test-web,
+#   - Добавить все jobs: lint-backend, lint-web,
+#     lint-markdown, lint-python, test-backend, test-web,
 #     build-cookbook, build-apigateway, build-web, e2e
 #   - Require branches to be up to date before merging
 
@@ -21,25 +21,15 @@ env:
 
 jobs:
   # ─── Lint ─────────────────────────────────────────────────────────────────
-  lint-cookbook:
+  lint-backend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
       - uses: actions/setup-dotnet@v4.3.1
         with:
           dotnet-version: '10.0.x'
-      - name: Lint C# (Cookbook)
-        run: dotnet format --verify-no-changes apps/Cookbook/Cookbook.slnx
-
-  lint-apigateway:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4.2.2
-      - uses: actions/setup-dotnet@v4.3.1
-        with:
-          dotnet-version: '10.0.x'
-      - name: Lint C# (ApiGateway)
-        run: dotnet format --verify-no-changes apps/ApiGateway/ApiGateway.slnx
+      - name: Lint C# (Backend)
+        run: dotnet format --verify-no-changes apps/Backend.slnx
 
   lint-web:
     runs-on: ubuntu-latest
@@ -81,25 +71,15 @@ jobs:
         run: ruff check tests/e2e/ tests/ui/
 
   # ─── Test ─────────────────────────────────────────────────────────────────
-  test-cookbook:
+  test-backend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
       - uses: actions/setup-dotnet@v4.3.1
         with:
           dotnet-version: '10.0.x'
-      - name: Test (Cookbook)
-        run: dotnet test apps/Cookbook/Cookbook.slnx
-
-  test-apigateway:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4.2.2
-      - uses: actions/setup-dotnet@v4.3.1
-        with:
-          dotnet-version: '10.0.x'
-      - name: Test (ApiGateway)
-        run: dotnet test apps/ApiGateway/ApiGateway.slnx
+      - name: Test (Backend)
+        run: dotnet test apps/Backend.slnx
 
   test-web:
     runs-on: ubuntu-latest
@@ -123,20 +103,20 @@ jobs:
 
   # ─── Build ────────────────────────────────────────────────────────────────
   build-cookbook:
-    needs: [lint-cookbook, test-cookbook]
+    needs: [lint-backend, test-backend]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
       - name: Build Docker image (Cookbook)
-        run: docker build apps/Cookbook
+        run: docker build -f apps/Cookbook/Dockerfile apps/
 
   build-apigateway:
-    needs: [lint-apigateway, test-apigateway]
+    needs: [lint-backend, test-backend]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
       - name: Build Docker image (ApiGateway)
-        run: docker build apps/ApiGateway
+        run: docker build -f apps/ApiGateway/Dockerfile apps/
 
   build-web:
     needs: [lint-web, test-web]

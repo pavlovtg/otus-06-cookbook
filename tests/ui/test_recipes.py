@@ -1,0 +1,123 @@
+import re
+
+from playwright.sync_api import Page, expect
+
+
+BASE_URL_KEY = "base_url"
+
+VALID_RECIPE = {
+    "title": "UI-тест борщ",
+    "description": "Классический борщ для UI-теста",
+    "cookingTime": "60",
+    "servings": "4",
+    "instructions": "1. Сварить бульон. 2. Добавить овощи.",
+}
+
+
+def test_recipe_list_shows_cards(page: Page, base_url: str) -> None:
+    """10.1 Список рецептов отображается с карточками."""
+    page.goto(base_url)
+
+    cards = page.locator(".recipe-card")
+    expect(cards.first).to_be_visible()
+
+
+def test_recipe_list_card_has_title(page: Page, base_url: str) -> None:
+    """10.1 Карточка рецепта содержит название."""
+    page.goto(base_url)
+
+    card = page.locator(".recipe-card").first
+    title = card.locator("h3")
+    expect(title).to_be_visible()
+    assert title.inner_text() != ""
+
+
+def test_recipe_card_click_navigates_to_detail(page: Page, base_url: str) -> None:
+    """10.2 Клик на карточку переходит на детальную страницу."""
+    page.goto(base_url)
+
+    card = page.locator(".recipe-card").first
+    card.click()
+
+    expect(page).to_have_url(re.compile(r"/recipes/"))
+    expect(page.locator(".detail-bar")).to_be_visible()
+
+
+def test_recipe_detail_page_shows_info(page: Page, base_url: str) -> None:
+    """10.3 Детальная страница рецепта отображает информацию."""
+    page.goto(base_url)
+    page.locator(".recipe-card").first.click()
+
+    expect(page.locator(".detail-bar .title")).to_be_visible()
+    expect(page.locator(".instructions-text")).to_be_visible()
+
+
+def test_recipe_detail_back_button_returns_to_list(page: Page, base_url: str) -> None:
+    """10.4 Кнопка «Назад» возвращает к списку."""
+    page.goto(base_url)
+    page.locator(".recipe-card").first.click()
+
+    page.locator(".back-btn").click()
+
+    expect(page).to_have_url(base_url + "/")
+    expect(page.locator(".recipes-grid")).to_be_visible()
+
+
+def test_create_recipe_success(page: Page, base_url: str) -> None:
+    """10.5 Успешное создание рецепта."""
+    page.goto(f"{base_url}/recipes/new")
+
+    page.fill("#title", VALID_RECIPE["title"])
+    page.fill("#description", VALID_RECIPE["description"])
+    page.fill("#cookingTime", VALID_RECIPE["cookingTime"])
+    page.fill("#servings", VALID_RECIPE["servings"])
+    page.select_option("#difficulty", "everyday")
+    page.fill("#instructions", VALID_RECIPE["instructions"])
+
+    page.click("button[type=submit]")
+
+    expect(page).to_have_url(re.compile(r"/recipes/(?!new)"))
+    expect(page.locator(".detail-bar .title")).to_contain_text(VALID_RECIPE["title"])
+
+
+def test_create_recipe_validation_error(page: Page, base_url: str) -> None:
+    """10.6 Ошибка валидации при создании рецепта с пустым названием."""
+    page.goto(f"{base_url}/recipes/new")
+
+    page.fill("#title", "")
+    page.fill("#description", VALID_RECIPE["description"])
+    page.fill("#cookingTime", VALID_RECIPE["cookingTime"])
+    page.fill("#servings", VALID_RECIPE["servings"])
+    page.fill("#instructions", VALID_RECIPE["instructions"])
+
+    page.click("button[type=submit]")
+
+    expect(page.locator(".error-text")).to_be_visible()
+    expect(page).to_have_url(f"{base_url}/recipes/new")
+
+
+def test_edit_recipe_prefills_form(page: Page, base_url: str) -> None:
+    """10.7 Форма редактирования предзаполнена данными рецепта."""
+    page.goto(base_url)
+    page.locator(".recipe-card").first.click()
+
+    recipe_title = page.locator(".detail-bar .title").inner_text()
+
+    page.locator("a", has_text="Редактировать").click()
+
+    expect(page.locator("#title")).to_have_value(recipe_title)
+
+
+def test_delete_recipe_cancel(page: Page, base_url: str) -> None:
+    """10.9 Отмена удаления рецепта."""
+    page.goto(base_url)
+    page.locator(".recipe-card").first.click()
+
+    page.locator("[data-testid='delete-recipe-trigger']").click()
+
+    expect(page.locator(".modal-backdrop.is-open")).to_be_visible()
+
+    page.locator("button", has_text="Отмена").click()
+
+    expect(page.locator(".modal-backdrop.is-open")).not_to_be_visible()
+    expect(page.locator(".detail-bar")).to_be_visible()

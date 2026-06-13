@@ -1,0 +1,79 @@
+/* ============================================================
+   motion.css — emil-design-eng moushen system
+   ============================================================ */
+
+/* Hover only on real pointers */
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { transform: translateY(-1px); }
+  .recipe-card:hover h3 { color: #fff; }
+}
+
+/* Click feedback — instant scale */
+.btn, .btn-icon, .btn-icon-sm, .page-btn, .stars button, .servings-control button {
+  transition: transform 120ms var(--ease-out), background 160ms var(--ease-out), color 160ms var(--ease-out), box-shadow 200ms var(--ease-out);
+}
+.btn:active, .btn-icon:active, .btn-icon-sm:active, .page-btn:active, .servings-control button:active {
+  transform: scale(0.97);
+}
+
+/* Star bounce on toggle */
+.stars button.is-on {
+  animation: starPop 240ms var(--ease-out);
+}
+@keyframes starPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+/* Stagger entry for grid cards */
+.recipes-grid > * {
+  animation: cardIn 320ms var(--ease-out) both;
+}
+.recipes-grid > *:nth-child(1) { animation-delay: 0ms; }
+.recipes-grid > *:nth-child(2) { animation-delay: 40ms; }
+.recipes-grid > *:nth-child(3) { animation-delay: 80ms; }
+.recipes-grid > *:nth-child(4) { animation-delay: 120ms; }
+.recipes-grid > *:nth-child(5) { animation-delay: 160ms; }
+.recipes-grid > *:nth-child(6) { animation-delay: 200ms; }
+.recipes-grid > *:nth-child(7) { animation-delay: 240ms; }
+.recipes-grid > *:nth-child(8) { animation-delay: 280ms; }
+.recipes-grid > *:nth-child(9) { animation-delay: 320ms; }
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Count-up bump for KPI */
+.kpi .value { transition: transform 160ms var(--ease-out); }
+
+/* Bar chart draw (line/path) */
+.chart-bar {
+  transform-origin: bottom;
+  animation: barGrow 600ms var(--ease-out) both;
+}
+@keyframes barGrow {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+/* Modal: grows from center */
+.modal { transform-origin: center center; }
+
+/* Autocomplete: grows from top */
+.autocomplete { transform-origin: top center; }
+
+/* Toast slides up from bottom-right */
+.toast { transform-origin: bottom right; }
+
+/* Reduced motion: remove movement, keep fades only */
+@media (prefers-reduced-motion: reduce) {
+  .recipes-grid > *,
+  .stars button.is-on,
+  .chart-bar {
+    animation: none !important;
+  }
+  .btn:active, .btn-icon:active, .btn-icon-sm:active, .page-btn:active {
+    transform: none !important;
+  }
+}

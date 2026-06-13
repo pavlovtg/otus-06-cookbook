@@ -2,14 +2,19 @@
 
 ## Текущая задача
 
-**Создание локальных CI-скриптов** (10.06.2026)
+Нет активных задач.
 
-## Что сделано в этой сессии
+## Что сделано в этой задаче
 
-- Создано 10 job-скриптов в `scripts/jobs/`
-- Создано 4 агрегирующих скрипта: `lint.sh`, `test.sh`, `build.sh`, `run-ci.sh`
-- Все скрипты: `#!/bin/sh`, `set -e`, `chmod +x`
-- `test-e2e.sh` и `test-ui.sh`: `trap 'docker compose down' EXIT` для cleanup
+Архивирование openspec-изменения `recipes-crud`.
+
+- Синхронизированы delta specs → main specs:
+  - `openspec/specs/recipe-list/spec.md` — обновлён (3 изменения)
+  - `openspec/specs/recipe-create/spec.md` — создан
+  - `openspec/specs/recipe-delete/spec.md` — создан
+  - `openspec/specs/recipe-detail/spec.md` — создан
+  - `openspec/specs/recipe-edit/spec.md` — создан
+- Изменение перемещено в `openspec/changes/archive/2026-06-13-recipes-crud/`
 
 ## Следующий шаг
 

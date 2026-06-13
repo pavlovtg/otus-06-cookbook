@@ -1,4 +1,10 @@
-export const metadata = {
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+
+const inter = Inter({ subsets: ["latin", "cyrillic"] });
+
+export const metadata: Metadata = {
   title: "Кулинарная книга",
   description: "Коллекция рецептов",
 };
@@ -9,8 +15,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ru">
-      <body>{children}</body>
+    <html lang="ru" className={inter.className}>
+      <body>
+        <div className="app">
+          <header className="header">
+            <div className="header-inner">
+              <div className="brand">
+                <div className="brand-mark">К</div>
+                Кулинарная книга
+              </div>
+            </div>
+          </header>
+          <main className="main">{children}</main>
+        </div>
+      </body>
     </html>
   );
 }

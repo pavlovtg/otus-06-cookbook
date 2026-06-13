@@ -27,7 +27,7 @@ env/
 
 # Бинарные файлы
 *.snk
-*.png
+#*.png
 *.svg
 *.jpg
 *.ico

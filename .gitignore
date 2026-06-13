@@ -27,7 +27,7 @@ env/
 
 # Бинарные файлы
 *.snk
-*.png
+#*.png
 *.svg
 *.jpg
 *.ico
@@ -74,3 +74,6 @@ vitest.config.*.timestamp*
 
 # macOS
 .DS_Store
+
+# Storybook
+storybook-static/

@@ -1,9 +1,9 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Recipes.Adapters.Postgresql;
+using Recipes.Adapters.Web;
 using Recipes.Application;
 using Recipes.Application.Ports;
 using Recipes.Infrastructure;
+using Shared.Hosting.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,11 +13,9 @@ builder.Services.AddControllers()
         manager.FeatureProviders.Add(new InternalControllersFeatureProvider());
     });
 builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
-builder.Services.AddDbContext<RecipeRepository>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("Recipes"),
-        o => o.MigrationsHistoryTable(HistoryRepository.DefaultTableName, RecipeRepository.DefaultSchema)));
+builder.Services.AddDatabase(builder.Configuration);
 
 builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
@@ -28,13 +26,15 @@ var app = builder.Build();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
+await app.MigrateDatabaseAsync<Program, RecipeRepository>();
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<RecipeRepository>();
-    await db.Database.MigrateAsync();
+    await RecipeSeeder.SeedAsync(db);
 }
 
-app.MapHealthChecks("/api/health/v1");
+app.MapHealthChecks("/api/v1/health");
 app.MapControllers();
 
 await app.RunAsync();

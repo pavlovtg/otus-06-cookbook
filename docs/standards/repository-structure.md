@@ -27,16 +27,25 @@ docs/
 │       ├── general/  # общие AR
 │       └── <domain>/ # домен: сервис, bounded context, технология
 ├── contributing/     # руководства для участников репозитория
+├── design/
+│   ├── guide/        # style guide продукта
+│   ├── mockup/       # макет интерфейса + дизайн токены
+│   └── storybook/    # Storybook компонентов для разработчиков
 └── standards/        # стандарты реализации
 apps/                 # приложения (сервисы, фронтенд и т.д.)
+├── Backend.slnx      # единый .NET solution для всех backend-проектов
 ├── <BoundedContext>/ # backend bounded context (.NET)
-│   ├── <BoundedContext>.slnx
 │   ├── src/          # исходники сервисов bounded context
 │   └── tests/        # тестовые проекты bounded context
+├── Shared/           # общие .NET-библиотеки (bounded context)
+│   ├── src/          # Shared.Database, Shared.Hosting, Shared.Testing
+│   └── tests/        # тесты shared-библиотек
 └── web/              # frontend + BFF (Next.js, TypeScript) — см. стандарт frontend-project-structure
 infrastructure/
 └── docker-compose/   # конфигурационные файлы сервисов для docker compose
     └── <service>/    # конфиги конкретного сервиса (nginx.conf, init.sql и т.д.)
+scripts/              # скрипты запуска CI и вспомогательные скрипты
+├── jobs/             # отдельные шаги CI (lint, build, test по стеку)
 tests/                # тесты
 openspec/             # спецификации и схемы (OpenSpec)
 ARCHITECTURE.md       # единая точка входа в архитектурную документацию
@@ -56,9 +65,14 @@ README.md             # описание проекта
 | `docs/ai/prompts/` | История промтов, использованных для настройки агента |
 | `docs/architecture/` | Обзор архитектуры, компоненты, диаграммы, AR |
 | `docs/contributing/` | Руководства для участников: процессы реализации фич и технических задач |
+| `docs/design/guide/` | Style guide продукта: цвета, типографика, токены |
+| `docs/design/mockup/` | Макет интерфейса (статический прототип) и design tokens (стили) |
+| `docs/design/storybook/` | Storybook компонентов — живой каталог UI для разработчиков |
 | `docs/standards/` | Стандарты реализации — обязательные соглашения по коду и документации |
 | `apps/` | Исходный код приложений и сервисов |
 | `infrastructure/docker-compose/` | Конфигурационные файлы сервисов для docker compose (nginx.conf, init.sql и т.д.) |
+| `scripts/` | Скрипты запуска CI и вспомогательные скрипты |
+| `scripts/jobs/` | Отдельные шаги CI: lint, build, test по стеку |
 | `tests/` | Тесты (интеграционные, e2e и т.д.) |
 | `openspec/` | Спецификации изменений, схемы, шаблоны OpenSpec |
 | `ARCHITECTURE.md` | Единая точка входа: индексы AR, стандартов, ADR |

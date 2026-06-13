@@ -8,6 +8,10 @@ describe("RecipeCard", () => {
       id: "11111111-0000-0000-0000-000000000002",
       title: "Борщ",
       description: "Классический украинский борщ со свёклой",
+      cookingTime: 120,
+      difficulty: "everyday" as const,
+      servings: 6,
+      instructions: "1. Сварить бульон.",
     };
 
     render(<RecipeCard recipe={recipe} />);

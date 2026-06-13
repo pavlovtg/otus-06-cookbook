@@ -21,11 +21,11 @@
 ### Формат URI
 
 ```
-{VERB} /api/{resource}/v{major_version}/{id}/{sub_resource}?{query_parameters}
+{VERB} /api/v{major_version}/{resource}/{id}/{sub_resource}?{query_parameters}
 ```
 
+- `{major_version}` — мажорная версия API сервиса (например, `v1`).
 - `{resource}` — существительное во множественном числе, kebab-case (например, `recipes`, `shopping-lists`).
-- `{major_version}` — мажорная версия API (например, `v1`).
 - `{id}` — идентификатор конкретного экземпляра ресурса (необязательный).
 - `{sub_resource}` — вложенный/дочерний ресурс (необязательный); используется только для композиционно связанных ресурсов.
 - `{query_parameters}` — параметры запроса (необязательные).
