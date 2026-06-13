@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
 import { deleteIngredient } from "@/lib/bff/ingredients";
 
 interface Props {
@@ -11,7 +10,6 @@ interface Props {
 }
 
 export function DeleteIngredientButton({ id, title }: Props) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
@@ -21,8 +19,8 @@ export function DeleteIngredientButton({ id, title }: Props) {
     setErrorDetail(null);
     try {
       await deleteIngredient(id);
-      router.refresh();
       setOpen(false);
+      window.location.assign(window.location.pathname + window.location.search);
     } catch (err: unknown) {
       setLoading(false);
       const detail =

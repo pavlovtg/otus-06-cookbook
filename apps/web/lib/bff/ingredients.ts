@@ -18,7 +18,8 @@ export async function getIngredients(params?: {
   page?: number;
   pageSize?: number;
 }): Promise<PagedIngredient> {
-  const url = new URL(SERVER_BASE);
+  const base = typeof window === "undefined" ? SERVER_BASE : CLIENT_BASE;
+  const url = new URL(base, typeof window === "undefined" ? undefined : window.location.origin);
   if (params?.title) url.searchParams.set("title", params.title);
   if (params?.category) url.searchParams.set("category", params.category);
   if (params?.page != null) url.searchParams.set("page", String(params.page));
@@ -35,7 +36,8 @@ export async function getIngredients(params?: {
 }
 
 export async function getIngredient(id: string): Promise<Ingredient> {
-  const response = await fetch(`${SERVER_BASE}/${id}`, { cache: "no-store" });
+  const base = typeof window === "undefined" ? SERVER_BASE : CLIENT_BASE;
+  const response = await fetch(`${base}/${id}`, { cache: "no-store" });
 
   if (!response.ok) {
     throw new Error(`Failed to fetch ingredient ${id}: ${response.status}`);

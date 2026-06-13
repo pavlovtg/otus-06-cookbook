@@ -20,10 +20,8 @@
 
 ## Выполнено (последнее)
 
-- `recipe-ingredients` секция 8 — все тесты (8.1–8.12):
-  - Unit: `RecipeIngredientTests`, `RecipeWithIngredientsTests`
-  - Integration: `RecipeRepositoryTests` (ингредиенты + `GetRecipesUsingIngredientAsync`)
-  - Microservice: POST/GET/PUT с ингредиентами, DELETE блокировка
-  - Frontend unit: `RecipeIngredientDtoSchema`
-  - E2E: создание с ингредиентами, убирание ингредиента
-  - Фикс: `RecipeRequest` с `Ingredients: []` во всех тестах, `VALID_RECIPE` в e2e
+- Фикс UI-тестов ингредиентов и формы рецепта (четыре этапа):
+  1. Добавлены BFF-роуты Next.js: `app/api/cookbook/v1/ingredients/route.ts` (GET, POST), `app/api/cookbook/v1/ingredients/[id]/route.ts` (GET, PUT, DELETE)
+  2. Заменён `router.refresh()` на `router.push(pathname+search)` в `IngredientModal.tsx` и `DeleteIngredientButton.tsx`
+  3. Добавлен `export const dynamic = "force-dynamic"` в 4 страницы: `(public)/page.tsx`, `ingredients/page.tsx`, `recipes/[id]/page.tsx`, `recipes/[id]/edit/page.tsx`
+  4. `getIngredients`/`getIngredient` в `lib/bff/ingredients.ts` — выбор base по `typeof window`: SSR → `SERVER_BASE`, CSR → `CLIENT_BASE` (иначе браузер не мог достучаться до `http://api-gateway`)

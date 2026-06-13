@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
 import {
   IngredientRequestSchema,
   IngredientCategory,
@@ -20,7 +19,6 @@ interface Props {
 const CATEGORY_OPTIONS = IngredientCategory.options;
 
 export function IngredientModal({ ingredient, trigger }: Props) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -72,7 +70,7 @@ export function IngredientModal({ ingredient, trigger }: Props) {
       }
       setOpen(false);
       setLoading(false);
-      router.refresh();
+      window.location.assign(window.location.pathname + window.location.search);
     } catch {
       setLoading(false);
     }

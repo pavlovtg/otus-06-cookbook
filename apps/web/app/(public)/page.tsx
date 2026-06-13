@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import logger from "@/lib/logger";
 import { getRecipes } from "@/lib/bff/recipes";
