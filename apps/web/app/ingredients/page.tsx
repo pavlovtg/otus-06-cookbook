@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { getIngredients } from "@/lib/bff/ingredients";
 import {
   IngredientCategory,
@@ -26,7 +27,8 @@ export default async function IngredientsPage({ searchParams }: Props) {
       title: title || undefined,
       category: categoryValue,
     });
-  } catch {
+  } catch (err) {
+    logger.error({ err }, "Failed to load ingredients");
     fetchError = "Не удалось загрузить список ингредиентов.";
   }
 
