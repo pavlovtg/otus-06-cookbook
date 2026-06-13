@@ -4,7 +4,9 @@ namespace Recipes.Application.Ports;
 
 internal interface IIngredientRepository : IUnitOfWorkRepository
 {
-    IAsyncEnumerable<Ingredient> GetIngredientsAsync(
+    Task<PagedResult<Ingredient>> GetIngredientsAsync(
+        int page,
+        int pageSize,
         string? titleFilter = null,
         IngredientCategory? categoryFilter = null,
         CancellationToken cancellationToken = default);

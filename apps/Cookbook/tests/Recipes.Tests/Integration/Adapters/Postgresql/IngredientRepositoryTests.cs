@@ -77,10 +77,10 @@ public sealed class IngredientRepositoryTests : IAsyncLifetime
         Assert.Null(result);
     }
 
-    // ── GetAllAsync ──────────────────────────────────────────────────────────
+    // ── GetIngredientsAsync (paged) ──────────────────────────────────────────
 
     [Fact]
-    public async Task GetAllAsync_ReturnsAllPersistedIngredients()
+    public async Task GetIngredientsAsync_ReturnsAllPersistedIngredients()
     {
         var i1 = NewIngredient();
         var i2 = NewIngredient();
@@ -93,16 +93,14 @@ public sealed class IngredientRepositoryTests : IAsyncLifetime
         }
 
         await using var readCtx = _factory.Create();
-        var all = new List<Ingredient>();
-        await foreach (var i in readCtx.GetIngredientsAsync(titleFilter: null, categoryFilter: null))
-            all.Add(i);
+        var result = await readCtx.GetIngredientsAsync(page: 1, pageSize: 100);
 
-        Assert.Contains(all, i => i.Id == i1.Id);
-        Assert.Contains(all, i => i.Id == i2.Id);
+        Assert.Contains(result.Items, i => i.Id == i1.Id);
+        Assert.Contains(result.Items, i => i.Id == i2.Id);
     }
 
     [Fact]
-    public async Task GetAllAsync_WithTitleFilter_ReturnsFiltered()
+    public async Task GetIngredientsAsync_WithTitleFilter_ReturnsFiltered()
     {
         var morkov = Ingredient.Create(IngredientId.New(), "Морковь", "г", 100f, IngredientCategory.Vegetables);
         var kartofel = Ingredient.Create(IngredientId.New(), "Картофель", "г", 200f, IngredientCategory.Vegetables);
@@ -115,16 +113,14 @@ public sealed class IngredientRepositoryTests : IAsyncLifetime
         }
 
         await using var readCtx = _factory.Create();
-        var all = new List<Ingredient>();
-        await foreach (var i in readCtx.GetIngredientsAsync(titleFilter: "морк"))
-            all.Add(i);
+        var result = await readCtx.GetIngredientsAsync(page: 1, pageSize: 100, titleFilter: "морк");
 
-        Assert.Contains(all, i => i.Id == morkov.Id);
-        Assert.DoesNotContain(all, i => i.Id == kartofel.Id);
+        Assert.Contains(result.Items, i => i.Id == morkov.Id);
+        Assert.DoesNotContain(result.Items, i => i.Id == kartofel.Id);
     }
 
     [Fact]
-    public async Task GetAllAsync_WithCategoryFilter_ReturnsFiltered()
+    public async Task GetIngredientsAsync_WithCategoryFilter_ReturnsFiltered()
     {
         var vegetable = Ingredient.Create(IngredientId.New(), "Свёкла", "г", 150f, IngredientCategory.Vegetables);
         var meat = Ingredient.Create(IngredientId.New(), "Говядина", "г", 300f, IngredientCategory.MeatAndPoultry);
@@ -137,12 +133,73 @@ public sealed class IngredientRepositoryTests : IAsyncLifetime
         }
 
         await using var readCtx = _factory.Create();
-        var all = new List<Ingredient>();
-        await foreach (var i in readCtx.GetIngredientsAsync(categoryFilter: IngredientCategory.Vegetables))
-            all.Add(i);
+        var result = await readCtx.GetIngredientsAsync(page: 1, pageSize: 100, categoryFilter: IngredientCategory.Vegetables);
 
-        Assert.Contains(all, i => i.Id == vegetable.Id);
-        Assert.DoesNotContain(all, i => i.Id == meat.Id);
+        Assert.Contains(result.Items, i => i.Id == vegetable.Id);
+        Assert.DoesNotContain(result.Items, i => i.Id == meat.Id);
+    }
+
+    [Fact]
+    public async Task GetIngredientsAsync_ReturnsCorrectTotalAndSlice()
+    {
+        // Создаём 5 ингредиентов
+        var ingredients = Enumerable.Range(1, 5)
+            .Select(n => Ingredient.Create(IngredientId.New(), $"Ингредиент {n:D2}", "г", 100f, IngredientCategory.Vegetables))
+            .ToList();
+
+        await using (var writeCtx = _factory.Create())
+        {
+            foreach (var i in ingredients)
+                await writeCtx.CreateAsync(i);
+            await writeCtx.CommitAsync();
+        }
+
+        await using var readCtx = _factory.Create();
+        var result = await readCtx.GetIngredientsAsync(page: 2, pageSize: 2, categoryFilter: IngredientCategory.Vegetables);
+
+        Assert.Equal(5, result.Total);
+        Assert.Equal(2, result.Items.Count);
+        Assert.Equal(2, result.Page);
+        Assert.Equal(2, result.PageSize);
+    }
+
+    [Fact]
+    public async Task GetIngredientsAsync_LastPage_ReturnsRemainingItems()
+    {
+        var ingredients = Enumerable.Range(1, 3)
+            .Select(n => Ingredient.Create(IngredientId.New(), $"Остаток {n:D2}", "г", 100f, IngredientCategory.Legumes))
+            .ToList();
+
+        await using (var writeCtx = _factory.Create())
+        {
+            foreach (var i in ingredients)
+                await writeCtx.CreateAsync(i);
+            await writeCtx.CommitAsync();
+        }
+
+        await using var readCtx = _factory.Create();
+        var result = await readCtx.GetIngredientsAsync(page: 2, pageSize: 2, categoryFilter: IngredientCategory.Legumes);
+
+        Assert.Equal(3, result.Total);
+        Assert.Single(result.Items);
+    }
+
+    [Fact]
+    public async Task GetIngredientsAsync_PageBeyondData_ReturnsEmptyItems()
+    {
+        var ingredient = NewIngredient();
+
+        await using (var writeCtx = _factory.Create())
+        {
+            await writeCtx.CreateAsync(ingredient);
+            await writeCtx.CommitAsync();
+        }
+
+        await using var readCtx = _factory.Create();
+        var result = await readCtx.GetIngredientsAsync(page: 100, pageSize: 100);
+
+        Assert.Empty(result.Items);
+        Assert.True(result.Total >= 1);
     }
 
     // ── UpdateAsync ──────────────────────────────────────────────────────────

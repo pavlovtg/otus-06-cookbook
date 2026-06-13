@@ -12,25 +12,75 @@ VALID_INGREDIENT = {
 }
 
 
+def _get_paged(base_url: str, **params) -> dict:
+    response = httpx.get(f"{base_url}{BASE}", params=params)
+    assert response.status_code == 200
+    data = response.json()
+    assert "items" in data
+    assert "total" in data
+    assert "page" in data
+    assert "pageSize" in data
+    return data
+
+
 def test_ingredients_list_returns_200(base_url: str) -> None:
     response = httpx.get(f"{base_url}{BASE}")
 
     assert response.status_code == 200
-    ingredients = response.json()
-    assert isinstance(ingredients, list)
+    data = response.json()
+    assert isinstance(data, dict)
+    assert "items" in data
+    assert "total" in data
+    assert "page" in data
+    assert "pageSize" in data
+
+
+def test_ingredients_list_default_page_and_page_size(base_url: str) -> None:
+    data = _get_paged(base_url)
+
+    assert data["page"] == 1
+    assert data["pageSize"] == 100
 
 
 def test_ingredients_list_items_have_required_fields(base_url: str) -> None:
-    response = httpx.get(f"{base_url}{BASE}")
-    ingredients = response.json()
+    data = _get_paged(base_url)
 
-    for ingredient in ingredients:
+    for ingredient in data["items"]:
         assert "id" in ingredient
         assert "title" in ingredient
         assert "unit" in ingredient
         assert "defaultAmount" in ingredient
         assert "category" in ingredient
         assert "isSystem" in ingredient
+
+
+def test_ingredients_list_with_explicit_page_and_page_size(base_url: str) -> None:
+    data = _get_paged(base_url, page=2, pageSize=50)
+
+    assert data["page"] == 2
+    assert data["pageSize"] == 50
+
+
+def test_ingredients_list_page_size_clamped_to_1000(base_url: str) -> None:
+    data = _get_paged(base_url, pageSize=5000)
+
+    assert data["pageSize"] == 1000
+
+
+def test_ingredients_list_returns_400_when_page_is_zero(base_url: str) -> None:
+    response = httpx.get(f"{base_url}{BASE}", params={"page": 0})
+    assert response.status_code == 400
+
+
+def test_ingredients_list_returns_400_when_page_size_is_zero(base_url: str) -> None:
+    response = httpx.get(f"{base_url}{BASE}", params={"pageSize": 0})
+    assert response.status_code == 400
+
+
+def test_ingredients_list_returns_400_when_title_exceeds_200_chars(base_url: str) -> None:
+    long_title = "А" * 201
+    response = httpx.get(f"{base_url}{BASE}", params={"title": long_title})
+    assert response.status_code == 400
 
 
 def test_create_ingredient_returns_201(base_url: str) -> None:
@@ -138,19 +188,13 @@ def test_delete_unknown_ingredient_returns_400(base_url: str) -> None:
 def test_get_ingredients_filter_by_title(base_url: str) -> None:
     httpx.post(f"{base_url}{BASE}", json=VALID_INGREDIENT)
 
-    response = httpx.get(f"{base_url}{BASE}", params={"title": "Тестовая"})
-
-    assert response.status_code == 200
-    data = response.json()
-    assert all("Тестовая" in item["title"] for item in data)
+    data = _get_paged(base_url, title="Тестовая")
+    assert all("Тестовая" in item["title"] for item in data["items"])
 
 
 def test_get_ingredients_filter_by_category(base_url: str) -> None:
-    response = httpx.get(f"{base_url}{BASE}", params={"category": "vegetables"})
-
-    assert response.status_code == 200
-    data = response.json()
-    assert all(item["category"] == "vegetables" for item in data)
+    data = _get_paged(base_url, category="vegetables")
+    assert all(item["category"] == "vegetables" for item in data["items"])
 
 
 def test_get_ingredients_filter_by_invalid_category_returns_400(base_url: str) -> None:

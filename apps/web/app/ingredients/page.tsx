@@ -4,33 +4,88 @@ import {
   IngredientCategory,
   IngredientCategoryLabels,
   type Ingredient,
+  type PagedIngredient,
 } from "@/lib/schemas/ingredient";
 import { IngredientModal } from "./IngredientModal";
 import { DeleteIngredientButton } from "./DeleteIngredientButton";
 
 interface Props {
-  searchParams: Promise<{ title?: string; category?: string }>;
+  searchParams: Promise<{ title?: string; category?: string; page?: string }>;
+}
+
+function Paginator({
+  page,
+  total,
+  pageSize,
+  searchParams,
+}: {
+  page: number;
+  total: number;
+  pageSize: number;
+  searchParams: { title?: string; category?: string };
+}) {
+  const totalPages = Math.ceil(total / pageSize);
+  if (totalPages <= 1) return null;
+
+  const buildHref = (p: number) => {
+    const params = new URLSearchParams();
+    if (searchParams.title) params.set("title", searchParams.title);
+    if (searchParams.category) params.set("category", searchParams.category);
+    params.set("page", String(p));
+    return `/ingredients?${params.toString()}`;
+  };
+
+  return (
+    <nav className="paginator" aria-label="Пагинация" data-testid="paginator">
+      {page > 1 && (
+        <a href={buildHref(page - 1)} className="paginator-btn" aria-label="Предыдущая страница">
+          ‹
+        </a>
+      )}
+      {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+        <a
+          key={p}
+          href={buildHref(p)}
+          className={`paginator-btn${p === page ? " is-active" : ""}`}
+          aria-current={p === page ? "page" : undefined}
+          data-testid={`paginator-page-${p}`}
+        >
+          {p}
+        </a>
+      ))}
+      {page < totalPages && (
+        <a href={buildHref(page + 1)} className="paginator-btn" aria-label="Следующая страница">
+          ›
+        </a>
+      )}
+    </nav>
+  );
 }
 
 export default async function IngredientsPage({ searchParams }: Props) {
-  const { title, category } = await searchParams;
+  const { title, category, page: pageParam } = await searchParams;
+
+  const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
 
   const categoryValue = IngredientCategory.safeParse(category).success
     ? (category as (typeof IngredientCategory.options)[number])
     : undefined;
 
-  let ingredients: Ingredient[] = [];
+  let result: PagedIngredient | null = null;
   let fetchError: string | null = null;
 
   try {
-    ingredients = await getIngredients({
+    result = await getIngredients({
       title: title || undefined,
       category: categoryValue,
+      page,
     });
   } catch (err) {
     logger.error({ err }, "Failed to load ingredients");
     fetchError = "Не удалось загрузить список ингредиентов.";
   }
+
+  const ingredients: Ingredient[] = result?.items ?? [];
 
   return (
     <>
@@ -56,6 +111,7 @@ export default async function IngredientsPage({ searchParams }: Props) {
               name="title"
               defaultValue={title ?? ""}
               placeholder="Найти ингредиент…"
+              maxLength={200}
               data-testid="filter-title"
             />
           </div>
@@ -100,49 +156,60 @@ export default async function IngredientsPage({ searchParams }: Props) {
           <p className="t-small">Попробуйте изменить фильтры.</p>
         </div>
       ) : (
-        <div className="ingredients-list">
-          {ingredients.map((ingredient) => (
-            <div
-              key={ingredient.id}
-              className="ingredient-item ingredient-row"
-              data-category={ingredient.category}
-            >
-              <div>
-                <span
-                  className="ingredient-title name"
-                  style={{ color: "var(--fg-primary)" }}
-                >
-                  {ingredient.title}
-                </span>
-                <span
-                  className="t-micro"
-                  style={{ display: "block", marginTop: 2 }}
-                >
-                  {IngredientCategoryLabels[ingredient.category]} ·{" "}
-                  {ingredient.defaultAmount} {ingredient.unit}
-                  {ingredient.isSystem && " · системный"}
-                </span>
+        <>
+          <div className="ingredients-list">
+            {ingredients.map((ingredient) => (
+              <div
+                key={ingredient.id}
+                className="ingredient-item ingredient-row"
+                data-category={ingredient.category}
+              >
+                <div>
+                  <span
+                    className="ingredient-title name"
+                    style={{ color: "var(--fg-primary)" }}
+                  >
+                    {ingredient.title}
+                  </span>
+                  <span
+                    className="t-micro"
+                    style={{ display: "block", marginTop: 2 }}
+                  >
+                    {IngredientCategoryLabels[ingredient.category]} ·{" "}
+                    {ingredient.defaultAmount} {ingredient.unit}
+                    {ingredient.isSystem && " · системный"}
+                  </span>
+                </div>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <IngredientModal
+                    ingredient={ingredient}
+                    trigger={
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        data-testid="edit-ingredient-trigger"
+                      >
+                        Редактировать
+                      </button>
+                    }
+                  />
+                  <DeleteIngredientButton
+                    id={ingredient.id}
+                    title={ingredient.title}
+                  />
+                </div>
               </div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <IngredientModal
-                  ingredient={ingredient}
-                  trigger={
-                    <button
-                      className="btn btn-ghost btn-sm"
-                      data-testid="edit-ingredient-trigger"
-                    >
-                      Редактировать
-                    </button>
-                  }
-                />
-                <DeleteIngredientButton
-                  id={ingredient.id}
-                  title={ingredient.title}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+
+          {result && (
+            <Paginator
+              page={result.page}
+              total={result.total}
+              pageSize={result.pageSize}
+              searchParams={{ title, category }}
+            />
+          )}
+        </>
       )}
     </>
   );

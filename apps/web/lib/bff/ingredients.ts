@@ -1,11 +1,12 @@
 import {
   IngredientSchema,
   IngredientRequestSchema,
+  PagedIngredientSchema,
   type Ingredient,
   type IngredientCategory,
   type IngredientRequest,
+  type PagedIngredient,
 } from "@/lib/schemas/ingredient";
-import { z } from "zod";
 
 const GATEWAY_URL = process.env["GATEWAY_URL"] ?? "http://api-gateway";
 const SERVER_BASE = `${GATEWAY_URL}/api/cookbook/v1/ingredients`;
@@ -14,10 +15,14 @@ const CLIENT_BASE = `/api/cookbook/v1/ingredients`;
 export async function getIngredients(params?: {
   title?: string;
   category?: IngredientCategory;
-}): Promise<Ingredient[]> {
+  page?: number;
+  pageSize?: number;
+}): Promise<PagedIngredient> {
   const url = new URL(SERVER_BASE);
   if (params?.title) url.searchParams.set("title", params.title);
   if (params?.category) url.searchParams.set("category", params.category);
+  if (params?.page != null) url.searchParams.set("page", String(params.page));
+  if (params?.pageSize != null) url.searchParams.set("pageSize", String(params.pageSize));
 
   const response = await fetch(url.toString(), { cache: "no-store" });
 
@@ -26,7 +31,7 @@ export async function getIngredients(params?: {
   }
 
   const data: unknown = await response.json();
-  return z.array(IngredientSchema).parse(data);
+  return PagedIngredientSchema.parse(data);
 }
 
 export async function getIngredient(id: string): Promise<Ingredient> {

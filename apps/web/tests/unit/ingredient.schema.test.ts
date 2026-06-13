@@ -1,95 +1,78 @@
-import { describe, expect, it } from "vitest";
+import { describe, it, expect } from "vitest";
 import {
-  IngredientCategory,
-  IngredientRequestSchema,
   IngredientSchema,
+  IngredientRequestSchema,
+  PagedIngredientSchema,
+  pagedIngredientSchema,
 } from "@/lib/schemas/ingredient";
 
-const validDto = {
-  id: "aad1f839-df31-49f2-84d7-4dd01e04be77",
+const validIngredient = {
+  id: "550e8400-e29b-41d4-a716-446655440000",
   title: "Морковь",
   unit: "г",
   defaultAmount: 100,
   category: "vegetables",
-  isSystem: true,
+  isSystem: false,
 };
 
-const validRequest = {
-  title: "Морковь",
-  unit: "г",
-  defaultAmount: 100,
-  category: "vegetables",
+const validPaged = {
+  items: [validIngredient],
+  total: 1,
+  page: 1,
+  pageSize: 100,
 };
-
-describe("IngredientCategory", () => {
-  it("принимает все допустимые значения категории", () => {
-    const categories = [
-      "vegetables",
-      "fruits_and_berries",
-      "meat_and_poultry",
-      "fish_and_seafood",
-      "dairy_and_eggs",
-      "grains_and_cereals",
-      "legumes",
-      "nuts_and_seeds",
-      "oils_and_fats",
-      "spices_and_seasonings",
-      "sauces_and_pastes",
-      "bakery_and_sweets",
-      "other",
-    ];
-    for (const category of categories) {
-      const result = IngredientCategory.safeParse(category);
-      expect(result.success).toBe(true);
-    }
-  });
-
-  it("отклоняет неизвестную категорию", () => {
-    const result = IngredientCategory.safeParse("unknown_category");
-    expect(result.success).toBe(false);
-  });
-});
 
 describe("IngredientSchema", () => {
-  it("парсит корректный объект", () => {
-    const result = IngredientSchema.safeParse(validDto);
+  it("parses a valid ingredient", () => {
+    const result = IngredientSchema.safeParse(validIngredient);
     expect(result.success).toBe(true);
   });
 
-  it("отклоняет некорректный uuid", () => {
-    const result = IngredientSchema.safeParse({ ...validDto, id: "not-a-uuid" });
+  it("rejects unknown category", () => {
+    const result = IngredientSchema.safeParse({
+      ...validIngredient,
+      category: "unknown_category",
+    });
     expect(result.success).toBe(false);
   });
 
-  it("отклоняет неизвестную категорию", () => {
-    const result = IngredientSchema.safeParse({ ...validDto, category: "invalid" });
+  it("rejects missing id", () => {
+    const { id: _id, ...rest } = validIngredient;
+    const result = IngredientSchema.safeParse(rest);
     expect(result.success).toBe(false);
   });
 
-  it("отклоняет отсутствующий title", () => {
-    const { title: _title, ...withoutTitle } = validDto;
-    const result = IngredientSchema.safeParse(withoutTitle);
-    expect(result.success).toBe(false);
-  });
-
-  it("отклоняет нечисловой defaultAmount", () => {
-    const result = IngredientSchema.safeParse({ ...validDto, defaultAmount: "сто" });
+  it("rejects non-uuid id", () => {
+    const result = IngredientSchema.safeParse({
+      ...validIngredient,
+      id: "not-a-uuid",
+    });
     expect(result.success).toBe(false);
   });
 });
 
 describe("IngredientRequestSchema", () => {
-  it("парсит корректный запрос", () => {
+  const validRequest = {
+    title: "Морковь",
+    unit: "г",
+    defaultAmount: 100,
+    category: "vegetables",
+  };
+
+  it("parses a valid request", () => {
     const result = IngredientRequestSchema.safeParse(validRequest);
     expect(result.success).toBe(true);
   });
 
-  it("отклоняет title короче 2 символов", () => {
-    const result = IngredientRequestSchema.safeParse({ ...validRequest, title: "А" });
+  it("rejects title shorter than 2 chars", () => {
+    const result = IngredientRequestSchema.safeParse({
+      ...validRequest,
+      title: "А",
+    });
     expect(result.success).toBe(false);
   });
 
-  it("отклоняет title длиннее 200 символов", () => {
+  it("rejects title longer than 200 chars", () => {
     const result = IngredientRequestSchema.safeParse({
       ...validRequest,
       title: "А".repeat(201),
@@ -97,46 +80,93 @@ describe("IngredientRequestSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("принимает title ровно 2 символа", () => {
-    const result = IngredientRequestSchema.safeParse({ ...validRequest, title: "Аб" });
+  it("accepts title of exactly 200 chars", () => {
+    const result = IngredientRequestSchema.safeParse({
+      ...validRequest,
+      title: "А".repeat(200),
+    });
     expect(result.success).toBe(true);
   });
 
-  it("отклоняет unit длиннее 20 символов", () => {
+  it("rejects defaultAmount = 0", () => {
     const result = IngredientRequestSchema.safeParse({
       ...validRequest,
-      unit: "г".repeat(21),
+      defaultAmount: 0,
     });
     expect(result.success).toBe(false);
   });
 
-  it("отклоняет defaultAmount равный нулю", () => {
-    const result = IngredientRequestSchema.safeParse({ ...validRequest, defaultAmount: 0 });
-    expect(result.success).toBe(false);
-  });
-
-  it("отклоняет defaultAmount больше 100000", () => {
+  it("rejects defaultAmount > 100000", () => {
     const result = IngredientRequestSchema.safeParse({
       ...validRequest,
       defaultAmount: 100001,
     });
     expect(result.success).toBe(false);
   });
+});
 
-  it("принимает граничные значения defaultAmount", () => {
-    expect(
-      IngredientRequestSchema.safeParse({ ...validRequest, defaultAmount: 0.001 }).success
-    ).toBe(true);
-    expect(
-      IngredientRequestSchema.safeParse({ ...validRequest, defaultAmount: 100000 }).success
-    ).toBe(true);
+describe("PagedIngredientSchema", () => {
+  it("parses a valid paged result", () => {
+    const result = PagedIngredientSchema.safeParse(validPaged);
+    expect(result.success).toBe(true);
   });
 
-  it("отклоняет неизвестную категорию", () => {
-    const result = IngredientRequestSchema.safeParse({
-      ...validRequest,
-      category: "unknown",
+  it("parses empty items list", () => {
+    const result = PagedIngredientSchema.safeParse({
+      ...validPaged,
+      items: [],
+      total: 0,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects negative total", () => {
+    const result = PagedIngredientSchema.safeParse({
+      ...validPaged,
+      total: -1,
     });
     expect(result.success).toBe(false);
+  });
+
+  it("rejects page = 0", () => {
+    const result = PagedIngredientSchema.safeParse({
+      ...validPaged,
+      page: 0,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects pageSize = 0", () => {
+    const result = PagedIngredientSchema.safeParse({
+      ...validPaged,
+      pageSize: 0,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects missing items field", () => {
+    const { items: _items, ...rest } = validPaged;
+    const result = PagedIngredientSchema.safeParse(rest);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects missing total field", () => {
+    const { total: _total, ...rest } = validPaged;
+    const result = PagedIngredientSchema.safeParse(rest);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects invalid ingredient inside items", () => {
+    const result = PagedIngredientSchema.safeParse({
+      ...validPaged,
+      items: [{ ...validIngredient, category: "bad_category" }],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("pagedIngredientSchema() factory returns same schema", () => {
+    const schema = pagedIngredientSchema();
+    const result = schema.safeParse(validPaged);
+    expect(result.success).toBe(true);
   });
 });

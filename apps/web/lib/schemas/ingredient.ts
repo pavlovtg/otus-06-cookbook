@@ -53,3 +53,16 @@ export const IngredientRequestSchema = z.object({
 });
 
 export type IngredientRequest = z.infer<typeof IngredientRequestSchema>;
+
+export function pagedIngredientSchema() {
+  return z.object({
+    items: z.array(IngredientSchema),
+    total: z.number().int().nonnegative(),
+    page: z.number().int().positive(),
+    pageSize: z.number().int().positive(),
+  });
+}
+
+export const PagedIngredientSchema = pagedIngredientSchema();
+
+export type PagedIngredient = z.infer<typeof PagedIngredientSchema>;

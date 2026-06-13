@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
 using Recipes.Adapters.Postgresql.Configurations;
+using Recipes.Application;
 using Recipes.Application.Ports;
 using Recipes.Domain;
 
@@ -64,10 +65,12 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
 
     // ── IIngredientRepository ────────────────────────────────────────────────
 
-    public async IAsyncEnumerable<Ingredient> GetIngredientsAsync(
+    public async Task<PagedResult<Ingredient>> GetIngredientsAsync(
+        int page,
+        int pageSize,
         string? titleFilter = null,
         IngredientCategory? categoryFilter = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         var query = Ingredients.AsNoTracking().AsQueryable();
 
@@ -77,8 +80,13 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         if (categoryFilter.HasValue)
             query = query.Where(i => i.Category == categoryFilter.Value);
 
-        await foreach (var ingredient in query.AsAsyncEnumerable().WithCancellation(cancellationToken))
-            yield return ingredient;
+        var total = await query.CountAsync(cancellationToken);
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<Ingredient>(items, total, page, pageSize);
     }
 
     public async Task<Ingredient?> GetByIdAsync(IngredientId id, CancellationToken cancellationToken = default)

@@ -192,3 +192,24 @@ def test_filter_ingredients_by_category(page: Page, base_url: str) -> None:
     for i in range(count):
         category = items.nth(i).get_attribute("data-category")
         assert category == "vegetables"
+
+
+def test_search_field_has_max_length_200(page: Page, base_url: str) -> None:
+    """11.6 Поле поиска ограничено 200 символами."""
+    page.goto(f"{base_url}/ingredients")
+
+    search_input = page.locator("[data-testid='filter-title']")
+    expect(search_input).to_be_visible()
+
+    max_length = search_input.get_attribute("maxlength")
+    assert max_length == "200"
+
+
+def test_paginator_not_visible_when_single_page(page: Page, base_url: str) -> None:
+    """11.7 Пагинатор не отображается, если все ингредиенты помещаются на одну страницу."""
+    page.goto(f"{base_url}/ingredients?pageSize=1000")
+    page.wait_for_load_state("networkidle")
+
+    paginator = page.locator("[data-testid='paginator']")
+    # Пагинатор либо отсутствует, либо не виден
+    assert paginator.count() == 0 or not paginator.is_visible()

@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using DotNet.Testcontainers.Builders;
 using Recipes.Adapters.Web.Dto;
+using Recipes.Application;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -108,7 +109,7 @@ public sealed class IngredientsCrudTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetIngredients_Returns200_WithList()
+    public async Task GetIngredients_Returns200_WithPagedResult()
     {
         await CreateTestIngredientAsync();
 
@@ -116,9 +117,59 @@ public sealed class IngredientsCrudTests : IAsyncLifetime
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var list = await response.Content.ReadFromJsonAsync<List<IngredientDto>>();
-        Assert.NotNull(list);
-        Assert.NotEmpty(list);
+        var result = await response.Content.ReadFromJsonAsync<PagedResult<IngredientDto>>();
+        Assert.NotNull(result);
+        Assert.NotEmpty(result.Items);
+        Assert.True(result.Total >= 1);
+        Assert.Equal(1, result.Page);
+        Assert.Equal(100, result.PageSize);
+    }
+
+    [Fact]
+    public async Task GetIngredients_Returns200_WithExplicitPageAndPageSize()
+    {
+        var response = await _client!.GetAsync("/api/v1/ingredients?page=2&pageSize=50");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var result = await response.Content.ReadFromJsonAsync<PagedResult<IngredientDto>>();
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Page);
+        Assert.Equal(50, result.PageSize);
+    }
+
+    [Fact]
+    public async Task GetIngredients_Returns200_WhenPageSizeExceedsMax_ClampsTo1000()
+    {
+        var response = await _client!.GetAsync("/api/v1/ingredients?pageSize=5000");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var result = await response.Content.ReadFromJsonAsync<PagedResult<IngredientDto>>();
+        Assert.NotNull(result);
+        Assert.Equal(1000, result.PageSize);
+    }
+
+    [Fact]
+    public async Task GetIngredients_Returns400_WhenPageIsZero()
+    {
+        var response = await _client!.GetAsync("/api/v1/ingredients?page=0");
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetIngredients_Returns400_WhenPageSizeIsZero()
+    {
+        var response = await _client!.GetAsync("/api/v1/ingredients?pageSize=0");
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetIngredients_Returns400_WhenTitleExceeds200Characters()
+    {
+        var longTitle = new string('А', 201);
+        var response = await _client!.GetAsync($"/api/v1/ingredients?title={Uri.EscapeDataString(longTitle)}");
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]

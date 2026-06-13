@@ -159,6 +159,7 @@ paths:
           required: false
           schema:
             type: string
+            maxLength: 200
           description: Фильтр по названию (вхождение, без учёта регистра)
         - name: category
           in: query
@@ -166,17 +167,32 @@ paths:
           schema:
             $ref: "#/components/schemas/IngredientCategory"
           description: Фильтр по категории
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Номер страницы (начиная с 1)
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+          description: Размер страницы (максимум 1000; если передано больше — используется 1000)
       responses:
         "200":
-          description: Список ингредиентов
+          description: Постраничный список ингредиентов
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/IngredientDto"
+                $ref: "#/components/schemas/PagedResultIngredientDto"
         "400":
-          description: Некорректное значение параметра (например, неизвестная категория)
+          description: Некорректное значение параметра (например, неизвестная категория, page < 1, pageSize < 1, title > 200 символов)
           content:
             application/problem+json:
               schema:
@@ -474,6 +490,30 @@ components:
         isSystem:
           type: boolean
           example: true
+    PagedResultIngredientDto:
+      type: object
+      required:
+        - items
+        - total
+        - page
+        - pageSize
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/IngredientDto"
+        total:
+          type: integer
+          description: Общее количество ингредиентов, соответствующих фильтрам
+          example: 150
+        page:
+          type: integer
+          description: Текущая страница
+          example: 1
+        pageSize:
+          type: integer
+          description: Размер страницы
+          example: 100
     IngredientRequest:
       type: object
       required:

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Recipes.Adapters.Web.Dto;
 using Recipes.Adapters.Web.Mapping;
+using Recipes.Application;
 using Recipes.Application.Ports;
 using Recipes.Domain;
 using Recipes.Domain.Exceptions;
@@ -11,6 +12,10 @@ namespace Recipes.Adapters.Web;
 [Route("api/v1/ingredients")]
 internal sealed class IngredientsController : ControllerBase
 {
+    private const int DefaultPage = 1;
+    private const int DefaultPageSize = 100;
+    private const int MaxPageSize = 1000;
+
     private readonly IIngredientService _ingredientService;
 
     public IngredientsController(IIngredientService ingredientService)
@@ -22,8 +27,21 @@ internal sealed class IngredientsController : ControllerBase
     public async Task<IActionResult> GetIngredients(
         [FromQuery] string? title,
         [FromQuery] string? category,
-        CancellationToken cancellationToken)
+        [FromQuery] int page = DefaultPage,
+        [FromQuery] int pageSize = DefaultPageSize,
+        CancellationToken cancellationToken = default)
     {
+        if (page < 1)
+            return BadRequest(ProblemDetailsFor("'page' must be greater than or equal to 1."));
+
+        if (pageSize < 1)
+            return BadRequest(ProblemDetailsFor("'pageSize' must be greater than or equal to 1."));
+
+        if (title is not null && title.Length > IngredientConstraints.TitleMaxLength)
+            return BadRequest(ProblemDetailsFor($"'title' must not exceed {IngredientConstraints.TitleMaxLength} characters."));
+
+        pageSize = Math.Min(pageSize, MaxPageSize);
+
         IngredientCategory? categoryFilter = null;
 
         if (!string.IsNullOrWhiteSpace(category))
@@ -34,11 +52,16 @@ internal sealed class IngredientsController : ControllerBase
             categoryFilter = parsed.ToDomain();
         }
 
-        var ingredients = new List<IngredientDto>();
-        await foreach (var ingredient in _ingredientService.GetIngredientsAsync(title, categoryFilter, cancellationToken))
-            ingredients.Add(ToDto(ingredient));
+        var result = await _ingredientService.GetIngredientsAsync(
+            page, pageSize, title, categoryFilter, cancellationToken);
 
-        return Ok(ingredients);
+        var dto = new PagedResult<IngredientDto>(
+            result.Items.Select(ToDto).ToList(),
+            result.Total,
+            result.Page,
+            result.PageSize);
+
+        return Ok(dto);
     }
 
     [HttpGet("{id:guid}")]
