@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
 using Recipes.Adapters.Postgresql;
+using Recipes.Application.Ports;
 using Recipes.Domain;
 using Shared.Testing.Database;
 using Testcontainers.PostgreSql;
@@ -94,7 +95,7 @@ public sealed class RecipeRepositoryTests : IAsyncLifetime
 
         await using var readCtx = _factory.Create();
         var all = new List<Recipe>();
-        await foreach (var r in readCtx.GetAllAsync())
+        await foreach (var r in ((IRecipeRepository)readCtx).GetAllAsync())
             all.Add(r);
 
         Assert.Contains(all, r => r.Id == r1.Id);
