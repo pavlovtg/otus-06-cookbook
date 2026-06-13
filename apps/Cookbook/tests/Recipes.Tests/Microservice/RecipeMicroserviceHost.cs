@@ -40,6 +40,15 @@ internal sealed class RecipeMicroserviceHost : WebApplicationFactory<Program>
             {
                 var databaseConfiguration = new { DatabaseConnection = _databaseConnectionString.FromConnectionString() };
                 AddConfigurationToBuilder(x, databaseConfiguration);
+                var suppressLogging = new
+				{
+					Logging = new Dictionary<string, string>
+					{
+						{ "LogLevel:Microsoft.EntityFrameworkCore", "Warning" },
+						{ "LogLevel:Microsoft.AspNetCore", "Warning" },
+					}
+				};
+				AddConfigurationToBuilder(x, suppressLogging);
             });
 
         return base.CreateHost(builder);
@@ -66,6 +75,10 @@ internal sealed class RecipeMicroserviceHost : WebApplicationFactory<Program>
 
     private void AddConfigurationToBuilder<TValue>(IConfigurationBuilder builder, TValue config)
     {
+        if (config == null)
+		{
+			return;
+		}
         using var stream = new MemoryStream();
         JsonSerializer.Serialize(stream, config);
         stream.Seek(0, SeekOrigin.Begin);
