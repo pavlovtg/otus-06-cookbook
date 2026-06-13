@@ -53,7 +53,7 @@ public sealed class IngredientsCrudTests : IAsyncLifetime
         Assert.Equal("Тестовый ингредиент", dto.Title);
         Assert.Equal("г", dto.Unit);
         Assert.Equal(100f, dto.DefaultAmount);
-        Assert.Equal("vegetables", dto.Category);
+        Assert.Equal("vegetables", dto.Category.ToString());
         Assert.False(dto.IsSystem);
     }
 
@@ -176,6 +176,22 @@ public sealed class IngredientsCrudTests : IAsyncLifetime
         var response = await _client!.DeleteAsync($"/api/v1/ingredients/{Guid.NewGuid()}");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateIngredient_CategoryIsSerializedAsSnakeCase()
+    {
+        // Arrange: категория с подчёркиваниями в snake_case контракте
+        var request = ValidRequest() with { Category = "nuts_and_seeds" };
+
+        // Act
+        var response = await _client!.PostAsJsonAsync("/api/v1/ingredients", request);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+        var json = await response.Content.ReadAsStringAsync();
+
+        // Assert: в JSON должно быть "nuts_and_seeds", а не "nutsandseeds"
+        Assert.Contains("\"nuts_and_seeds\"", json);
     }
 
     private async Task<IngredientDto> CreateTestIngredientAsync()
