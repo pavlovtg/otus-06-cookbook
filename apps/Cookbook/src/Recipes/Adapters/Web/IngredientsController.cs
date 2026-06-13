@@ -133,6 +133,10 @@ internal sealed class IngredientsController : ControllerBase
             await _ingredientService.DeleteAsync(IngredientId.From(id), cancellationToken);
             return NoContent();
         }
+        catch (IngredientInUseException ex)
+        {
+            return BadRequest(ProblemDetailsFor(ex.Message));
+        }
         catch (IngredientDomainException ex)
         {
             return BadRequest(ProblemDetailsFor(ex));

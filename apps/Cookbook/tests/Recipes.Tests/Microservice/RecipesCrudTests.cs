@@ -42,7 +42,8 @@ public sealed class RecipesCrudTests : IAsyncLifetime
             CookingTime: 30,
             Difficulty: "easy",
             Servings: 2,
-            Instructions: "Шаг 1. Приготовить."
+            Instructions: "Шаг 1. Приготовить.",
+            Ingredients: []
         );
 
         var response = await _client!.PostAsJsonAsync("/api/v1/recipes", request);
@@ -67,7 +68,8 @@ public sealed class RecipesCrudTests : IAsyncLifetime
             CookingTime: 30,
             Difficulty: "easy",
             Servings: 2,
-            Instructions: "Инструкции"
+            Instructions: "Инструкции",
+            Ingredients: []
         );
 
         var response = await _client!.PostAsJsonAsync("/api/v1/recipes", request);
@@ -109,7 +111,8 @@ public sealed class RecipesCrudTests : IAsyncLifetime
             CookingTime: 60,
             Difficulty: "festive",
             Servings: 4,
-            Instructions: "Новые инструкции"
+            Instructions: "Новые инструкции",
+            Ingredients: []
         );
 
         var response = await _client!.PutAsJsonAsync($"/api/v1/recipes/{created.Id}", updateRequest);
@@ -134,7 +137,8 @@ public sealed class RecipesCrudTests : IAsyncLifetime
             CookingTime: 30,
             Difficulty: "easy",
             Servings: 2,
-            Instructions: "Инструкции"
+            Instructions: "Инструкции",
+            Ingredients: []
         );
 
         var response = await _client!.PutAsJsonAsync($"/api/v1/recipes/{created.Id}", updateRequest);
@@ -163,6 +167,120 @@ public sealed class RecipesCrudTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    // ── Ingredients (8.6) ────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task CreateRecipe_WithIngredients_GetById_ReturnsIngredients()
+    {
+        var ingredient = await CreateTestIngredientAsync();
+
+        var request = new RecipeRequest(
+            Title: "Рецепт с ингредиентами",
+            Description: "Описание",
+            CookingTime: 30,
+            Difficulty: "easy",
+            Servings: 2,
+            Instructions: "Шаг 1.",
+            Ingredients: [new RecipeIngredientRequest(ingredient.Id, 150m)]
+        );
+
+        var createResponse = await _client!.PostAsJsonAsync("/api/v1/recipes", request);
+        Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+
+        var created = await createResponse.Content.ReadFromJsonAsync<RecipeDto>();
+        Assert.NotNull(created);
+
+        var getResponse = await _client!.GetAsync($"/api/v1/recipes/{created.Id}");
+        Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
+
+        var dto = await getResponse.Content.ReadFromJsonAsync<RecipeDto>();
+        Assert.NotNull(dto);
+        Assert.Single(dto.Ingredients);
+        Assert.Equal(ingredient.Id, dto.Ingredients[0].IngredientId);
+        Assert.Equal(150m, dto.Ingredients[0].Amount);
+    }
+
+    // ── Update ingredients (8.7) ─────────────────────────────────────────────
+
+    [Fact]
+    public async Task UpdateRecipe_WithNewIngredients_ReplacesIngredients()
+    {
+        var ingredient1 = await CreateTestIngredientAsync();
+        var ingredient2 = await CreateTestIngredientAsync("Лук", "шт.");
+
+        var createRequest = new RecipeRequest(
+            Title: "Рецепт",
+            Description: "Описание",
+            CookingTime: 30,
+            Difficulty: "easy",
+            Servings: 2,
+            Instructions: "Шаг 1.",
+            Ingredients: [new RecipeIngredientRequest(ingredient1.Id, 100m)]
+        );
+
+        var createResponse = await _client!.PostAsJsonAsync("/api/v1/recipes", createRequest);
+        var created = await createResponse.Content.ReadFromJsonAsync<RecipeDto>();
+        Assert.NotNull(created);
+
+        var updateRequest = new RecipeRequest(
+            Title: "Рецепт",
+            Description: "Описание",
+            CookingTime: 30,
+            Difficulty: "easy",
+            Servings: 2,
+            Instructions: "Шаг 1.",
+            Ingredients: [
+                new RecipeIngredientRequest(ingredient1.Id, 200m),
+                new RecipeIngredientRequest(ingredient2.Id, 3m),
+            ]
+        );
+
+        var updateResponse = await _client!.PutAsJsonAsync($"/api/v1/recipes/{created.Id}", updateRequest);
+        Assert.Equal(HttpStatusCode.NoContent, updateResponse.StatusCode);
+
+        var getResponse = await _client!.GetAsync($"/api/v1/recipes/{created.Id}");
+        var updated = await getResponse.Content.ReadFromJsonAsync<RecipeDto>();
+        Assert.NotNull(updated);
+        Assert.Equal(2, updated.Ingredients.Count);
+    }
+
+    [Fact]
+    public async Task UpdateRecipe_WithEmptyIngredients_ClearsIngredients()
+    {
+        var ingredient = await CreateTestIngredientAsync();
+
+        var createRequest = new RecipeRequest(
+            Title: "Рецепт",
+            Description: "Описание",
+            CookingTime: 30,
+            Difficulty: "easy",
+            Servings: 2,
+            Instructions: "Шаг 1.",
+            Ingredients: [new RecipeIngredientRequest(ingredient.Id, 100m)]
+        );
+
+        var createResponse = await _client!.PostAsJsonAsync("/api/v1/recipes", createRequest);
+        var created = await createResponse.Content.ReadFromJsonAsync<RecipeDto>();
+        Assert.NotNull(created);
+
+        var updateRequest = new RecipeRequest(
+            Title: "Рецепт",
+            Description: "Описание",
+            CookingTime: 30,
+            Difficulty: "easy",
+            Servings: 2,
+            Instructions: "Шаг 1.",
+            Ingredients: []
+        );
+
+        await _client!.PutAsJsonAsync($"/api/v1/recipes/{created.Id}", updateRequest);
+
+        var getResponse = await _client!.GetAsync($"/api/v1/recipes/{created.Id}");
+        var updated = await getResponse.Content.ReadFromJsonAsync<RecipeDto>();
+        Assert.NotNull(updated);
+        Assert.Empty(updated.Ingredients);
+    }
+
     private async Task<RecipeDto> CreateTestRecipeAsync()
     {
         var request = new RecipeRequest(
@@ -171,7 +289,8 @@ public sealed class RecipesCrudTests : IAsyncLifetime
             CookingTime: 45,
             Difficulty: "everyday",
             Servings: 3,
-            Instructions: "Шаг 1. Тест."
+            Instructions: "Шаг 1. Тест.",
+            Ingredients: []
         );
 
         var response = await _client!.PostAsJsonAsync("/api/v1/recipes", request);
@@ -179,5 +298,20 @@ public sealed class RecipesCrudTests : IAsyncLifetime
 
         var dto = await response.Content.ReadFromJsonAsync<RecipeDto>();
         return dto!;
+    }
+
+    private async Task<IngredientDto> CreateTestIngredientAsync(string title = "Морковь", string unit = "г")
+    {
+        var request = new IngredientRequest(
+            Title: title,
+            Unit: unit,
+            DefaultAmount: 100f,
+            Category: "vegetables"
+        );
+
+        var response = await _client!.PostAsJsonAsync("/api/v1/ingredients", request);
+        response.EnsureSuccessStatusCode();
+
+        return (await response.Content.ReadFromJsonAsync<IngredientDto>())!;
     }
 }

@@ -11,6 +11,14 @@ VALID_RECIPE = {
     "difficulty": "everyday",
     "servings": 6,
     "instructions": "1. Сварить бульон. 2. Добавить овощи.",
+    "ingredients": [],
+}
+
+VALID_INGREDIENT = {
+    "title": "Тестовая морковь",
+    "unit": "г",
+    "defaultAmount": 100.0,
+    "category": "vegetables",
 }
 
 
@@ -33,8 +41,6 @@ def test_recipes_list_items_have_required_fields(base_url: str) -> None:
         assert "description" in recipe
         assert "cookingTime" in recipe
         assert "difficulty" in recipe
-        assert "servings" in recipe
-        assert "instructions" in recipe
 
 
 def test_create_recipe_returns_201(base_url: str) -> None:
@@ -102,3 +108,55 @@ def test_delete_unknown_recipe_returns_400(base_url: str) -> None:
     response = httpx.delete(f"{base_url}{BASE}/{uuid.uuid4()}")
 
     assert response.status_code == 400
+
+
+# ── Ingredients in recipes (8.11, 8.12) ──────────────────────────────────────
+
+INGREDIENTS_BASE = "/api/cookbook/v1/ingredients"
+
+
+def _create_ingredient(base_url: str) -> dict:
+    response = httpx.post(f"{base_url}{INGREDIENTS_BASE}", json=VALID_INGREDIENT)
+    assert response.status_code == 201
+    return response.json()
+
+
+def test_create_recipe_with_ingredients_returns_ingredients_in_get(base_url: str) -> None:
+    ingredient = _create_ingredient(base_url)
+
+    recipe_payload = {
+        **VALID_RECIPE,
+        "ingredients": [{"ingredientId": ingredient["id"], "amount": 150.0}],
+    }
+    create_resp = httpx.post(f"{base_url}{BASE}", json=recipe_payload)
+    assert create_resp.status_code == 201
+    recipe_id = create_resp.json()["id"]
+
+    get_resp = httpx.get(f"{base_url}{BASE}/{recipe_id}")
+    assert get_resp.status_code == 200
+
+    data = get_resp.json()
+    assert "ingredients" in data
+    assert len(data["ingredients"]) == 1
+    assert data["ingredients"][0]["ingredientId"] == ingredient["id"]
+    assert data["ingredients"][0]["amount"] == 150.0
+
+
+def test_update_recipe_removes_ingredient(base_url: str) -> None:
+    ingredient = _create_ingredient(base_url)
+
+    recipe_payload = {
+        **VALID_RECIPE,
+        "ingredients": [{"ingredientId": ingredient["id"], "amount": 100.0}],
+    }
+    create_resp = httpx.post(f"{base_url}{BASE}", json=recipe_payload)
+    assert create_resp.status_code == 201
+    recipe_id = create_resp.json()["id"]
+
+    update_payload = {**VALID_RECIPE, "ingredients": []}
+    update_resp = httpx.put(f"{base_url}{BASE}/{recipe_id}", json=update_payload)
+    assert update_resp.status_code == 204
+
+    get_resp = httpx.get(f"{base_url}{BASE}/{recipe_id}")
+    data = get_resp.json()
+    assert data["ingredients"] == []

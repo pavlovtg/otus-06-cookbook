@@ -27,6 +27,10 @@ export function EditRecipeForm({ recipe }: Props) {
         difficulty: recipe.difficulty,
         servings: recipe.servings,
         instructions: recipe.instructions,
+        ingredients: recipe.ingredients.map((ing) => ({
+          ingredientId: ing.ingredientId,
+          amount: ing.amount,
+        })),
       }}
       onSubmit={handleSubmit}
       submitLabel="Сохранить изменения"

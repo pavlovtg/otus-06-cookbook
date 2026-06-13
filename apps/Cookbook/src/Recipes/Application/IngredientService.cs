@@ -7,10 +7,12 @@ namespace Recipes.Application;
 internal sealed class IngredientService : IIngredientService
 {
     private readonly IIngredientRepository _repository;
+    private readonly IRecipeRepository _recipeRepository;
 
-    public IngredientService(IIngredientRepository repository)
+    public IngredientService(IIngredientRepository repository, IRecipeRepository recipeRepository)
     {
         _repository = repository;
+        _recipeRepository = recipeRepository;
     }
 
     public async Task<PagedResult<Ingredient>> GetIngredientsAsync(
@@ -62,6 +64,10 @@ internal sealed class IngredientService : IIngredientService
     {
         var ingredient = await _repository.GetByIdAsync(id, cancellationToken)
             ?? throw new IngredientNotFoundException(id);
+
+        var usage = await _recipeRepository.GetRecipesUsingIngredientAsync(id, cancellationToken);
+        if (usage.TotalCount > 0)
+            throw new IngredientInUseException(usage.TopTitles, usage.TotalCount);
 
         await _repository.DeleteAsync(ingredient.Id, cancellationToken);
         await _repository.CommitAsync(cancellationToken);

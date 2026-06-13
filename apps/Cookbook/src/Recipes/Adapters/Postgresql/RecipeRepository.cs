@@ -21,6 +21,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         modelBuilder.HasDefaultSchema(DefaultSchema);
         modelBuilder.ApplyConfiguration(new RecipeConfiguration());
         modelBuilder.ApplyConfiguration(new IngredientConfiguration());
+        modelBuilder.ApplyConfiguration(new RecipeIngredientConfiguration());
     }
 
     public async IAsyncEnumerable<Recipe> GetRecipesAsync(
@@ -37,7 +38,36 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
 
     public async Task<Recipe?> GetByIdAsync(RecipeId id, CancellationToken cancellationToken = default)
     {
-        return await Recipes.FindAsync([id], cancellationToken);
+        return await Recipes
+            .Include(r => r.Ingredients)
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+    }
+
+    public async Task<RecipeWithIngredientDetails?> GetByIdWithDetailsAsync(
+        RecipeId id,
+        CancellationToken cancellationToken = default)
+    {
+        var recipe = await Recipes
+            .Include(r => r.Ingredients)
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+
+        if (recipe is null)
+            return null;
+
+        var ingredientIds = recipe.Ingredients.Select(i => i.IngredientId).ToList();
+
+        var ingredientMap = await Ingredients
+            .AsNoTracking()
+            .Where(i => ingredientIds.Contains(i.Id))
+            .ToDictionaryAsync(i => i.Id, cancellationToken);
+
+        var details = recipe.Ingredients
+            .Select(ri => ingredientMap.TryGetValue(ri.IngredientId, out var ing)
+                ? new RecipeIngredientDetail(ri.IngredientId, ing.Title, ri.Amount, ing.Unit)
+                : new RecipeIngredientDetail(ri.IngredientId, string.Empty, ri.Amount, string.Empty))
+            .ToList();
+
+        return new RecipeWithIngredientDetails(recipe, details);
     }
 
     public async Task CreateAsync(Recipe recipe, CancellationToken cancellationToken = default)
@@ -56,6 +86,25 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         var recipe = await Recipes.FindAsync([id], cancellationToken);
         if (recipe is not null)
             Recipes.Remove(recipe);
+    }
+
+    public async Task<RecipeUsageResult> GetRecipesUsingIngredientAsync(
+        IngredientId ingredientId,
+        CancellationToken cancellationToken = default)
+    {
+        var query = Recipes
+            .AsNoTracking()
+            .Where(r => r.Ingredients.Any(i => i.IngredientId == ingredientId));
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var topTitles = await query
+            .OrderBy(r => r.Title)
+            .Take(10)
+            .Select(r => r.Title)
+            .ToListAsync(cancellationToken);
+
+        return new RecipeUsageResult(topTitles, totalCount);
     }
 
     public async Task CommitAsync(CancellationToken cancellationToken = default)

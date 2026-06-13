@@ -12,6 +12,9 @@ internal sealed class Recipe
     public int Servings { get; private set; }
     public string Instructions { get; private set; } = string.Empty;
 
+    private List<RecipeIngredient> _ingredients = [];
+    public IReadOnlyList<RecipeIngredient> Ingredients => _ingredients.AsReadOnly();
+
     private Recipe() { }
 
     public static Recipe Create(
@@ -21,13 +24,17 @@ internal sealed class Recipe
         int cookingTime,
         Difficulty difficulty,
         int servings,
-        string instructions)
+        string instructions,
+        IEnumerable<RecipeIngredient>? ingredients = null)
     {
         ValidateTitle(title);
         ValidateDescription(description);
         ValidateCookingTime(cookingTime);
         ValidateServings(servings);
         ValidateInstructions(instructions);
+
+        var ingredientList = ingredients?.ToList() ?? [];
+        ValidateIngredientsCount(ingredientList.Count);
 
         return new Recipe
         {
@@ -38,6 +45,7 @@ internal sealed class Recipe
             Difficulty = difficulty,
             Servings = servings,
             Instructions = instructions,
+            _ingredients = ingredientList,
         };
     }
 
@@ -47,7 +55,8 @@ internal sealed class Recipe
         int cookingTime,
         Difficulty difficulty,
         int servings,
-        string instructions)
+        string instructions,
+        IEnumerable<RecipeIngredient>? ingredients = null)
     {
         ValidateTitle(title);
         ValidateDescription(description);
@@ -55,12 +64,18 @@ internal sealed class Recipe
         ValidateServings(servings);
         ValidateInstructions(instructions);
 
+        var ingredientList = ingredients?.ToList() ?? [];
+        ValidateIngredientsCount(ingredientList.Count);
+
         Title = title;
         Description = description ?? string.Empty;
         CookingTime = cookingTime;
         Difficulty = difficulty;
         Servings = servings;
         Instructions = instructions;
+
+        _ingredients.Clear();
+        _ingredients.AddRange(ingredientList);
     }
 
     private static void ValidateTitle(string title)
@@ -97,5 +112,11 @@ internal sealed class Recipe
 
         if (instructions.Length > RecipeConstraints.InstructionsMaxLength)
             throw new RecipeInstructionsTooLongException(instructions.Length);
+    }
+
+    private static void ValidateIngredientsCount(int count)
+    {
+        if (count > RecipeConstraints.IngredientsMaxCount)
+            throw new RecipeIngredientsTooManyException(count);
     }
 }

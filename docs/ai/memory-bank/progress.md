@@ -12,14 +12,18 @@
 - Редактирование рецепта
 - Удаление рецепта
 - CRUD ингредиентов (backend + тесты + frontend схемы/BFF + E2E тесты)
+- `recipe-ingredients` — все 56 задач (секции 1–8) полностью реализованы
 
 ## В работе
 
-- `ingredients-crud` — Frontend UI (задача 8): страница `/ingredients`, модальные окна, навигация
+Нет активных задач.
 
 ## Выполнено (последнее)
 
-- `ingredients-crud` — все задачи кроме Frontend UI реализованы
-- Добавлены AR-0057 (BFF один файл на ресурс) и AR-0058 (структура unit-тестов frontend)
-- Рефакторинг: `gateway.ts` → `recipes.ts` + `ingredients.ts`
-- Добавлен `recipe.bff.test.ts` (паритет с `ingredient.bff.test.ts`)
+- `recipe-ingredients` секция 8 — все тесты (8.1–8.12):
+  - Unit: `RecipeIngredientTests`, `RecipeWithIngredientsTests`
+  - Integration: `RecipeRepositoryTests` (ингредиенты + `GetRecipesUsingIngredientAsync`)
+  - Microservice: POST/GET/PUT с ингредиентами, DELETE блокировка
+  - Frontend unit: `RecipeIngredientDtoSchema`
+  - E2E: создание с ингредиентами, убирание ингредиента
+  - Фикс: `RecipeRequest` с `Ingredients: []` во всех тестах, `VALID_RECIPE` в e2e

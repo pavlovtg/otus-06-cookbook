@@ -7,4 +7,5 @@ internal sealed record RecipeDto(
     int CookingTime,
     string Difficulty,
     int Servings,
-    string Instructions);
+    string Instructions,
+    IReadOnlyList<RecipeIngredientDto> Ingredients);

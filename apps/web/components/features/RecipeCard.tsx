@@ -1,4 +1,4 @@
-import type { RecipeDto } from "@/lib/schemas/recipe";
+import type { RecipeShortDto } from "@/lib/schemas/recipe";
 import { ClockIcon, FlameIcon } from "@/components/icons";
 import { RecipePhoto } from "@/components/photo";
 import { Tag } from "@/components/ui/Tag";
@@ -12,7 +12,7 @@ const DIFFICULTY_LABELS: Record<string, string> = {
 };
 
 interface RecipeCardProps {
-  recipe: RecipeDto;
+  recipe: RecipeShortDto;
   onClick?: () => void;
 }
 
@@ -32,7 +32,7 @@ export function RecipeCard({ recipe, onClick }: RecipeCardProps) {
             <ClockIcon size={12} /> {recipe.cookingTime} мин
           </span>
           <span>
-            <FlameIcon size={12} /> {recipe.servings} порц.
+            <FlameIcon size={12} /> {DIFFICULTY_LABELS[recipe.difficulty] ?? recipe.difficulty}
           </span>
         </div>
         <p className="t-small" style={{ margin: 0, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>

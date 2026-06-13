@@ -46,6 +46,15 @@ public sealed class RecipeRepositoryTests : IAsyncLifetime
             30, Difficulty.Easy, 2,
             "Шаг 1. Готовить.");
 
+    private static Recipe NewRecipeWithIngredients(IEnumerable<RecipeIngredient> ingredients, RecipeId? id = null) =>
+        Recipe.Create(
+            id ?? RecipeId.New(),
+            "Рецепт с ингредиентами",
+            "Описание",
+            45, Difficulty.Everyday, 4,
+            "Шаг 1. Готовить.",
+            ingredients);
+
     // ── CreateAsync ──────────────────────────────────────────────────────────
 
     [Fact]
@@ -196,5 +205,140 @@ public sealed class RecipeRepositoryTests : IAsyncLifetime
         // Убеждаемся что таблица recipes доступна для запросов
         var count = await ctx.Recipes.CountAsync();
         Assert.Equal(0, count);
+    }
+
+    // ── Ingredients (8.4) ────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task CreateAsync_WithIngredients_GetByIdAsync_ReturnsIngredients()
+    {
+        var ingredientId = IngredientId.New();
+        var ingredient = Ingredient.Create(ingredientId, "Морковь", "г", 100f, IngredientCategory.Vegetables);
+
+        await using (var writeCtx = _factory.Create())
+        {
+            await writeCtx.CreateAsync(ingredient);
+            await writeCtx.CommitAsync();
+        }
+
+        var recipeIngredient = RecipeIngredient.Create(ingredientId, 200m);
+        var recipe = NewRecipeWithIngredients([recipeIngredient]);
+
+        await using (var writeCtx = _factory.Create())
+        {
+            await writeCtx.CreateAsync(recipe);
+            await writeCtx.CommitAsync();
+        }
+
+        await using var readCtx = _factory.Create();
+        var result = await readCtx.GetByIdAsync(recipe.Id);
+
+        Assert.NotNull(result);
+        Assert.Single(result.Ingredients);
+        Assert.Equal(ingredientId, result.Ingredients[0].IngredientId);
+        Assert.Equal(200m, result.Ingredients[0].Amount);
+    }
+
+    [Fact]
+    public async Task CreateAsync_WithMultipleIngredients_GetByIdAsync_ReturnsAllIngredients()
+    {
+        var id1 = IngredientId.New();
+        var id2 = IngredientId.New();
+
+        await using (var writeCtx = _factory.Create())
+        {
+            await writeCtx.CreateAsync(Ingredient.Create(id1, "Морковь", "г", 100f, IngredientCategory.Vegetables));
+            await writeCtx.CreateAsync(Ingredient.Create(id2, "Лук", "шт.", 1f, IngredientCategory.Vegetables));
+            await writeCtx.CommitAsync();
+        }
+
+        var recipe = NewRecipeWithIngredients([
+            RecipeIngredient.Create(id1, 150m),
+            RecipeIngredient.Create(id2, 2m),
+        ]);
+
+        await using (var writeCtx = _factory.Create())
+        {
+            await writeCtx.CreateAsync(recipe);
+            await writeCtx.CommitAsync();
+        }
+
+        await using var readCtx = _factory.Create();
+        var result = await readCtx.GetByIdAsync(recipe.Id);
+
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Ingredients.Count);
+    }
+
+    // ── GetRecipesUsingIngredientAsync (8.5) ─────────────────────────────────
+
+    [Fact]
+    public async Task GetRecipesUsingIngredientAsync_WhenIngredientUsed_ReturnsTotalCount()
+    {
+        var ingredientId = IngredientId.New();
+        await using (var writeCtx = _factory.Create())
+        {
+            await writeCtx.CreateAsync(Ingredient.Create(ingredientId, "Картофель", "г", 200f, IngredientCategory.Vegetables));
+            await writeCtx.CommitAsync();
+        }
+
+        var ri = RecipeIngredient.Create(ingredientId, 300m);
+        var r1 = NewRecipeWithIngredients([ri]);
+        var r2 = NewRecipeWithIngredients([RecipeIngredient.Create(ingredientId, 100m)]);
+
+        await using (var writeCtx = _factory.Create())
+        {
+            await writeCtx.CreateAsync(r1);
+            await writeCtx.CreateAsync(r2);
+            await writeCtx.CommitAsync();
+        }
+
+        await using var readCtx = _factory.Create();
+        var result = await readCtx.GetRecipesUsingIngredientAsync(ingredientId);
+
+        Assert.Equal(2, result.TotalCount);
+        Assert.Equal(2, result.TopTitles.Count);
+    }
+
+    [Fact]
+    public async Task GetRecipesUsingIngredientAsync_WhenIngredientNotUsed_ReturnsZero()
+    {
+        var ingredientId = IngredientId.New();
+
+        await using var ctx = _factory.Create();
+        var result = await ctx.GetRecipesUsingIngredientAsync(ingredientId);
+
+        Assert.Equal(0, result.TotalCount);
+        Assert.Empty(result.TopTitles);
+    }
+
+    [Fact]
+    public async Task GetRecipesUsingIngredientAsync_ReturnsTop10Titles()
+    {
+        var ingredientId = IngredientId.New();
+        await using (var writeCtx = _factory.Create())
+        {
+            await writeCtx.CreateAsync(Ingredient.Create(ingredientId, "Соль", "г", 5f, IngredientCategory.SpicesAndSeasonings));
+            await writeCtx.CommitAsync();
+        }
+
+        await using (var writeCtx = _factory.Create())
+        {
+            for (var i = 1; i <= 12; i++)
+            {
+                var recipe = Recipe.Create(
+                    RecipeId.New(), $"Рецепт {i:D2}", "Описание",
+                    30, Difficulty.Easy, 2, "Шаг 1.",
+                    [RecipeIngredient.Create(ingredientId, 5m)]);
+                await writeCtx.CreateAsync(recipe);
+            }
+            await writeCtx.CommitAsync();
+        }
+
+        await using var readCtx = _factory.Create();
+        var result = await readCtx.GetRecipesUsingIngredientAsync(ingredientId);
+
+        Assert.Equal(12, result.TotalCount);
+        Assert.Equal(10, result.TopTitles.Count);
     }
 }

@@ -7,6 +7,14 @@ import {
   updateRecipe,
 } from "@/lib/bff/recipes";
 
+const mockRecipeShort = {
+  id: "11111111-0000-0000-0000-000000000001",
+  title: "Борщ",
+  description: "Классический борщ",
+  cookingTime: 120,
+  difficulty: "everyday",
+};
+
 const mockRecipe = {
   id: "11111111-0000-0000-0000-000000000001",
   title: "Борщ",
@@ -15,6 +23,7 @@ const mockRecipe = {
   difficulty: "everyday",
   servings: 6,
   instructions: "1. Сварить бульон.",
+  ingredients: [],
 };
 
 const mockRequest = {
@@ -24,6 +33,7 @@ const mockRequest = {
   difficulty: "everyday" as const,
   servings: 6,
   instructions: "1. Сварить бульон.",
+  ingredients: [],
 };
 
 beforeEach(() => {
@@ -37,7 +47,7 @@ afterEach(() => {
 describe("getRecipes", () => {
   it("возвращает список рецептов", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
-      new Response(JSON.stringify([mockRecipe]), { status: 200 })
+      new Response(JSON.stringify([mockRecipeShort]), { status: 200 })
     );
 
     const result = await getRecipes();

@@ -18,7 +18,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/RecipeDto"
+                  $ref: "#/components/schemas/RecipeShortDto"
         "500":
           description: Внутренняя ошибка сервера
           content:
@@ -336,6 +336,73 @@ components:
         - restaurant
         - signature
       example: everyday
+    RecipeShortDto:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - cookingTime
+        - difficulty
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: aad1f839-df31-49f2-84d7-4dd01e04be77
+        title:
+          type: string
+          example: Борщ
+        description:
+          type: string
+          example: Классический украинский борщ со свёклой и капустой
+        cookingTime:
+          type: integer
+          description: Время приготовления в минутах
+          minimum: 1
+          maximum: 9999
+          example: 90
+        difficulty:
+          $ref: "#/components/schemas/Difficulty"
+    RecipeIngredientDto:
+      type: object
+      required:
+        - ingredientId
+        - title
+        - amount
+        - unit
+      properties:
+        ingredientId:
+          type: string
+          format: uuid
+          example: 22222222-0000-0000-0000-000000000001
+        title:
+          type: string
+          example: Морковь
+        amount:
+          type: number
+          format: double
+          minimum: 0.001
+          maximum: 100000
+          example: 150
+        unit:
+          type: string
+          example: г
+    RecipeIngredientRequest:
+      type: object
+      required:
+        - ingredientId
+        - amount
+      properties:
+        ingredientId:
+          type: string
+          format: uuid
+          example: 22222222-0000-0000-0000-000000000001
+        amount:
+          type: number
+          format: double
+          minimum: 0.001
+          maximum: 100000
+          example: 150
     RecipeDto:
       type: object
       required:
@@ -346,6 +413,7 @@ components:
         - difficulty
         - servings
         - instructions
+        - ingredients
       properties:
         id:
           type: string
@@ -375,6 +443,10 @@ components:
           type: string
           description: Пошаговые инструкции приготовления
           example: "Сварить бульон. Добавить овощи. Подавать со сметаной."
+        ingredients:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecipeIngredientDto"
     RecipeRequest:
       type: object
       required:
@@ -383,6 +455,7 @@ components:
         - difficulty
         - servings
         - instructions
+        - ingredients
       properties:
         title:
           type: string
@@ -412,6 +485,10 @@ components:
           maxLength: 10000
           description: Пошаговые инструкции приготовления
           example: "Сварить бульон. Добавить овощи. Подавать со сметаной."
+        ingredients:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecipeIngredientRequest"
     ProblemDetails:
       description: RFC 7807 Problem Details
       type: object

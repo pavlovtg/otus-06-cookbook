@@ -245,6 +245,55 @@ public sealed class IngredientsCrudTests : IAsyncLifetime
         Assert.Contains("\"nuts_and_seeds\"", json);
     }
 
+    // ── Delete blocked by recipe usage (8.8) ─────────────────────────────────
+
+    [Fact]
+    public async Task DeleteIngredient_Returns400_WhenUsedInRecipe()
+    {
+        var ingredient = await CreateTestIngredientAsync();
+
+        var recipeRequest = new RecipeRequest(
+            Title: "Рецепт с ингредиентом",
+            Description: "Описание",
+            CookingTime: 30,
+            Difficulty: "easy",
+            Servings: 2,
+            Instructions: "Шаг 1.",
+            Ingredients: [new RecipeIngredientRequest(ingredient.Id, 100m)]
+        );
+        var recipeResponse = await _client!.PostAsJsonAsync("/api/v1/recipes", recipeRequest);
+        recipeResponse.EnsureSuccessStatusCode();
+
+        var deleteResponse = await _client!.DeleteAsync($"/api/v1/ingredients/{ingredient.Id}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, deleteResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteIngredient_Returns400_WhenUsedInRecipe_ResponseContainsRecipeTitles()
+    {
+        var ingredient = await CreateTestIngredientAsync();
+
+        var recipeRequest = new RecipeRequest(
+            Title: "Борщ с морковью",
+            Description: "Описание",
+            CookingTime: 30,
+            Difficulty: "easy",
+            Servings: 2,
+            Instructions: "Шаг 1.",
+            Ingredients: [new RecipeIngredientRequest(ingredient.Id, 100m)]
+        );
+        var recipeResponse = await _client!.PostAsJsonAsync("/api/v1/recipes", recipeRequest);
+        recipeResponse.EnsureSuccessStatusCode();
+
+        var deleteResponse = await _client!.DeleteAsync($"/api/v1/ingredients/{ingredient.Id}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, deleteResponse.StatusCode);
+
+        var body = await deleteResponse.Content.ReadAsStringAsync();
+        Assert.Contains("Борщ с морковью", body);
+    }
+
     private async Task<IngredientDto> CreateTestIngredientAsync()
     {
         var response = await _client!.PostAsJsonAsync("/api/v1/ingredients", ValidRequest());

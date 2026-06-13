@@ -10,8 +10,6 @@ describe("RecipeCard", () => {
       description: "Классический украинский борщ со свёклой",
       cookingTime: 120,
       difficulty: "everyday" as const,
-      servings: 6,
-      instructions: "1. Сварить бульон.",
     };
 
     render(<RecipeCard recipe={recipe} />);

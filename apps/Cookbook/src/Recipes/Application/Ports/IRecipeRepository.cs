@@ -6,7 +6,9 @@ internal interface IRecipeRepository : IUnitOfWorkRepository
 {
     IAsyncEnumerable<Recipe> GetRecipesAsync(CancellationToken cancellationToken = default);
     Task<Recipe?> GetByIdAsync(RecipeId id, CancellationToken cancellationToken = default);
+    Task<RecipeWithIngredientDetails?> GetByIdWithDetailsAsync(RecipeId id, CancellationToken cancellationToken = default);
     Task CreateAsync(Recipe recipe, CancellationToken cancellationToken = default);
     Task UpdateAsync(Recipe recipe, CancellationToken cancellationToken = default);
     Task DeleteAsync(RecipeId id, CancellationToken cancellationToken = default);
+    Task<RecipeUsageResult> GetRecipesUsingIngredientAsync(IngredientId ingredientId, CancellationToken cancellationToken = default);
 }
