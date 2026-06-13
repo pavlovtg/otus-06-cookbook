@@ -135,7 +135,8 @@ internal sealed class IngredientsController : ControllerBase
         }
         catch (IngredientInUseException ex)
         {
-            return BadRequest(ProblemDetailsFor(ex.Message));
+            return BadRequest(ProblemDetailsFor(
+                $"Ingredient is used in recipes: {string.Join(", ", ex.TopRecipeTitles)}"));
         }
         catch (IngredientDomainException ex)
         {

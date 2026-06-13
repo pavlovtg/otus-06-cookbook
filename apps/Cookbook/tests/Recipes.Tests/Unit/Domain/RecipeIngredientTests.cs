@@ -1,3 +1,4 @@
+using System.Globalization;
 using Recipes.Domain;
 using Recipes.Domain.Exceptions;
 using Xunit;
@@ -36,7 +37,7 @@ public class RecipeIngredientTests
     [InlineData("100000")]
     public void Create_WithBoundaryAmount_Succeeds(string amountStr)
     {
-        var amount = decimal.Parse(amountStr);
+        var amount = decimal.Parse(amountStr, CultureInfo.InvariantCulture);
 
         var ingredient = RecipeIngredient.Create(ValidIngredientId, amount);
 

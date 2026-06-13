@@ -32,7 +32,7 @@ internal sealed class RecipesController : ControllerBase
         }
         catch (RecipeDomainException ex)
         {
-            return NotFound(ProblemDetailsFor(ex));
+            return BadRequest(ProblemDetailsFor(ex));
         }
     }
 
@@ -104,7 +104,7 @@ internal sealed class RecipesController : ControllerBase
         }
         catch (RecipeDomainException ex)
         {
-            return NotFound(ProblemDetailsFor(ex));
+            return BadRequest(ProblemDetailsFor(ex));
         }
     }
 
