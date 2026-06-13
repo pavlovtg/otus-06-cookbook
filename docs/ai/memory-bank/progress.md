@@ -30,7 +30,7 @@
 
 ## Выполнено (последнее)
 
-- Оптимизация Docker build context: добавлены `apps/Cookbook/.dockerignore` и `apps/ApiGateway/.dockerignore` (исключают `bin/`, `obj/`, `TestResults/`, `tests/`).
+- Архивирование openspec-изменения `recipes-crud` → `openspec/changes/archive/2026-06-13-recipes-crud/`; синхронизированы 5 delta specs в main specs (recipe-list обновлён, recipe-create/delete/detail/edit созданы).
 
 ## Запланировано
 

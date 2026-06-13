@@ -6,12 +6,15 @@
 
 ## Что сделано в этой задаче
 
-Исправлен падающий UI-тест `test_delete_recipe_cancel`.
+Архивирование openspec-изменения `recipes-crud`.
 
-- `DeleteRecipeButton.tsx`: добавлен `data-testid="delete-recipe-trigger"` на кнопку-триггер удаления
-- `tests/ui/test_recipes.py`: селектор `.detail-toolbar button` с `has_text="Удалить"` заменён на `[data-testid='delete-recipe-trigger']`
-
-Причина: в `.detail-toolbar` рендерились два `<button>Удалить</button>` — триггер и кнопка подтверждения в модале, что нарушало strict-режим Playwright.
+- Синхронизированы delta specs → main specs:
+  - `openspec/specs/recipe-list/spec.md` — обновлён (3 изменения)
+  - `openspec/specs/recipe-create/spec.md` — создан
+  - `openspec/specs/recipe-delete/spec.md` — создан
+  - `openspec/specs/recipe-detail/spec.md` — создан
+  - `openspec/specs/recipe-edit/spec.md` — создан
+- Изменение перемещено в `openspec/changes/archive/2026-06-13-recipes-crud/`
 
 ## Следующий шаг
 
