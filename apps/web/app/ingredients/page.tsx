@@ -36,9 +36,9 @@ function Paginator({
   };
 
   return (
-    <nav className="paginator" aria-label="Пагинация" data-testid="paginator">
+    <nav className="pagination" aria-label="Пагинация" data-testid="paginator">
       {page > 1 && (
-        <a href={buildHref(page - 1)} className="paginator-btn" aria-label="Предыдущая страница">
+        <a href={buildHref(page - 1)} className="page-btn" aria-label="Предыдущая страница">
           ‹
         </a>
       )}
@@ -46,7 +46,7 @@ function Paginator({
         <a
           key={p}
           href={buildHref(p)}
-          className={`paginator-btn${p === page ? " is-active" : ""}`}
+          className={`page-btn${p === page ? " is-active" : ""}`}
           aria-current={p === page ? "page" : undefined}
           data-testid={`paginator-page-${p}`}
         >
@@ -54,7 +54,7 @@ function Paginator({
         </a>
       ))}
       {page < totalPages && (
-        <a href={buildHref(page + 1)} className="paginator-btn" aria-label="Следующая страница">
+        <a href={buildHref(page + 1)} className="page-btn" aria-label="Следующая страница">
           ›
         </a>
       )}
