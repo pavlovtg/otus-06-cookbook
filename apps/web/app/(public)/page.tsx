@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getRecipes } from "@/lib/bff/gateway";
+import { getRecipes } from "@/lib/bff/recipes";
 import { RecipeCard } from "@/components/features/RecipeCard";
 import type { RecipeDto } from "@/lib/schemas/recipe";
 

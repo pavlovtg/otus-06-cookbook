@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getRecipe } from "@/lib/bff/gateway";
+import { getRecipe } from "@/lib/bff/recipes";
 import { RecipePhoto } from "@/components/photo";
 import { Tag } from "@/components/ui/Tag";
 import { ArrowLeftIcon, ClockIcon, FlameIcon } from "@/components/icons";

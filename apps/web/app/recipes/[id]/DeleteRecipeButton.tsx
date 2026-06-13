@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { deleteRecipe } from "@/lib/bff/gateway";
+import { deleteRecipe } from "@/lib/bff/recipes";
 
 interface Props {
   id: string;
