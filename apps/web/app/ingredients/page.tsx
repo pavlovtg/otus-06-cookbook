@@ -26,9 +26,8 @@ export default async function IngredientsPage({ searchParams }: Props) {
       title: title || undefined,
       category: categoryValue,
     });
-  } catch (err) {
-    fetchError =
-      err instanceof Error ? err.message : "Не удалось загрузить ингредиенты.";
+  } catch {
+    fetchError = "Не удалось загрузить список ингредиентов.";
   }
 
   return (
