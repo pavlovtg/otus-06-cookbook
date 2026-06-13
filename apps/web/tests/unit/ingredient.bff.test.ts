@@ -50,7 +50,7 @@ describe("getIngredients", () => {
 
     await getIngredients({ title: "морк" });
 
-    const url = vi.mocked(fetch).mock.calls[0]?.[0] as string;
+    const url = decodeURIComponent(vi.mocked(fetch).mock.calls[0]?.[0] as string);
     expect(url).toContain("title=морк");
   });
 
