@@ -53,6 +53,7 @@ def test_create_ingredient_success(page: Page, base_url: str) -> None:
     modal.locator("button[type=submit]").click()
 
     expect(page.locator(".modal-backdrop.is-open")).not_to_be_visible()
+    page.wait_for_load_state("networkidle")
     expect(page.locator(".ingredients-list")).to_contain_text(title)
 
 
@@ -103,6 +104,7 @@ def test_edit_ingredient_success(page: Page, base_url: str) -> None:
     modal.locator("#ingredient-category").select_option(VALID_INGREDIENT["category"])
     modal.locator("button[type=submit]").click()
     expect(page.locator(".modal-backdrop.is-open")).not_to_be_visible()
+    page.wait_for_load_state("networkidle")
 
     item = page.locator(".ingredient-item", has_text=title).first
     item.locator("[data-testid='edit-ingredient-trigger']").click()
@@ -113,6 +115,7 @@ def test_edit_ingredient_success(page: Page, base_url: str) -> None:
     edit_modal.locator("button[type=submit]").click()
 
     expect(page.locator(".modal-backdrop.is-open")).not_to_be_visible()
+    page.wait_for_load_state("networkidle")
     expect(page.locator(".ingredients-list")).to_contain_text(updated_title)
 
 
@@ -129,6 +132,7 @@ def test_delete_ingredient_with_confirmation(page: Page, base_url: str) -> None:
     modal.locator("#ingredient-category").select_option(VALID_INGREDIENT["category"])
     modal.locator("button[type=submit]").click()
     expect(page.locator(".modal-backdrop.is-open")).not_to_be_visible()
+    page.wait_for_load_state("networkidle")
 
     item = page.locator(".ingredient-item", has_text=title).first
     item.locator("[data-testid='delete-ingredient-trigger']").click()
