@@ -2,20 +2,16 @@
 
 ## Текущая задача
 
-Нет активных задач.
+`ingredients-crud` — CRUD ингредиентов (proposal + specs + design + tasks готовы).
 
 ## Что сделано в этой задаче
 
-Архивирование openspec-изменения `recipes-crud`.
-
-- Синхронизированы delta specs → main specs:
-  - `openspec/specs/recipe-list/spec.md` — обновлён (3 изменения)
-  - `openspec/specs/recipe-create/spec.md` — создан
-  - `openspec/specs/recipe-delete/spec.md` — создан
-  - `openspec/specs/recipe-detail/spec.md` — создан
-  - `openspec/specs/recipe-edit/spec.md` — создан
-- Изменение перемещено в `openspec/changes/archive/2026-06-13-recipes-crud/`
+- Создан change `openspec/changes/ingredients-crud/`
+- `proposal.md` — мотивация, список изменений, 4 новые возможности
+- `specs/ingredient-list/spec.md`, `specs/ingredient-create/spec.md`, `specs/ingredient-edit/spec.md`, `specs/ingredient-delete/spec.md`
+- `design.md` — архитектурные решения (агрегат в сервисе `recipes`, contract-first, валидация в домене, EF Core, frontend)
+- `tasks.md` — 11 групп задач (контракт, domain, application, postgresql, web, тесты backend, frontend схемы/BFF/UI/тесты, e2e API, UI e2e)
 
 ## Следующий шаг
 
-Нет активных задач.
+Реализация: `/opsx:apply ingredients-crud`
