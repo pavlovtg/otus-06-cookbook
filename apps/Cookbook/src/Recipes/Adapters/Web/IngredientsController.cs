@@ -28,7 +28,7 @@ internal sealed class IngredientsController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(category))
         {
-            if (!Enum.TryParse<IngredientCategoryDto>(category, ignoreCase: true, out var parsed))
+            if (!IngredientCategoryDtoExtensions.TryParseCategory(category, out var parsed))
                 return BadRequest(ProblemDetailsFor($"Invalid category value: '{category}'."));
 
             categoryFilter = parsed.ToDomain();
@@ -60,7 +60,7 @@ internal sealed class IngredientsController : ControllerBase
     {
         try
         {
-            if (!Enum.TryParse<IngredientCategoryDto>(request.Category, ignoreCase: true, out var categoryDto))
+            if (!IngredientCategoryDtoExtensions.TryParseCategory(request.Category, out var categoryDto))
                 return BadRequest(ProblemDetailsFor($"Invalid category value: '{request.Category}'."));
 
             var ingredient = await _ingredientService.CreateAsync(
@@ -83,7 +83,7 @@ internal sealed class IngredientsController : ControllerBase
     {
         try
         {
-            if (!Enum.TryParse<IngredientCategoryDto>(request.Category, ignoreCase: true, out var categoryDto))
+            if (!IngredientCategoryDtoExtensions.TryParseCategory(request.Category, out var categoryDto))
                 return BadRequest(ProblemDetailsFor($"Invalid category value: '{request.Category}'."));
 
             await _ingredientService.UpdateAsync(

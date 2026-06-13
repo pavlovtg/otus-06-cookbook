@@ -53,7 +53,7 @@ public sealed class IngredientsCrudTests : IAsyncLifetime
         Assert.Equal("Тестовый ингредиент", dto.Title);
         Assert.Equal("г", dto.Unit);
         Assert.Equal(100f, dto.DefaultAmount);
-        Assert.Equal("vegetables", dto.Category.ToString());
+        Assert.Equal(IngredientCategoryDto.Vegetables, dto.Category);
         Assert.False(dto.IsSystem);
     }
 

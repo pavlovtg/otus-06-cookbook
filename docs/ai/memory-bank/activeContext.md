@@ -2,16 +2,16 @@
 
 ## Текущая задача
 
-`ingredients-crud` — CRUD ингредиентов (proposal + specs + design + tasks готовы).
+Нет активной задачи.
 
-## Что сделано в этой задаче
+## Статус
 
-- Создан change `openspec/changes/ingredients-crud/`
-- `proposal.md` — мотивация, список изменений, 4 новые возможности
-- `specs/ingredient-list/spec.md`, `specs/ingredient-create/spec.md`, `specs/ingredient-edit/spec.md`, `specs/ingredient-delete/spec.md`
-- `design.md` — архитектурные решения (агрегат в сервисе `recipes`, contract-first, валидация в домене, EF Core, frontend)
-- `tasks.md` — 11 групп задач (контракт, domain, application, postgresql, web, тесты backend, frontend схемы/BFF/UI/тесты, e2e API, UI e2e)
+`ingredients-crud` — реализовано, закоммичено, все правки применены. Готово к архивированию (`/opsx:archive ingredients-crud`).
 
-## Следующий шаг
+## Что было сделано в последней сессии
 
-Реализация: `/opsx:apply ingredients-crud`
+- `feat(ingredients): implement ingredients CRUD` (bca4d86)
+- `chore: ignore *.tsbuildinfo build artifacts` (472a46e)
+- `fix(migrations): convert to file-scoped namespace, fix encoding` (8764976)
+- `refactor(seeding): move IngredientSeedData into SeedData` (0e2b2d6)
+- `test(seeding): add IngredientSeederTests, fix GetAllAsync ambiguity` (d41ddfd)

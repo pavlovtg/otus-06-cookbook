@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import {
   IngredientRequestSchema,
@@ -80,120 +81,123 @@ export function IngredientModal({ ingredient, trigger }: Props) {
     <>
       <span onClick={handleOpen}>{trigger}</span>
 
-      <div
-        className={`modal-backdrop${open ? " is-open" : ""}`}
-        onClick={() => setOpen(false)}
-      >
-        <div className="modal" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-head">
-            <h2>{ingredient ? "Редактировать ингредиент" : "Новый ингредиент"}</h2>
-          </div>
-          <form className="modal-body" onSubmit={handleSubmit}>
-            <div className="field">
-              <label htmlFor="ingredient-title">Название</label>
-              <input
-                id="ingredient-title"
-                className="input"
-                value={form.title}
-                onChange={(e) => set("title", e.target.value)}
-                placeholder="Название ингредиента"
-                maxLength={200}
-                disabled={loading}
-              />
-              {errors.title && (
-                <span className="error-text">{errors.title}</span>
-              )}
+      {createPortal(
+        <div
+          className={`modal-backdrop${open ? " is-open" : ""}`}
+          onClick={() => setOpen(false)}
+        >
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-head">
+              <h2>{ingredient ? "Редактировать ингредиент" : "Новый ингредиент"}</h2>
             </div>
-
-            <div className="field-row">
+            <form className="modal-body" onSubmit={handleSubmit}>
               <div className="field">
-                <label htmlFor="ingredient-unit">Единица измерения</label>
+                <label htmlFor="ingredient-title">Название</label>
                 <input
-                  id="ingredient-unit"
+                  id="ingredient-title"
                   className="input"
-                  value={form.unit}
-                  onChange={(e) => set("unit", e.target.value)}
-                  placeholder="г, мл, шт"
-                  maxLength={20}
+                  value={form.title}
+                  onChange={(e) => set("title", e.target.value)}
+                  placeholder="Название ингредиента"
+                  maxLength={200}
                   disabled={loading}
                 />
-                {errors.unit && (
-                  <span className="error-text">{errors.unit}</span>
+                {errors.title && (
+                  <span className="error-text">{errors.title}</span>
                 )}
               </div>
 
+              <div className="field-row">
+                <div className="field">
+                  <label htmlFor="ingredient-unit">Единица измерения</label>
+                  <input
+                    id="ingredient-unit"
+                    className="input"
+                    value={form.unit}
+                    onChange={(e) => set("unit", e.target.value)}
+                    placeholder="г, мл, шт"
+                    maxLength={20}
+                    disabled={loading}
+                  />
+                  {errors.unit && (
+                    <span className="error-text">{errors.unit}</span>
+                  )}
+                </div>
+
+                <div className="field">
+                  <label htmlFor="ingredient-defaultAmount">
+                    Количество по умолчанию
+                  </label>
+                  <input
+                    id="ingredient-defaultAmount"
+                    type="number"
+                    className="input"
+                    value={form.defaultAmount}
+                    onChange={(e) =>
+                      set("defaultAmount", Number(e.target.value))
+                    }
+                    min={0.001}
+                    max={100000}
+                    step={0.001}
+                    disabled={loading}
+                  />
+                  {errors.defaultAmount && (
+                    <span className="error-text">{errors.defaultAmount}</span>
+                  )}
+                </div>
+              </div>
+
               <div className="field">
-                <label htmlFor="ingredient-defaultAmount">
-                  Количество по умолчанию
-                </label>
-                <input
-                  id="ingredient-defaultAmount"
-                  type="number"
-                  className="input"
-                  value={form.defaultAmount}
+                <label htmlFor="ingredient-category">Категория</label>
+                <select
+                  id="ingredient-category"
+                  className="select"
+                  value={form.category}
                   onChange={(e) =>
-                    set("defaultAmount", Number(e.target.value))
+                    set(
+                      "category",
+                      e.target.value as IngredientRequest["category"],
+                    )
                   }
-                  min={0.001}
-                  max={100000}
-                  step={0.001}
                   disabled={loading}
-                />
-                {errors.defaultAmount && (
-                  <span className="error-text">{errors.defaultAmount}</span>
+                >
+                  {CATEGORY_OPTIONS.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {IngredientCategoryLabels[cat]}
+                    </option>
+                  ))}
+                </select>
+                {errors.category && (
+                  <span className="error-text">{errors.category}</span>
                 )}
               </div>
-            </div>
 
-            <div className="field">
-              <label htmlFor="ingredient-category">Категория</label>
-              <select
-                id="ingredient-category"
-                className="select"
-                value={form.category}
-                onChange={(e) =>
-                  set(
-                    "category",
-                    e.target.value as IngredientRequest["category"],
-                  )
-                }
-                disabled={loading}
-              >
-                {CATEGORY_OPTIONS.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {IngredientCategoryLabels[cat]}
-                  </option>
-                ))}
-              </select>
-              {errors.category && (
-                <span className="error-text">{errors.category}</span>
-              )}
-            </div>
-
-            <div className="form-actions">
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => setOpen(false)}
-                disabled={loading}
-              >
-                Отмена
-              </button>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={loading}
-              >
-                {loading
-                  ? "Сохранение..."
-                  : ingredient
-                    ? "Сохранить"
-                    : "Создать"}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
+              <div className="form-actions">
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => setOpen(false)}
+                  disabled={loading}
+                >
+                  Отмена
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={loading}
+                >
+                  {loading
+                    ? "Сохранение..."
+                    : ingredient
+                      ? "Сохранить"
+                      : "Создать"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body,
+      )}
     </>
   );
 }

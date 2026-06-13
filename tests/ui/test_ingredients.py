@@ -1,15 +1,18 @@
+import time
 from playwright.sync_api import Page, expect
 
 
+def _unique_title(base: str) -> str:
+    return f"{base}-{int(time.time() * 1000) % 100000}"
+
+
 VALID_INGREDIENT = {
-    "title": "UI-тест морковь",
     "unit": "г",
     "defaultAmount": "150",
     "category": "vegetables",
 }
 
 UPDATED_INGREDIENT = {
-    "title": "UI-тест морковь обновлённая",
     "unit": "шт.",
     "defaultAmount": "3",
     "category": "vegetables",
@@ -34,21 +37,23 @@ def test_ingredients_list_shows_items(page: Page, base_url: str) -> None:
 
 def test_create_ingredient_success(page: Page, base_url: str) -> None:
     """11.2 Успешное создание ингредиента через форму."""
+    title = _unique_title("UI-тест морковь")
     page.goto(f"{base_url}/ingredients")
 
     page.locator("[data-testid='create-ingredient-trigger']").click()
 
-    expect(page.locator(".modal-backdrop.is-open")).to_be_visible()
+    modal = page.locator(".modal-backdrop.is-open")
+    expect(modal).to_be_visible()
 
-    page.fill("#ingredient-title", VALID_INGREDIENT["title"])
-    page.fill("#ingredient-unit", VALID_INGREDIENT["unit"])
-    page.fill("#ingredient-defaultAmount", VALID_INGREDIENT["defaultAmount"])
-    page.select_option("#ingredient-category", VALID_INGREDIENT["category"])
+    modal.locator("#ingredient-title").fill(title)
+    modal.locator("#ingredient-unit").fill(VALID_INGREDIENT["unit"])
+    modal.locator("#ingredient-defaultAmount").fill(VALID_INGREDIENT["defaultAmount"])
+    modal.locator("#ingredient-category").select_option(VALID_INGREDIENT["category"])
 
-    page.locator("button[type=submit]").click()
+    modal.locator("button[type=submit]").click()
 
     expect(page.locator(".modal-backdrop.is-open")).not_to_be_visible()
-    expect(page.locator(".ingredients-list")).to_contain_text(VALID_INGREDIENT["title"])
+    expect(page.locator(".ingredients-list")).to_contain_text(title)
 
 
 def test_create_ingredient_validation_error(page: Page, base_url: str) -> None:
@@ -57,15 +62,17 @@ def test_create_ingredient_validation_error(page: Page, base_url: str) -> None:
 
     page.locator("[data-testid='create-ingredient-trigger']").click()
 
-    page.fill("#ingredient-title", "А")
-    page.fill("#ingredient-unit", VALID_INGREDIENT["unit"])
-    page.fill("#ingredient-defaultAmount", VALID_INGREDIENT["defaultAmount"])
-    page.select_option("#ingredient-category", VALID_INGREDIENT["category"])
+    modal = page.locator(".modal-backdrop.is-open")
 
-    page.locator("button[type=submit]").click()
+    modal.locator("#ingredient-title").fill("А")
+    modal.locator("#ingredient-unit").fill(VALID_INGREDIENT["unit"])
+    modal.locator("#ingredient-defaultAmount").fill(VALID_INGREDIENT["defaultAmount"])
+    modal.locator("#ingredient-category").select_option(VALID_INGREDIENT["category"])
 
-    expect(page.locator(".error-text")).to_be_visible()
-    expect(page.locator(".modal-backdrop.is-open")).to_be_visible()
+    modal.locator("button[type=submit]").click()
+
+    expect(modal.locator(".error-text")).to_be_visible()
+    expect(modal).to_be_visible()
 
 
 def test_edit_ingredient_prefills_form(page: Page, base_url: str) -> None:
@@ -77,54 +84,64 @@ def test_edit_ingredient_prefills_form(page: Page, base_url: str) -> None:
 
     first_item.locator("[data-testid='edit-ingredient-trigger']").click()
 
-    expect(page.locator(".modal-backdrop.is-open")).to_be_visible()
-    expect(page.locator("#ingredient-title")).to_have_value(ingredient_title)
+    modal = page.locator(".modal-backdrop.is-open")
+    expect(modal).to_be_visible()
+    expect(modal.locator("#ingredient-title")).to_have_value(ingredient_title)
 
 
 def test_edit_ingredient_success(page: Page, base_url: str) -> None:
     """11.3 Успешное редактирование ингредиента."""
+    title = _unique_title("UI-тест морковь")
+    updated_title = _unique_title("UI-тест морковь обновлённая")
     page.goto(f"{base_url}/ingredients")
 
     page.locator("[data-testid='create-ingredient-trigger']").click()
-    page.fill("#ingredient-title", VALID_INGREDIENT["title"])
-    page.fill("#ingredient-unit", VALID_INGREDIENT["unit"])
-    page.fill("#ingredient-defaultAmount", VALID_INGREDIENT["defaultAmount"])
-    page.select_option("#ingredient-category", VALID_INGREDIENT["category"])
-    page.locator("button[type=submit]").click()
+    modal = page.locator(".modal-backdrop.is-open")
+    modal.locator("#ingredient-title").fill(title)
+    modal.locator("#ingredient-unit").fill(VALID_INGREDIENT["unit"])
+    modal.locator("#ingredient-defaultAmount").fill(VALID_INGREDIENT["defaultAmount"])
+    modal.locator("#ingredient-category").select_option(VALID_INGREDIENT["category"])
+    modal.locator("button[type=submit]").click()
     expect(page.locator(".modal-backdrop.is-open")).not_to_be_visible()
 
-    item = page.locator(".ingredient-item", has_text=VALID_INGREDIENT["title"])
+    item = page.locator(".ingredient-item", has_text=title).first
     item.locator("[data-testid='edit-ingredient-trigger']").click()
 
-    page.fill("#ingredient-title", UPDATED_INGREDIENT["title"])
-    page.fill("#ingredient-unit", UPDATED_INGREDIENT["unit"])
-    page.locator("button[type=submit]").click()
+    edit_modal = page.locator(".modal-backdrop.is-open")
+    edit_modal.locator("#ingredient-title").fill(updated_title)
+    edit_modal.locator("#ingredient-unit").fill(UPDATED_INGREDIENT["unit"])
+    edit_modal.locator("button[type=submit]").click()
 
     expect(page.locator(".modal-backdrop.is-open")).not_to_be_visible()
-    expect(page.locator(".ingredients-list")).to_contain_text(UPDATED_INGREDIENT["title"])
+    expect(page.locator(".ingredients-list")).to_contain_text(updated_title)
 
 
 def test_delete_ingredient_with_confirmation(page: Page, base_url: str) -> None:
     """11.4 Удаление ингредиента с подтверждением."""
+    title = _unique_title("UI-тест удаление")
     page.goto(f"{base_url}/ingredients")
 
     page.locator("[data-testid='create-ingredient-trigger']").click()
-    page.fill("#ingredient-title", VALID_INGREDIENT["title"])
-    page.fill("#ingredient-unit", VALID_INGREDIENT["unit"])
-    page.fill("#ingredient-defaultAmount", VALID_INGREDIENT["defaultAmount"])
-    page.select_option("#ingredient-category", VALID_INGREDIENT["category"])
-    page.locator("button[type=submit]").click()
+    modal = page.locator(".modal-backdrop.is-open")
+    modal.locator("#ingredient-title").fill(title)
+    modal.locator("#ingredient-unit").fill(VALID_INGREDIENT["unit"])
+    modal.locator("#ingredient-defaultAmount").fill(VALID_INGREDIENT["defaultAmount"])
+    modal.locator("#ingredient-category").select_option(VALID_INGREDIENT["category"])
+    modal.locator("button[type=submit]").click()
     expect(page.locator(".modal-backdrop.is-open")).not_to_be_visible()
 
-    item = page.locator(".ingredient-item", has_text=VALID_INGREDIENT["title"])
+    item = page.locator(".ingredient-item", has_text=title).first
     item.locator("[data-testid='delete-ingredient-trigger']").click()
 
-    expect(page.locator(".modal-backdrop.is-open")).to_be_visible()
+    confirm_modal = page.locator(".modal-backdrop.is-open")
+    expect(confirm_modal).to_be_visible()
 
-    page.locator("button", has_text="Удалить").click()
+    confirm_modal.locator("button", has_text="Удалить").click()
 
     expect(page.locator(".modal-backdrop.is-open")).not_to_be_visible()
-    expect(page.locator(".ingredients-list")).not_to_contain_text(VALID_INGREDIENT["title"])
+    page.wait_for_load_state("networkidle")
+    titles = page.locator(".ingredient-item .ingredient-title").all_inner_texts()
+    assert title not in titles
 
 
 def test_delete_ingredient_cancel(page: Page, base_url: str) -> None:
@@ -136,9 +153,10 @@ def test_delete_ingredient_cancel(page: Page, base_url: str) -> None:
 
     first_item.locator("[data-testid='delete-ingredient-trigger']").click()
 
-    expect(page.locator(".modal-backdrop.is-open")).to_be_visible()
+    confirm_modal = page.locator(".modal-backdrop.is-open")
+    expect(confirm_modal).to_be_visible()
 
-    page.locator("button", has_text="Отмена").click()
+    confirm_modal.locator("button", has_text="Отмена").click()
 
     expect(page.locator(".modal-backdrop.is-open")).not_to_be_visible()
     expect(page.locator(".ingredients-list")).to_contain_text(ingredient_title)
@@ -149,6 +167,8 @@ def test_filter_ingredients_by_title(page: Page, base_url: str) -> None:
     page.goto(f"{base_url}/ingredients")
 
     page.fill("[data-testid='filter-title']", "морк")
+    page.locator("button[type=submit]", has_text="Найти").click()
+    page.wait_for_load_state("networkidle")
 
     items = page.locator(".ingredient-item")
     count = items.count()
@@ -162,6 +182,8 @@ def test_filter_ingredients_by_category(page: Page, base_url: str) -> None:
     page.goto(f"{base_url}/ingredients")
 
     page.select_option("[data-testid='filter-category']", "vegetables")
+    page.locator("button[type=submit]", has_text="Найти").click()
+    page.wait_for_load_state("networkidle")
 
     items = page.locator(".ingredient-item")
     expect(items.first).to_be_visible()

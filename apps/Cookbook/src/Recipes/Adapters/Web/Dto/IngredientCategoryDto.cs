@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Recipes.Adapters.Web.Dto;
 
+[JsonConverter(typeof(JsonStringEnumConverter<IngredientCategoryDto>))]
 internal enum IngredientCategoryDto
 {
     [JsonStringEnumMemberName("vegetables")]
