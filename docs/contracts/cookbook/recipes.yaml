@@ -147,6 +147,168 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/ingredients:
+    get:
+      summary: Получить список ингредиентов
+      operationId: getIngredients
+      tags:
+        - Ingredients
+      parameters:
+        - name: title
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Фильтр по названию (вхождение, без учёта регистра)
+        - name: category
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/IngredientCategory"
+          description: Фильтр по категории
+      responses:
+        "200":
+          description: Список ингредиентов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/IngredientDto"
+        "400":
+          description: Некорректное значение параметра (например, неизвестная категория)
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    post:
+      summary: Создать ингредиент
+      operationId: createIngredient
+      tags:
+        - Ingredients
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IngredientRequest"
+      responses:
+        "201":
+          description: Ингредиент создан
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngredientDto"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/ingredients/{id}:
+    get:
+      summary: Получить ингредиент по идентификатору
+      operationId: getIngredientById
+      tags:
+        - Ingredients
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Ингредиент найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngredientDto"
+        "400":
+          description: Некорректный идентификатор или ингредиент не найден
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    put:
+      summary: Обновить ингредиент
+      operationId: updateIngredient
+      tags:
+        - Ingredients
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IngredientRequest"
+      responses:
+        "204":
+          description: Ингредиент обновлён
+        "400":
+          description: Ошибка валидации, некорректный идентификатор или ингредиент не найден
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    delete:
+      summary: Удалить ингредиент
+      operationId: deleteIngredient
+      tags:
+        - Ingredients
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Ингредиент удалён
+        "400":
+          description: Некорректный идентификатор или ингредиент не найден
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
 components:
   schemas:
     Difficulty:
@@ -264,3 +426,77 @@ components:
           type: string
           description: URI-ссылка, идентифицирующая конкретный экземпляр проблемы
           example: /api/v1/recipes
+    IngredientCategory:
+      type: string
+      enum:
+        - vegetables
+        - fruits_and_berries
+        - meat_and_poultry
+        - fish_and_seafood
+        - dairy_and_eggs
+        - grains_and_cereals
+        - legumes
+        - nuts_and_seeds
+        - oils_and_fats
+        - spices_and_seasonings
+        - sauces_and_pastes
+        - bakery_and_sweets
+        - other
+      example: vegetables
+    IngredientDto:
+      type: object
+      required:
+        - id
+        - title
+        - unit
+        - defaultAmount
+        - category
+        - isSystem
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: aad1f839-df31-49f2-84d7-4dd01e04be77
+        title:
+          type: string
+          example: Морковь
+        unit:
+          type: string
+          example: г
+        defaultAmount:
+          type: number
+          format: double
+          minimum: 0.001
+          maximum: 100000
+          example: 100
+        category:
+          $ref: "#/components/schemas/IngredientCategory"
+        isSystem:
+          type: boolean
+          example: true
+    IngredientRequest:
+      type: object
+      required:
+        - title
+        - unit
+        - defaultAmount
+        - category
+      properties:
+        title:
+          type: string
+          minLength: 2
+          maxLength: 200
+          example: Морковь
+        unit:
+          type: string
+          minLength: 1
+          maxLength: 20
+          example: г
+        defaultAmount:
+          type: number
+          format: double
+          minimum: 0.001
+          maximum: 100000
+          example: 100
+        category:
+          $ref: "#/components/schemas/IngredientCategory"

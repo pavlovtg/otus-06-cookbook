@@ -6,11 +6,12 @@ using Recipes.Domain;
 
 namespace Recipes.Adapters.Postgresql;
 
-internal sealed class RecipeRepository : DbContext, IRecipeRepository
+internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredientRepository
 {
     public const string DefaultSchema = "cookbook";
 
     public DbSet<Recipe> Recipes => Set<Recipe>();
+    public DbSet<Ingredient> Ingredients => Set<Ingredient>();
 
     public RecipeRepository(DbContextOptions<RecipeRepository> options) : base(options) { }
 
@@ -18,6 +19,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository
     {
         modelBuilder.HasDefaultSchema(DefaultSchema);
         modelBuilder.ApplyConfiguration(new RecipeConfiguration());
+        modelBuilder.ApplyConfiguration(new IngredientConfiguration());
     }
 
     public async IAsyncEnumerable<Recipe> GetAllAsync(
@@ -58,5 +60,47 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository
     public async Task CommitAsync(CancellationToken cancellationToken = default)
     {
         await SaveChangesAsync(cancellationToken);
+    }
+
+    // ── IIngredientRepository ────────────────────────────────────────────────
+
+    public async IAsyncEnumerable<Ingredient> GetAllAsync(
+        string? titleFilter = null,
+        IngredientCategory? categoryFilter = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var query = Ingredients.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(titleFilter))
+            query = query.Where(i => i.Title.ToLower().Contains(titleFilter.ToLower()));
+
+        if (categoryFilter.HasValue)
+            query = query.Where(i => i.Category == categoryFilter.Value);
+
+        await foreach (var ingredient in query.AsAsyncEnumerable().WithCancellation(cancellationToken))
+            yield return ingredient;
+    }
+
+    public async Task<Ingredient?> GetByIdAsync(IngredientId id, CancellationToken cancellationToken = default)
+    {
+        return await Ingredients.FindAsync([id], cancellationToken);
+    }
+
+    public async Task CreateAsync(Ingredient ingredient, CancellationToken cancellationToken = default)
+    {
+        await Ingredients.AddAsync(ingredient, cancellationToken);
+    }
+
+    public Task UpdateAsync(Ingredient ingredient, CancellationToken cancellationToken = default)
+    {
+        Ingredients.Update(ingredient);
+        return Task.CompletedTask;
+    }
+
+    public async Task DeleteAsync(IngredientId id, CancellationToken cancellationToken = default)
+    {
+        var ingredient = await Ingredients.FindAsync([id], cancellationToken);
+        if (ingredient is not null)
+            Ingredients.Remove(ingredient);
     }
 }

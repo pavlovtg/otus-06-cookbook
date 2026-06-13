@@ -18,7 +18,9 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddDatabase(builder.Configuration);
 
 builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
+builder.Services.AddScoped<IIngredientRepository, RecipeRepository>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
+builder.Services.AddScoped<IIngredientService, IngredientService>();
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
@@ -32,6 +34,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<RecipeRepository>();
     await RecipeSeeder.SeedAsync(db);
+    await IngredientSeeder.SeedAsync(db);
 }
 
 app.MapHealthChecks("/api/v1/health");

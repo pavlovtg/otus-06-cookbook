@@ -83,6 +83,8 @@
 | AR-0054: Загрузка начальных данных через отдельный класс-загрузчик по принципу Upsert | Seeding — отдельный класс-загрузчик после миграций; upsert по существующим данным; API репозитория или SQL | [AR-0054](docs/architecture/rules/dotnet/AR-0054-seeding-upsert.md) | dotnet |
 | AR-0055: Миграция схемы при старте приложения через MigrateDatabaseAsync | Миграция до поднятия эндпоинтов через хелпер `MigrateDatabaseAsync<TProgram, TContext>` из `Shared.Hosting` | [AR-0055](docs/architecture/rules/dotnet/AR-0055-migrate-on-startup.md) | dotnet |
 | AR-0056: Изоляция DbContext в тестах репозитория | Каждый тест — новый инстанс `DbContext`; запись и чтение в одном тесте — разные инстансы | [AR-0056](docs/architecture/rules/dotnet/AR-0056-repository-test-dbcontext-isolation.md) | dotnet |
+| AR-0057: BFF — один файл на ресурс | Каждый ресурс BFF располагается в отдельном файле `apps/web/lib/bff/<resource>.ts`; общий файл-агрегатор запрещён | [AR-0057](docs/architecture/rules/frontend/AR-0057-bff-one-file-per-resource.md) | frontend |
+| AR-0058: Структура unit-тестов frontend | Для каждого ресурса — два файла: `<resource>.schema.test.ts` (Zod) и `<resource>.bff.test.ts` (fetch mock); объединять запрещено | [AR-0058](docs/architecture/rules/frontend/AR-0058-frontend-unit-test-structure.md) | frontend |
 
 ## Стандарты
 
