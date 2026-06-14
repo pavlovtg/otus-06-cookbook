@@ -36,7 +36,8 @@ await app.MigrateDatabaseAsync<Program, RecipeRepository>();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<RecipeRepository>();
-    await CookbookSeeder.SeedAsync(db);
+    var photosPath = app.Configuration["Seeder:PhotosPath"];
+    await CookbookSeeder.SeedAsync(db, photosPath);
 }
 
 app.MapHealthChecks("/api/v1/health");

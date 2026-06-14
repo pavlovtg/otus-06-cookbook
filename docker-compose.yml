@@ -3,7 +3,9 @@ name: ${COMPOSE_NAME:?NO_COMPOSE_NAME}
 services:
   reverse-proxy:
     container_name: ${REVERSE_PROXY_CONTAINER_NAME:?NO_REVERSE_PROXY_CONTAINER_NAME}
-    image: nginx:1.27-alpine
+    build:
+      context: infrastructure/docker-compose/reverse-proxy
+      dockerfile: Dockerfile
     ports:
       - "${REVERSE_PROXY_PORT:?NO_REVERSE_PROXY_PORT}:${REVERSE_PROXY_INTERNAL_PORT:?NO_REVERSE_PROXY_INTERNAL_PORT}"
     volumes:
@@ -78,6 +80,7 @@ services:
       DatabaseConnection__Database: ${POSTGRES_DB:?NO_POSTGRES_DB}
       DatabaseConnection__Username: ${POSTGRES_USER:?NO_POSTGRES_USER}
       DatabaseConnection__Password: ${POSTGRES_PASSWORD:?NO_POSTGRES_PASSWORD}
+      Seeder__PhotosPath: /app/seed/photos
     networks:
       - backend-net
     healthcheck:

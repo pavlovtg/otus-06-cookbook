@@ -33,6 +33,7 @@ export type Recipe = {
   categories: Category[];
   author_id: string;
   is_public: boolean;
+  photo_url?: string;
 };
 export type Comment = {
   id: string;

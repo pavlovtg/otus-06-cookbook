@@ -10,5 +10,6 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app/publish .
+COPY seed/photos /app/seed/photos
 
 ENTRYPOINT ["dotnet", "Recipes.dll"]

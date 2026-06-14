@@ -2,7 +2,7 @@
 
 ## Инфраструктура
 
-- [ ] **INFRA-1** Проверить nginx: убедиться, что образ собран с `ngx_cache_purge`; настроить `proxy_cache` для `/api/cookbook/photos/`; разрешить `PURGE` от внутренней сети Docker.
+- [x] **INFRA-1** Проверить nginx: убедиться, что образ собран с `ngx_cache_purge`; настроить `proxy_cache` для `/api/cookbook/photos/`; разрешить `PURGE` от внутренней сети Docker.
 
 ## Контракт
 
@@ -36,29 +36,29 @@
 
 ## Seed
 
-- [ ] **SEED-1** Добавить директорию `apps/seed/photos/` с JPEG-заглушками для 25+ рецептов.
-- [ ] **SEED-2** Расширить `CookbookSeeder`: загружать фото из `apps/seed/photos/`, генерировать thumbnail, сохранять в `recipe_photos`, обновлять `photo_id` у рецептов. Операция идемпотентна.
+- [x] **SEED-1** Добавить директорию `apps/seed/photos/` с JPEG-заглушками для 25+ рецептов.
+- [x] **SEED-2** Расширить `CookbookSeeder`: загружать фото из `apps/seed/photos/`, генерировать thumbnail, сохранять в `recipe_photos`, обновлять `photo_id` у рецептов. Операция идемпотентна.
 
 ## Frontend — схемы и BFF
 
-- [ ] **FE-1** Обновить Zod-схемы `RecipeDto` и `RecipeShortDto`: добавить `photoId: z.string().uuid().nullable()`.
-- [ ] **FE-2** Добавить BFF-функции: `uploadRecipePhoto(recipeId, file)`, `deleteRecipePhoto(recipeId)`.
-- [ ] **FE-3** После успешного `uploadRecipePhoto` и `deleteRecipePhoto` отправлять PURGE-запрос из BFF в nginx на URL фото и thumbnail.
-- [ ] **FE-4** Добавить утилиту `getRecipePhotoUrl(photoId)` и `getRecipeThumbnailUrl(photoId)` — формируют URL `/api/cookbook/photos/{photoId}` и `/api/cookbook/photos/{photoId}/thumbnail`.
+- [x] **FE-1** Обновить Zod-схемы `RecipeDto` и `RecipeShortDto`: добавить `photoId: z.string().uuid().nullable()`.
+- [x] **FE-2** Добавить BFF-функции: `uploadRecipePhoto(recipeId, file)`, `deleteRecipePhoto(recipeId)`.
+- [x] **FE-3** После успешного `uploadRecipePhoto` и `deleteRecipePhoto` отправлять PURGE-запрос из BFF в nginx на URL фото и thumbnail.
+- [x] **FE-4** Добавить утилиту `getRecipePhotoUrl(photoId)` и `getRecipeThumbnailUrl(photoId)` — формируют URL `/api/cookbook/photos/{photoId}` и `/api/cookbook/photos/{photoId}/thumbnail`.
 
 ## Frontend — UI
 
-- [ ] **UI-1** Обновить компонент `RecipeCard`: если `photoId != null` — рендерить `<img src={thumbnailUrl}>`, иначе — заглушку (SVG-градиент из `photo.tsx`).
-- [ ] **UI-2** Обновить детальную страницу рецепта: если `photoId != null` — рендерить `<img src={photoUrl}>`, иначе — заглушку.
-- [ ] **UI-3** Добавить на детальную страницу кнопки управления фото (видны только автору и admin): «Загрузить фото» (если `photoId = null`), «Заменить фото» и «Удалить фото» (если `photoId != null`).
-- [ ] **UI-4** Добавить Storybook-истории: `RecipeCard` с фото и без; блок управления фото на детальной странице.
+- [x] **UI-1** Обновить компонент `RecipeCard`: если `photoId != null` — рендерить `<img src={thumbnailUrl}>`, иначе — заглушку (SVG-градиент из `photo.tsx`).
+- [x] **UI-2** Обновить детальную страницу рецепта: если `photoId != null` — рендерить `<img src={photoUrl}>`, иначе — заглушку.
+- [x] **UI-3** Добавить на детальную страницу кнопки управления фото (видны только автору и admin): «Загрузить фото» (если `photoId = null`), «Заменить фото» и «Удалить фото» (если `photoId != null`).
+- [x] **UI-4** Добавить Storybook-истории: `RecipeCard` с фото и без; блок управления фото на детальной странице.
 
 ## Тесты
 
 - [x] **TEST-1** Unit (backend): `RecipePhoto.Create` — валидация MIME и размера.
-- [ ] **TEST-2** Unit (backend): `RecipePhotoService` — покрыто микросервисными тестами.
-- [ ] **TEST-3** Unit (frontend): Zod-схемы с `photoId`; `getRecipePhotoUrl` / `getRecipeThumbnailUrl`.
-- [ ] **TEST-4** Integration (DB): сохранение фото; `GetOriginalAsync` не загружает `thumbnail_data`; `GetThumbnailAsync` не загружает `original_data`; CASCADE DELETE при удалении рецепта.
+- [x] **TEST-2** Unit (backend): `RecipePhotoService` — покрыто микросервисными тестами.
+- [x] **TEST-3** Unit (frontend): Zod-схемы с `photoId`; `getRecipePhotoUrl` / `getRecipeThumbnailUrl`.
+- [x] **TEST-4** Integration (DB): сохранение фото; `GetOriginalAsync` не загружает `thumbnail_data`; `GetThumbnailAsync` не загружает `original_data`; CASCADE DELETE при удалении рецепта.
 - [x] **TEST-5** Microservice: `POST /photo` → `GET /photos/{id}` возвращает фото; `DELETE /photo` → `photoId = null`; недопустимый формат → `400`; фото не найдено → `400`.
-- [ ] **TEST-6** E2E API: загрузка фото, `photoId != null` в ответе; удаление фото, `photoId = null`.
-- [ ] **TEST-7** UI E2E: карточка рецепта с фото рендерит `<img>`; кнопки управления фото видны автору и скрыты для гостя.
+- [x] **TEST-6** E2E API: загрузка фото, `photoId != null` в ответе; удаление фото, `photoId = null`.
+- [x] **TEST-7** UI E2E: карточка рецепта с фото рендерит `<img>`; кнопки управления фото видны автору и скрыты для гостя.

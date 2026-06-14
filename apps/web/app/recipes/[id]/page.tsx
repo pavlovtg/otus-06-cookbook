@@ -7,6 +7,8 @@ import { RecipePhoto } from "@/components/photo";
 import { Tag } from "@/components/ui/Tag";
 import { ArrowLeftIcon, ClockIcon, FlameIcon } from "@/components/icons";
 import { DeleteRecipeButton } from "./DeleteRecipeButton";
+import { RecipePhotoActions } from "./RecipePhotoActions";
+import { getRecipePhotoUrl } from "@/lib/bff/photos";
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   easy: "Просто",
@@ -71,8 +73,18 @@ export default async function RecipeDetailPage({ params }: Props) {
         {/* Left column */}
         <div className="gallery">
           <div className="main-photo">
-            <RecipePhoto seed={recipe.id} title={recipe.title} />
+            {recipe.photoId != null ? (
+              <img
+                src={getRecipePhotoUrl(recipe.photoId)}
+                alt={recipe.title}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              <RecipePhoto seed={recipe.id} title={recipe.title} />
+            )}
           </div>
+
+          <RecipePhotoActions recipeId={recipe.id} photoId={recipe.photoId} />
 
           <p
             className="t-small"

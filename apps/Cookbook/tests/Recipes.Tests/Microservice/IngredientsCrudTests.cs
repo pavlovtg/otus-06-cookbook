@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Json;
-using DotNet.Testcontainers.Builders;
 using Recipes.Adapters.Web.Dto;
 using Recipes.Application;
 using Testcontainers.PostgreSql;
@@ -12,7 +11,6 @@ public sealed class IngredientsCrudTests : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
         .WithImage("postgres:16-alpine")
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
         .Build();
 
     private RecipeMicroserviceHost? _host;

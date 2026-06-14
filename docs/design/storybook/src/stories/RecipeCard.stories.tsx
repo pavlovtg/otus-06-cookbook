@@ -23,6 +23,24 @@ export const Default: S = {
   },
 };
 
+export const WithPhoto: S = {
+  name: 'С фото',
+  args: {
+    recipe: { ...r, photo_url: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop' },
+    author: getUser(r.author_id),
+    rating: avgRating(r.id),
+  },
+};
+
+export const WithoutPhoto: S = {
+  name: 'Без фото (заглушка)',
+  args: {
+    recipe: { ...r, photo_url: undefined },
+    author: getUser(r.author_id),
+    rating: avgRating(r.id),
+  },
+};
+
 export const Private: S = {
   args: {
     recipe: recipes.find((x) => !x.is_public)!,

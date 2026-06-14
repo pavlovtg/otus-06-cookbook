@@ -6,12 +6,12 @@ namespace Recipes.Adapters.Postgresql;
 
 internal static class CookbookSeeder
 {
-    public static async Task SeedAsync(RecipeRepository db, CancellationToken cancellationToken = default)
+    public static async Task SeedAsync(RecipeRepository db, string? photosPath = null, CancellationToken cancellationToken = default)
     {
         await SeedIngredientsAsync(db, cancellationToken);
         await SeedRecipesAsync(db, cancellationToken);
         await SeedRecipeIngredientsAsync(db, cancellationToken);
-        await SeedPhotosAsync(db, cancellationToken);
+        await SeedPhotosAsync(db, photosPath, cancellationToken);
     }
 
     private static async Task SeedIngredientsAsync(RecipeRepository db, CancellationToken cancellationToken)
@@ -110,13 +110,16 @@ internal static class CookbookSeeder
         }
     }
 
-    private static async Task SeedPhotosAsync(RecipeRepository db, CancellationToken cancellationToken)
+    private static async Task SeedPhotosAsync(RecipeRepository db, string? photosPath, CancellationToken cancellationToken)
     {
         if (SeedData.RecipePhotoSeeds.Length == 0)
             return;
 
-        var photosDir = GetPhotosDirectory();
-        if (photosDir is null || !photosDir.Exists)
+        if (string.IsNullOrWhiteSpace(photosPath))
+            return;
+
+        var photosDir = new DirectoryInfo(photosPath);
+        if (!photosDir.Exists)
             return;
 
         var thumbnailGenerator = new ImageSharpThumbnailGenerator();
@@ -181,19 +184,6 @@ internal static class CookbookSeeder
             await tx.RollbackAsync(cancellationToken);
             throw;
         }
-    }
-
-    private static DirectoryInfo? GetPhotosDirectory()
-    {
-        var current = new DirectoryInfo(AppContext.BaseDirectory);
-        while (current is not null)
-        {
-            var candidate = new DirectoryInfo(Path.Combine(current.FullName, "apps", "seed", "photos"));
-            if (candidate.Exists)
-                return candidate;
-            current = current.Parent;
-        }
-        return null;
     }
 
     private static FileInfo? FindPhotoFile(DirectoryInfo dir, RecipePhotoId photoId)

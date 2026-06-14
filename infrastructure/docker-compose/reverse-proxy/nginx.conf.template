@@ -21,6 +21,13 @@ server {
         add_header X-Cache-Status $upstream_cache_status;
     }
 
+    location ~ /purge(/api/cookbook/photos/.*) {
+        allow 172.16.0.0/12;
+        allow 10.0.0.0/8;
+        deny all;
+        proxy_cache_purge photos_cache $scheme$proxy_host$1;
+    }
+
     location /api/ {
         proxy_pass ${GATEWAY_URL};
         proxy_set_header Host $host;

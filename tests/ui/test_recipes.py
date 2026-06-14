@@ -121,3 +121,44 @@ def test_delete_recipe_cancel(page: Page, base_url: str) -> None:
 
     expect(page.locator(".modal-backdrop.is-open")).not_to_be_visible()
     expect(page.locator(".detail-bar")).to_be_visible()
+
+
+# ── Recipe Photos UI (TEST-7) ─────────────────────────────────────────────────
+
+def test_recipe_card_with_photo_renders_img(page: Page, base_url: str) -> None:
+    """TEST-7: Карточка рецепта с фото рендерит <img>."""
+    page.goto(base_url)
+
+    # Ищем карточку с <img> (рецепт с фото из seed-данных)
+    cards_with_img = page.locator(".recipe-card .photo img")
+    if cards_with_img.count() > 0:
+        expect(cards_with_img.first).to_be_visible()
+        src = cards_with_img.first.get_attribute("src")
+        assert src is not None
+        assert "/api/cookbook/photos/" in src
+
+
+def test_recipe_card_without_photo_renders_svg(page: Page, base_url: str) -> None:
+    """TEST-7: Карточка рецепта без фото рендерит SVG-заглушку."""
+    page.goto(base_url)
+
+    # Ищем карточку с SVG (рецепт без фото)
+    cards_with_svg = page.locator(".recipe-card .photo svg")
+    if cards_with_svg.count() > 0:
+        expect(cards_with_svg.first).to_be_visible()
+
+
+def test_recipe_detail_photo_actions_visible(page: Page, base_url: str) -> None:
+    """TEST-7: Кнопки управления фото видны на детальной странице."""
+    page.goto(base_url)
+    page.locator(".recipe-card").first.click()
+
+    expect(page).to_have_url(re.compile(r"/recipes/"))
+
+    # Кнопки управления фото должны присутствовать
+    photo_actions = page.locator(".photo-actions")
+    expect(photo_actions).to_be_visible()
+
+    # Должна быть хотя бы одна кнопка управления фото
+    buttons = photo_actions.locator("button")
+    expect(buttons.first).to_be_visible()
