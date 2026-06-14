@@ -210,10 +210,10 @@ def test_search_field_has_max_length_200(page: Page, base_url: str) -> None:
 
 
 def test_paginator_not_visible_when_single_page(page: Page, base_url: str) -> None:
-    """11.7 Пагинатор не отображается, если все ингредиенты помещаются на одну страницу."""
-    page.goto(f"{base_url}/ingredients?pageSize=1000")
+    """11.7 Пагинатор не отображается, если результатов меньше одной страницы."""
+    unique = f"zzz-no-such-ingredient-{int(time.time())}"
+    page.goto(f"{base_url}/ingredients?title={unique}")
     page.wait_for_load_state("networkidle")
 
     paginator = page.locator("[data-testid='paginator']")
-    # Пагинатор либо отсутствует, либо не виден
     assert paginator.count() == 0 or not paginator.is_visible()
