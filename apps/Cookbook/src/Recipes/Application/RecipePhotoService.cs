@@ -20,7 +20,7 @@ internal sealed class RecipePhotoService : IRecipePhotoService
         _thumbnailGenerator = thumbnailGenerator;
     }
 
-    public async Task UploadAsync(
+    public async Task<RecipePhotoId> UploadAsync(
         RecipeId recipeId,
         string mimeType,
         Stream stream,
@@ -51,6 +51,8 @@ internal sealed class RecipePhotoService : IRecipePhotoService
         recipe.SetPhoto(photo.Id);
         await _recipeRepository.UpdateAsync(recipe, cancellationToken);
         await _recipeRepository.CommitAsync(cancellationToken);
+
+        return photo.Id;
     }
 
     public async Task DeleteAsync(RecipeId recipeId, CancellationToken cancellationToken = default)

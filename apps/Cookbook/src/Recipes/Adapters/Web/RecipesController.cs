@@ -115,12 +115,12 @@ internal sealed class RecipesController : ControllerBase
     {
         try
         {
-            await _photoService.UploadAsync(
+            var photoId = await _photoService.UploadAsync(
                 RecipeId.From(id),
                 file.ContentType,
                 file.OpenReadStream(),
                 cancellationToken);
-            return NoContent();
+            return Ok(new { photoId = photoId.Value });
         }
         catch (RecipeDomainException ex)
         {

@@ -8,7 +8,7 @@ proxy_cache_path /var/cache/nginx/photos
 server {
     listen ${REVERSE_PROXY_INTERNAL_PORT};
 
-    location /api/cookbook/photos/ {
+    location /api/cookbook/v1/photos/ {
         proxy_pass ${GATEWAY_URL};
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -21,7 +21,7 @@ server {
         add_header X-Cache-Status $upstream_cache_status;
     }
 
-    location ~ /purge(/api/cookbook/photos/.*) {
+    location ~ /purge(/api/cookbook/v1/photos/.*) {
         allow 172.16.0.0/12;
         allow 10.0.0.0/8;
         deny all;

@@ -15,8 +15,8 @@ const CLIENT_BASE = `/api/cookbook/v1/recipes`;
 
 async function purgePhotoCache(photoId: string): Promise<void> {
   const urls = [
-    `${REVERSE_PROXY_URL}/purge/api/cookbook/photos/${photoId}`,
-    `${REVERSE_PROXY_URL}/purge/api/cookbook/photos/${photoId}/thumbnail`,
+    `${REVERSE_PROXY_URL}/purge/api/cookbook/v1/photos/${photoId}`,
+    `${REVERSE_PROXY_URL}/purge/api/cookbook/v1/photos/${photoId}/thumbnail`,
   ];
   await Promise.allSettled(
     urls.map((url) => fetch(url, { method: "PURGE", cache: "no-store" })),

@@ -7,7 +7,7 @@ const PHOTO_ID = "aaaaaaaa-0000-0000-0000-000000000001";
 describe("getRecipePhotoUrl", () => {
   it("формирует корректный URL оригинала", () => {
     expect(getRecipePhotoUrl(PHOTO_ID)).toBe(
-      `/api/cookbook/photos/${PHOTO_ID}`,
+      `/api/cookbook/v1/photos/${PHOTO_ID}`,
     );
   });
 });
@@ -15,7 +15,7 @@ describe("getRecipePhotoUrl", () => {
 describe("getRecipeThumbnailUrl", () => {
   it("формирует корректный URL thumbnail", () => {
     expect(getRecipeThumbnailUrl(PHOTO_ID)).toBe(
-      `/api/cookbook/photos/${PHOTO_ID}/thumbnail`,
+      `/api/cookbook/v1/photos/${PHOTO_ID}/thumbnail`,
     );
   });
 });

@@ -1,3 +1,4 @@
+using DotNet.Testcontainers.Builders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql;
@@ -14,6 +15,7 @@ public sealed class RecipeRepositoryTests : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
         .WithImage("postgres:16-alpine")
+        .WithOutputConsumer(Consume.DoNotConsumeStdoutAndStderr())
         .Build();
 
     private RepositoryFactory<RecipeRepository> _factory = null!;

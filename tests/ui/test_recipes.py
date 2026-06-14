@@ -135,7 +135,7 @@ def test_recipe_card_with_photo_renders_img(page: Page, base_url: str) -> None:
         expect(cards_with_img.first).to_be_visible()
         src = cards_with_img.first.get_attribute("src")
         assert src is not None
-        assert "/api/cookbook/photos/" in src
+        assert "/api/cookbook/v1/photos/" in src
 
 
 def test_recipe_card_without_photo_renders_svg(page: Page, base_url: str) -> None:

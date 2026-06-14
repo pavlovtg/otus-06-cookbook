@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using DotNet.Testcontainers.Builders;
 using Recipes.Adapters.Web.Dto;
 using Testcontainers.PostgreSql;
 using Xunit;
@@ -10,6 +11,7 @@ public sealed class RecipePhotoTests : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
         .WithImage("postgres:16-alpine")
+        .WithOutputConsumer(Consume.DoNotConsumeStdoutAndStderr())
         .Build();
 
     private RecipeMicroserviceHost? _host;
@@ -30,13 +32,13 @@ public sealed class RecipePhotoTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task UploadPhoto_Returns204_AndRecipeHasPhotoId()
+    public async Task UploadPhoto_Returns200_AndRecipeHasPhotoId()
     {
         var recipe = await CreateTestRecipeAsync();
         Assert.Null(recipe.PhotoId);
 
         var response = await UploadPhotoAsync(recipe.Id);
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var updated = await _client!.GetFromJsonAsync<RecipeDto>($"/api/v1/recipes/{recipe.Id}");
         Assert.NotNull(updated);

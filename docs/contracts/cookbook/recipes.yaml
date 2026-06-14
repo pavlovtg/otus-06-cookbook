@@ -82,8 +82,19 @@ paths:
                   format: binary
                   description: Файл изображения (image/jpeg или image/png, максимум 10 МБ)
       responses:
-        "204":
+        "200":
           description: Фото загружено
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - photoId
+                properties:
+                  photoId:
+                    type: string
+                    format: uuid
+                    description: Идентификатор загруженного фото
         "400":
           description: Недопустимый формат или размер файла, некорректный идентификатор или рецепт не найден
           content:

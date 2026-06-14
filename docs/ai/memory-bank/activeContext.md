@@ -2,9 +2,26 @@
 
 ## Текущая задача
 
-Завершена реализация change `recipe-photos` — все 27 задач выполнены.
+Создан `scripts/restart.sh` — скрипт полного перезапуска приложения (stop → rebuild --no-cache → up --wait).
 
-## Что было сделано в последней сессии
+## Что было сделано в последней сессии (bugfix 2)
+
+- `/api/cookbook/photos/` → `/api/cookbook/v1/photos/` везде:
+  - `nginx.conf.template`: location и purge regex
+  - `lib/bff/photos.ts`: URL утилиты
+  - `lib/bff/recipes.ts`: PURGE URLs
+  - `tests/unit/photos.test.ts`, `RecipeCard.test.tsx`: ожидаемые URL
+  - `tests/ui/test_recipes.py`: assert
+
+## Что было сделано ранее (bugfix 1)
+
+- `IRecipePhotoService.UploadAsync` → `Task<RecipePhotoId>` (было `Task`)
+- `RecipePhotoService.UploadAsync` → возвращает `photo.Id`
+- `RecipesController.UploadPhoto` → `Ok(new { photoId })` вместо `NoContent()`
+- `RecipePhotoTests.cs` → `UploadPhoto_Returns200_AndRecipeHasPhotoId` (было `NoContent`)
+- `recipes.yaml` → `"200"` с телом `{ photoId: uuid }` вместо `"204"`
+
+## Что было сделано ранее
 
 - **INFRA-1**: nginx собран с `ngx_cache_purge`; настроен `proxy_cache` для `/api/cookbook/photos/`; разрешён `PURGE` от `172.0.0.0/8`
 - **FE-1**: Zod-схемы `RecipeDto` и `RecipeShortDto` — добавлен `photoId: z.string().uuid().nullable()`

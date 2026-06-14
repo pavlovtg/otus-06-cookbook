@@ -39,7 +39,7 @@ describe("RecipeCard", () => {
     expect(img).toBeInTheDocument();
     expect(img).toHaveAttribute(
       "src",
-      `/api/cookbook/photos/${PHOTO_ID}/thumbnail`
+      `/api/cookbook/v1/photos/${PHOTO_ID}/thumbnail`
     );
   });
 
