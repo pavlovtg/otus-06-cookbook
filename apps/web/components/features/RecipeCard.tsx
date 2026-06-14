@@ -27,6 +27,7 @@ export function RecipeCard({ recipe, onClick }: RecipeCardProps) {
             src={getRecipeThumbnailUrl(recipe.photoId)}
             alt={recipe.title}
             fill
+            unoptimized
             style={{ objectFit: "cover" }}
           />
         ) : (

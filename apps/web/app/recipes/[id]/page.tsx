@@ -79,6 +79,7 @@ export default async function RecipeDetailPage({ params }: Props) {
                 src={getRecipePhotoUrl(recipe.photoId)}
                 alt={recipe.title}
                 fill
+                unoptimized
                 style={{ objectFit: "cover" }}
               />
             ) : (

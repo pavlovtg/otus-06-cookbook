@@ -38,10 +38,11 @@ describe("RecipeCard", () => {
     const img = screen.getByRole("img", { name: "Борщ" });
     expect(img).toBeInTheDocument();
     const src = img.getAttribute("src") ?? "";
-    const decodedSrc = src.startsWith("/_next/image")
+    // next/image с unoptimized передаёт src напрямую; без него — через /_next/image?url=...
+    const resolvedSrc = src.startsWith("/_next/image")
       ? decodeURIComponent(new URL(src, "http://localhost").searchParams.get("url") ?? "")
       : src;
-    expect(decodedSrc).toBe(`/api/cookbook/v1/photos/${PHOTO_ID}/thumbnail`);
+    expect(resolvedSrc).toBe(`/api/cookbook/v1/photos/${PHOTO_ID}/thumbnail`);
   });
 
   it("рендерит SVG-заглушку если photoId == null", () => {
