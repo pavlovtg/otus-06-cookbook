@@ -55,6 +55,154 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/recipes/{id}/photo:
+    post:
+      summary: Загрузить фото рецепта
+      operationId: uploadRecipePhoto
+      tags:
+        - Photos
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Файл изображения (image/jpeg или image/png, максимум 10 МБ)
+      responses:
+        "204":
+          description: Фото загружено
+        "400":
+          description: Недопустимый формат или размер файла, некорректный идентификатор или рецепт не найден
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    delete:
+      summary: Удалить фото рецепта
+      operationId: deleteRecipePhoto
+      tags:
+        - Photos
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Фото удалено
+        "400":
+          description: Некорректный идентификатор или рецепт не найден
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/photos/{photoId}:
+    get:
+      summary: Получить оригинал фото
+      operationId: getPhoto
+      tags:
+        - Photos
+      parameters:
+        - name: photoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Оригинал фото
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: public, max-age=86400
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Некорректный идентификатор или фото не найдено
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/photos/{photoId}/thumbnail:
+    get:
+      summary: Получить thumbnail фото
+      operationId: getPhotoThumbnail
+      tags:
+        - Photos
+      parameters:
+        - name: photoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Thumbnail фото (400×300 px)
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: public, max-age=86400
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Некорректный идентификатор или фото не найдено
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
   /api/v1/recipes/{id}:
     get:
       summary: Получить рецепт по идентификатору
@@ -344,6 +492,7 @@ components:
         - description
         - cookingTime
         - difficulty
+        - photoId
       properties:
         id:
           type: string
@@ -363,6 +512,12 @@ components:
           example: 90
         difficulty:
           $ref: "#/components/schemas/Difficulty"
+        photoId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Идентификатор фото рецепта (null если фото нет)
+          example: null
     RecipeIngredientDto:
       type: object
       required:
@@ -414,6 +569,7 @@ components:
         - servings
         - instructions
         - ingredients
+        - photoId
       properties:
         id:
           type: string
@@ -447,6 +603,12 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RecipeIngredientDto"
+        photoId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Идентификатор фото рецепта (null если фото нет)
+          example: null
     RecipeRequest:
       type: object
       required:

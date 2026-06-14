@@ -12,10 +12,12 @@ namespace Recipes.Adapters.Web;
 internal sealed class RecipesController : ControllerBase
 {
     private readonly IRecipeService _recipeService;
+    private readonly IRecipePhotoService _photoService;
 
-    public RecipesController(IRecipeService recipeService)
+    public RecipesController(IRecipeService recipeService, IRecipePhotoService photoService)
     {
         _recipeService = recipeService;
+        _photoService = photoService;
     }
 
     [HttpGet]
@@ -108,6 +110,38 @@ internal sealed class RecipesController : ControllerBase
         }
     }
 
+    [HttpPost("{id:guid}/photo")]
+    public async Task<IActionResult> UploadPhoto(Guid id, IFormFile file, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _photoService.UploadAsync(
+                RecipeId.From(id),
+                file.ContentType,
+                file.OpenReadStream(),
+                cancellationToken);
+            return NoContent();
+        }
+        catch (RecipeDomainException ex)
+        {
+            return BadRequest(ProblemDetailsFor(ex));
+        }
+    }
+
+    [HttpDelete("{id:guid}/photo")]
+    public async Task<IActionResult> DeletePhoto(Guid id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _photoService.DeleteAsync(RecipeId.From(id), cancellationToken);
+            return NoContent();
+        }
+        catch (RecipeDomainException ex)
+        {
+            return BadRequest(ProblemDetailsFor(ex));
+        }
+    }
+
     private static IEnumerable<RecipeIngredientInput> MapIngredientInputs(
         IReadOnlyList<RecipeIngredientRequest> items)
         => items.Select(i => new RecipeIngredientInput(IngredientId.From(i.IngredientId), i.Amount));
@@ -117,7 +151,8 @@ internal sealed class RecipesController : ControllerBase
         recipe.Title,
         recipe.Description,
         recipe.CookingTime,
-        recipe.Difficulty.ToString().ToLowerInvariant());
+        recipe.Difficulty.ToString().ToLowerInvariant(),
+        recipe.PhotoId?.Value);
 
     private static RecipeDto ToDto(RecipeWithIngredientDetails details) => new(
         details.Recipe.Id.Value,
@@ -129,7 +164,8 @@ internal sealed class RecipesController : ControllerBase
         details.Recipe.Instructions,
         details.Ingredients
             .Select(i => new RecipeIngredientDto(i.IngredientId.Value, i.Title, i.Amount, i.Unit))
-            .ToList());
+            .ToList(),
+        details.Recipe.PhotoId?.Value);
 
     private ProblemDetails ProblemDetailsFor(RecipeDomainException ex) =>
         ProblemDetailsFor(ex.GetType().Name);

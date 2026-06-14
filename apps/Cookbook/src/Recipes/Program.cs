@@ -19,8 +19,11 @@ builder.Services.AddDatabase(builder.Configuration);
 
 builder.Services.AddScoped<IRecipeRepository>(sp => sp.GetRequiredService<RecipeRepository>());
 builder.Services.AddScoped<IIngredientRepository>(sp => sp.GetRequiredService<RecipeRepository>());
+builder.Services.AddScoped<IRecipePhotoRepository>(sp => sp.GetRequiredService<RecipeRepository>());
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IIngredientService, IngredientService>();
+builder.Services.AddScoped<ImageSharpThumbnailGenerator>();
+builder.Services.AddScoped<IRecipePhotoService, RecipePhotoService>();
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();

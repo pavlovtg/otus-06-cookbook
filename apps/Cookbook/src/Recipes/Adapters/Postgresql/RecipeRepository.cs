@@ -7,12 +7,13 @@ using Recipes.Domain;
 
 namespace Recipes.Adapters.Postgresql;
 
-internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredientRepository
+internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredientRepository, IRecipePhotoRepository
 {
     public const string DefaultSchema = "cookbook";
 
     public DbSet<Recipe> Recipes => Set<Recipe>();
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
+    public DbSet<RecipePhoto> RecipePhotos => Set<RecipePhoto>();
 
     public RecipeRepository(DbContextOptions<RecipeRepository> options) : base(options) { }
 
@@ -22,6 +23,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         modelBuilder.ApplyConfiguration(new RecipeConfiguration());
         modelBuilder.ApplyConfiguration(new IngredientConfiguration());
         modelBuilder.ApplyConfiguration(new RecipeIngredientConfiguration());
+        modelBuilder.ApplyConfiguration(new RecipePhotoConfiguration());
     }
 
     public async IAsyncEnumerable<Recipe> GetRecipesAsync(
@@ -159,5 +161,43 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         var ingredient = await Ingredients.FindAsync([id], cancellationToken);
         if (ingredient is not null)
             Ingredients.Remove(ingredient);
+    }
+
+    // ── IRecipePhotoRepository ───────────────────────────────────────────────
+
+    async Task IRecipePhotoRepository.SaveAsync(RecipePhoto photo, CancellationToken cancellationToken)
+    {
+        var existing = await RecipePhotos
+            .FirstOrDefaultAsync(p => p.Id == photo.Id, cancellationToken);
+
+        if (existing is null)
+            await RecipePhotos.AddAsync(photo, cancellationToken);
+        else
+            RecipePhotos.Update(photo);
+    }
+
+    async Task<byte[]?> IRecipePhotoRepository.GetOriginalAsync(RecipePhotoId id, CancellationToken cancellationToken)
+    {
+        return await RecipePhotos
+            .AsNoTracking()
+            .Where(p => p.Id == id)
+            .Select(p => p.OriginalData)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    async Task<byte[]?> IRecipePhotoRepository.GetThumbnailAsync(RecipePhotoId id, CancellationToken cancellationToken)
+    {
+        return await RecipePhotos
+            .AsNoTracking()
+            .Where(p => p.Id == id)
+            .Select(p => p.ThumbnailData)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    async Task IRecipePhotoRepository.DeleteAsync(RecipePhotoId id, CancellationToken cancellationToken)
+    {
+        var photo = await RecipePhotos.FindAsync([id], cancellationToken);
+        if (photo is not null)
+            RecipePhotos.Remove(photo);
     }
 }

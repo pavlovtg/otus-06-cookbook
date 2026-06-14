@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Recipes.Application;
 using Recipes.Domain;
 
 namespace Recipes.Adapters.Postgresql;
@@ -10,6 +11,7 @@ internal static class CookbookSeeder
         await SeedIngredientsAsync(db, cancellationToken);
         await SeedRecipesAsync(db, cancellationToken);
         await SeedRecipeIngredientsAsync(db, cancellationToken);
+        await SeedPhotosAsync(db, cancellationToken);
     }
 
     private static async Task SeedIngredientsAsync(RecipeRepository db, CancellationToken cancellationToken)
@@ -106,5 +108,103 @@ internal static class CookbookSeeder
             await tx.RollbackAsync(cancellationToken);
             throw;
         }
+    }
+
+    private static async Task SeedPhotosAsync(RecipeRepository db, CancellationToken cancellationToken)
+    {
+        if (SeedData.RecipePhotoSeeds.Length == 0)
+            return;
+
+        var photosDir = GetPhotosDirectory();
+        if (photosDir is null || !photosDir.Exists)
+            return;
+
+        var thumbnailGenerator = new ImageSharpThumbnailGenerator();
+
+        await using var tx = await db.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            foreach (var (recipeId, photoId) in SeedData.RecipePhotoSeeds)
+            {
+                var recipe = await db.Recipes
+                    .FirstOrDefaultAsync(r => r.Id == recipeId, cancellationToken);
+
+                if (recipe is null)
+                    continue;
+
+                if (recipe.PhotoId == photoId)
+                    continue;
+
+                var photoFile = FindPhotoFile(photosDir, photoId);
+                if (photoFile is null)
+                    continue;
+
+                var rawData = await File.ReadAllBytesAsync(photoFile.FullName, cancellationToken);
+                var ext = photoFile.Extension.ToLowerInvariant();
+                byte[] originalData;
+                string mimeType;
+                if (ext == ".png")
+                {
+                    originalData = rawData;
+                    mimeType = "image/png";
+                }
+                else if (ext is ".jpg" or ".jpeg")
+                {
+                    originalData = rawData;
+                    mimeType = "image/jpeg";
+                }
+                else
+                {
+                    // Конвертируем неподдерживаемые форматы (webp и др.) в JPEG
+                    originalData = thumbnailGenerator.ConvertToJpeg(rawData);
+                    mimeType = "image/jpeg";
+                }
+                var thumbnailData = thumbnailGenerator.Generate(originalData);
+
+                if (recipe.PhotoId is not null)
+                {
+                    var oldPhoto = await db.RecipePhotos.FindAsync([recipe.PhotoId], cancellationToken);
+                    if (oldPhoto is not null)
+                        db.RecipePhotos.Remove(oldPhoto);
+                }
+
+                var photo = RecipePhoto.Create(photoId, recipeId, mimeType, originalData, thumbnailData);
+                await db.RecipePhotos.AddAsync(photo, cancellationToken);
+                recipe.SetPhoto(photoId);
+            }
+
+            await db.SaveChangesAsync(cancellationToken);
+            await tx.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await tx.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
+
+    private static DirectoryInfo? GetPhotosDirectory()
+    {
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var candidate = new DirectoryInfo(Path.Combine(current.FullName, "apps", "seed", "photos"));
+            if (candidate.Exists)
+                return candidate;
+            current = current.Parent;
+        }
+        return null;
+    }
+
+    private static FileInfo? FindPhotoFile(DirectoryInfo dir, RecipePhotoId photoId)
+    {
+        var id = photoId.Value.ToString();
+        foreach (var ext in new[] { ".jpg", ".jpeg", ".png", ".webp" })
+        {
+            var file = new FileInfo(Path.Combine(dir.FullName, id + ext));
+            if (file.Exists)
+                return file;
+        }
+        return null;
     }
 }

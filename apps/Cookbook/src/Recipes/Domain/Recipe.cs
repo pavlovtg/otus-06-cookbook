@@ -12,6 +12,8 @@ internal sealed class Recipe
     public int Servings { get; private set; }
     public string Instructions { get; private set; } = string.Empty;
 
+    public RecipePhotoId? PhotoId { get; private set; }
+
     private List<RecipeIngredient> _ingredients = [];
     public IReadOnlyList<RecipeIngredient> Ingredients => _ingredients.AsReadOnly();
 
@@ -76,6 +78,16 @@ internal sealed class Recipe
 
         _ingredients.Clear();
         _ingredients.AddRange(ingredientList);
+    }
+
+    public void SetPhoto(RecipePhotoId photoId)
+    {
+        PhotoId = photoId;
+    }
+
+    public void ClearPhoto()
+    {
+        PhotoId = null;
     }
 
     private static void ValidateTitle(string title)
