@@ -80,9 +80,11 @@
 | AR-0051: Конфигурация модели EF Core через IEntityTypeConfiguration | Конфигурация каждой сущности — отдельный класс в `Configurations/`; inline в `OnModelCreating` запрещён | [AR-0051](docs/architecture/rules/dotnet/AR-0051-ef-entity-type-configuration.md) | dotnet |
 | AR-0052: Миграции EF Core располагаются в папке Migrations | Все миграции — в `Migrations/` внутри папки адаптера; хранение в отдельном проекте запрещено | [AR-0052](docs/architecture/rules/dotnet/AR-0052-ef-migrations-folder.md) | dotnet |
 | AR-0053: Запрет HasData для seed-данных | `HasData` запрещён в любом месте конфигурации модели | [AR-0053](docs/architecture/rules/dotnet/AR-0053-no-has-data.md) | dotnet |
-| AR-0054: Загрузка начальных данных через отдельный класс-загрузчик по принципу Upsert | Seeding — отдельный класс-загрузчик после миграций; upsert по существующим данным; API репозитория или SQL | [AR-0054](docs/architecture/rules/dotnet/AR-0054-seeding-upsert.md) | dotnet |
+| AR-0054: Загрузка начальных данных через отдельный класс-загрузчик по принципу Upsert | Один класс-оркестратор управляет порядком и транзакциями; каждая группа данных в отдельной транзакции (ингредиенты → рецепты → связи); идемпотентен | [AR-0054](docs/architecture/rules/dotnet/AR-0054-seeding-upsert.md) | dotnet |
 | AR-0055: Миграция схемы при старте приложения через MigrateDatabaseAsync | Миграция до поднятия эндпоинтов через хелпер `MigrateDatabaseAsync<TProgram, TContext>` из `Shared.Hosting` | [AR-0055](docs/architecture/rules/dotnet/AR-0055-migrate-on-startup.md) | dotnet |
 | AR-0056: Изоляция DbContext в тестах репозитория | Каждый тест — новый инстанс `DbContext`; запись и чтение в одном тесте — разные инстансы | [AR-0056](docs/architecture/rules/dotnet/AR-0056-repository-test-dbcontext-isolation.md) | dotnet |
+| AR-0057: BFF — один файл на ресурс | Каждый ресурс BFF располагается в отдельном файле `apps/web/lib/bff/<resource>.ts`; общий файл-агрегатор запрещён | [AR-0057](docs/architecture/rules/frontend/AR-0057-bff-one-file-per-resource.md) | frontend |
+| AR-0058: Структура unit-тестов frontend | Для каждого ресурса — два файла: `<resource>.schema.test.ts` (Zod) и `<resource>.bff.test.ts` (fetch mock); объединять запрещено | [AR-0058](docs/architecture/rules/frontend/AR-0058-frontend-unit-test-structure.md) | frontend |
 
 ## Стандарты
 
@@ -91,7 +93,7 @@
 | Стандарт оформления Markdown | Правила форматирования Markdown-файлов: отступы, заголовки, списки, пустые строки | [markdown-code-style.md](docs/standards/markdown-code-style.md) |
 | Стандарт структуры репозитория | Структура папок монорепозитория и назначение каждой папки | [repository-structure.md](docs/standards/repository-structure.md) |
 | Стандарт ветвления и релизной политики | Правила работы с ветками по GitHub Flow: именование, PR, защита main | [branch-plan.md](docs/standards/branch-plan.md) |
-| Стандарт REST API Design | Правила проектирования REST API и OpenAPI-спецификации | [api-design.md](docs/standards/api-design.md) |
+| Стандарт REST API Design | Правила проектирования REST API, OpenAPI-спецификации и пагинации (page/pageSize, PagedResult, clamp 1000) | [api-design.md](docs/standards/api-design.md) |
 | Стандарт Docker Compose | Правила оформления `docker-compose.yml`, переменных окружения и сервисов | [docker-compose-standard.md](docs/standards/docker-compose-standard.md) |
 | Стандарт тестирования | Требования к unit/integration/e2e тестам и покрытию | [testing.md](docs/standards/testing.md) |
 | Стандарт CI Pipeline | Обязательные шаги CI (lint, тесты, build) и блокировка PR при падении | [ci-standard.md](docs/standards/ci-standard.md) |

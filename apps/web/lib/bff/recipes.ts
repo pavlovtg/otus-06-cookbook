@@ -4,13 +4,14 @@ import {
   RecipeRequestSchema,
   type RecipeDto,
   type RecipeRequest,
+  type RecipeShortDto,
 } from "@/lib/schemas/recipe";
 
 const GATEWAY_URL = process.env["GATEWAY_URL"] ?? "http://api-gateway";
 const SERVER_BASE = `${GATEWAY_URL}/api/cookbook/v1/recipes`;
 const CLIENT_BASE = `/api/cookbook/v1/recipes`;
 
-export async function getRecipes(): Promise<RecipeDto[]> {
+export async function getRecipes(): Promise<RecipeShortDto[]> {
   const response = await fetch(SERVER_BASE, { cache: "no-store" });
 
   if (!response.ok) {

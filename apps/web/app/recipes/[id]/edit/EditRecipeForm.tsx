@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { updateRecipe } from "@/lib/bff/gateway";
+import { updateRecipe } from "@/lib/bff/recipes";
 import { RecipeForm } from "@/components/features/RecipeForm";
 import type { RecipeDto, RecipeRequest } from "@/lib/schemas/recipe";
 
@@ -27,6 +27,10 @@ export function EditRecipeForm({ recipe }: Props) {
         difficulty: recipe.difficulty,
         servings: recipe.servings,
         instructions: recipe.instructions,
+        ingredients: recipe.ingredients.map((ing) => ({
+          ingredientId: ing.ingredientId,
+          amount: ing.amount,
+        })),
       }}
       onSubmit={handleSubmit}
       submitLabel="Сохранить изменения"

@@ -14,16 +14,22 @@ internal sealed class RecipeService : IRecipeService
         _repository = repository;
     }
 
-    public async IAsyncEnumerable<Recipe> GetAllAsync(
+    public async IAsyncEnumerable<Recipe> GetRecipesAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var recipe in _repository.GetAllAsync(cancellationToken))
+        await foreach (var recipe in _repository.GetRecipesAsync(cancellationToken))
             yield return recipe;
     }
 
     public async Task<Recipe> GetByIdAsync(RecipeId id, CancellationToken cancellationToken = default)
     {
         return await _repository.GetByIdAsync(id, cancellationToken)
+            ?? throw new RecipeNotFoundException(id);
+    }
+
+    public async Task<RecipeWithIngredientDetails> GetByIdWithDetailsAsync(RecipeId id, CancellationToken cancellationToken = default)
+    {
+        return await _repository.GetByIdWithDetailsAsync(id, cancellationToken)
             ?? throw new RecipeNotFoundException(id);
     }
 
@@ -34,9 +40,14 @@ internal sealed class RecipeService : IRecipeService
         Difficulty difficulty,
         int servings,
         string instructions,
+        IEnumerable<RecipeIngredientInput> ingredients,
         CancellationToken cancellationToken = default)
     {
-        var recipe = Recipe.Create(RecipeId.New(), title, description, cookingTime, difficulty, servings, instructions);
+        var recipeIngredients = ingredients
+            .Select(i => RecipeIngredient.Create(i.IngredientId, i.Amount))
+            .ToList();
+
+        var recipe = Recipe.Create(RecipeId.New(), title, description, cookingTime, difficulty, servings, instructions, recipeIngredients);
         await _repository.CreateAsync(recipe, cancellationToken);
         await _repository.CommitAsync(cancellationToken);
         return recipe;
@@ -50,12 +61,17 @@ internal sealed class RecipeService : IRecipeService
         Difficulty difficulty,
         int servings,
         string instructions,
+        IEnumerable<RecipeIngredientInput> ingredients,
         CancellationToken cancellationToken = default)
     {
         var recipe = await _repository.GetByIdAsync(id, cancellationToken)
             ?? throw new RecipeNotFoundException(id);
 
-        recipe.Update(title, description, cookingTime, difficulty, servings, instructions);
+        var recipeIngredients = ingredients
+            .Select(i => RecipeIngredient.Create(i.IngredientId, i.Amount))
+            .ToList();
+
+        recipe.Update(title, description, cookingTime, difficulty, servings, instructions, recipeIngredients);
         await _repository.UpdateAsync(recipe, cancellationToken);
         await _repository.CommitAsync(cancellationToken);
     }

@@ -1,13 +1,17 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
-import { getRecipes } from "@/lib/bff/gateway";
+import logger from "@/lib/logger";
+import { getRecipes } from "@/lib/bff/recipes";
 import { RecipeCard } from "@/components/features/RecipeCard";
-import type { RecipeDto } from "@/lib/schemas/recipe";
+import type { RecipeShortDto } from "@/lib/schemas/recipe";
 
 export default async function HomePage() {
-  let recipes: RecipeDto[] = [];
+  let recipes: RecipeShortDto[] = [];
   try {
     recipes = await getRecipes();
-  } catch {
+  } catch (err) {
+    logger.error({ err }, "Failed to load recipes");
     recipes = [];
   }
 

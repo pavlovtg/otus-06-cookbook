@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   RecipeDtoSchema,
+  RecipeIngredientDtoSchema,
   RecipeRequestSchema,
   RecipeListSchema,
 } from "@/lib/schemas/recipe";
@@ -13,6 +14,7 @@ const validDto = {
   difficulty: "everyday",
   servings: 6,
   instructions: "1. Сварить бульон.",
+  ingredients: [],
 };
 
 const validRequest = {
@@ -22,6 +24,15 @@ const validRequest = {
   difficulty: "everyday",
   servings: 6,
   instructions: "1. Сварить бульон.",
+  ingredients: [],
+};
+
+const validShortDto = {
+  id: "11111111-0000-0000-0000-000000000001",
+  title: "Борщ",
+  description: "Классический борщ",
+  cookingTime: 120,
+  difficulty: "everyday",
 };
 
 describe("RecipeDtoSchema", () => {
@@ -120,7 +131,7 @@ describe("RecipeRequestSchema", () => {
 
 describe("RecipeListSchema", () => {
   it("парсит массив рецептов", () => {
-    const result = RecipeListSchema.safeParse([validDto, validDto]);
+    const result = RecipeListSchema.safeParse([validShortDto, validShortDto]);
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data).toHaveLength(2);
@@ -133,7 +144,67 @@ describe("RecipeListSchema", () => {
   });
 
   it("отклоняет массив с некорректным элементом", () => {
-    const result = RecipeListSchema.safeParse([{ ...validDto, id: "bad" }]);
+    const result = RecipeListSchema.safeParse([{ ...validShortDto, id: "bad" }]);
     expect(result.success).toBe(false);
+  });
+});
+
+// ── RecipeIngredientDtoSchema (8.9) ───────────────────────────────────────────
+
+const validIngredientDto = {
+  ingredientId: "22222222-0000-0000-0000-000000000002",
+  title: "Морковь",
+  amount: 150,
+  unit: "г",
+};
+
+describe("RecipeIngredientDtoSchema", () => {
+  it("парсит корректный объект", () => {
+    const result = RecipeIngredientDtoSchema.safeParse(validIngredientDto);
+    expect(result.success).toBe(true);
+  });
+
+  it("отклоняет некорректный ingredientId (не uuid)", () => {
+    const result = RecipeIngredientDtoSchema.safeParse({
+      ...validIngredientDto,
+      ingredientId: "not-a-uuid",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("отклоняет нулевой amount", () => {
+    const result = RecipeIngredientDtoSchema.safeParse({
+      ...validIngredientDto,
+      amount: 0,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("отклоняет отрицательный amount", () => {
+    const result = RecipeIngredientDtoSchema.safeParse({
+      ...validIngredientDto,
+      amount: -1,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("отклоняет объект без поля title", () => {
+    const { title: _, ...withoutTitle } = validIngredientDto;
+    const result = RecipeIngredientDtoSchema.safeParse(withoutTitle);
+    expect(result.success).toBe(false);
+  });
+
+  it("отклоняет объект без поля unit", () => {
+    const { unit: _, ...withoutUnit } = validIngredientDto;
+    const result = RecipeIngredientDtoSchema.safeParse(withoutUnit);
+    expect(result.success).toBe(false);
+  });
+
+  it("принимает дробный amount", () => {
+    const result = RecipeIngredientDtoSchema.safeParse({
+      ...validIngredientDto,
+      amount: 0.001,
+    });
+    expect(result.success).toBe(true);
   });
 });

@@ -12,4 +12,9 @@ internal static class RecipeConstraints
 
     public const int ServingsMin = 1;
     public const int ServingsMax = 99;
+
+    public const int IngredientsMaxCount = 50;
+
+    public const decimal IngredientAmountMin = 0.001m;
+    public const decimal IngredientAmountMax = 100_000m;
 }

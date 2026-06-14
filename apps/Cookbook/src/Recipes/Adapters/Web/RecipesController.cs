@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Recipes.Adapters.Web.Dto;
+using Recipes.Application;
 using Recipes.Application.Ports;
 using Recipes.Domain;
 using Recipes.Domain.Exceptions;
@@ -18,16 +19,16 @@ internal sealed class RecipesController : ControllerBase
     }
 
     [HttpGet]
-    public IAsyncEnumerable<RecipeDto> GetRecipes(CancellationToken cancellationToken)
-        => _recipeService.GetAllAsync(cancellationToken).Select(ToDto);
+    public IAsyncEnumerable<RecipeShortDto> GetRecipes(CancellationToken cancellationToken)
+        => _recipeService.GetRecipesAsync(cancellationToken).Select(ToShortDto);
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetRecipe(Guid id, CancellationToken cancellationToken)
     {
         try
         {
-            var recipe = await _recipeService.GetByIdAsync(RecipeId.From(id), cancellationToken);
-            return Ok(ToDto(recipe));
+            var details = await _recipeService.GetByIdWithDetailsAsync(RecipeId.From(id), cancellationToken);
+            return Ok(ToDto(details));
         }
         catch (RecipeDomainException ex)
         {
@@ -43,6 +44,8 @@ internal sealed class RecipesController : ControllerBase
             if (!Enum.TryParse<Difficulty>(request.Difficulty, ignoreCase: true, out var difficulty))
                 return BadRequest(ProblemDetailsFor($"Invalid difficulty value: '{request.Difficulty}'."));
 
+            var ingredientInputs = MapIngredientInputs(request.Ingredients);
+
             var recipe = await _recipeService.CreateAsync(
                 request.Title,
                 request.Description,
@@ -50,9 +53,11 @@ internal sealed class RecipesController : ControllerBase
                 difficulty,
                 request.Servings,
                 request.Instructions,
+                ingredientInputs,
                 cancellationToken);
 
-            return CreatedAtAction(nameof(GetRecipe), new { id = recipe.Id.Value }, ToDto(recipe));
+            var details = await _recipeService.GetByIdWithDetailsAsync(recipe.Id, cancellationToken);
+            return CreatedAtAction(nameof(GetRecipe), new { id = recipe.Id.Value }, ToDto(details));
         }
         catch (RecipeDomainException ex)
         {
@@ -68,6 +73,8 @@ internal sealed class RecipesController : ControllerBase
             if (!Enum.TryParse<Difficulty>(request.Difficulty, ignoreCase: true, out var difficulty))
                 return BadRequest(ProblemDetailsFor($"Invalid difficulty value: '{request.Difficulty}'."));
 
+            var ingredientInputs = MapIngredientInputs(request.Ingredients);
+
             await _recipeService.UpdateAsync(
                 RecipeId.From(id),
                 request.Title,
@@ -76,6 +83,7 @@ internal sealed class RecipesController : ControllerBase
                 difficulty,
                 request.Servings,
                 request.Instructions,
+                ingredientInputs,
                 cancellationToken);
 
             return NoContent();
@@ -100,14 +108,28 @@ internal sealed class RecipesController : ControllerBase
         }
     }
 
-    private static RecipeDto ToDto(Recipe recipe) => new(
+    private static IEnumerable<RecipeIngredientInput> MapIngredientInputs(
+        IReadOnlyList<RecipeIngredientRequest> items)
+        => items.Select(i => new RecipeIngredientInput(IngredientId.From(i.IngredientId), i.Amount));
+
+    private static RecipeShortDto ToShortDto(Recipe recipe) => new(
         recipe.Id.Value,
         recipe.Title,
         recipe.Description,
         recipe.CookingTime,
-        recipe.Difficulty.ToString().ToLowerInvariant(),
-        recipe.Servings,
-        recipe.Instructions);
+        recipe.Difficulty.ToString().ToLowerInvariant());
+
+    private static RecipeDto ToDto(RecipeWithIngredientDetails details) => new(
+        details.Recipe.Id.Value,
+        details.Recipe.Title,
+        details.Recipe.Description,
+        details.Recipe.CookingTime,
+        details.Recipe.Difficulty.ToString().ToLowerInvariant(),
+        details.Recipe.Servings,
+        details.Recipe.Instructions,
+        details.Ingredients
+            .Select(i => new RecipeIngredientDto(i.IngredientId.Value, i.Title, i.Amount, i.Unit))
+            .ToList());
 
     private ProblemDetails ProblemDetailsFor(RecipeDomainException ex) =>
         ProblemDetailsFor(ex.GetType().Name);

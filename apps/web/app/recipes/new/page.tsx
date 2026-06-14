@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { createRecipe } from "@/lib/bff/gateway";
+import { createRecipe } from "@/lib/bff/recipes";
 import { RecipeForm } from "@/components/features/RecipeForm";
 import type { RecipeRequest } from "@/lib/schemas/recipe";
 
