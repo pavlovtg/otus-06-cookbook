@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { RecipeShortDto } from "@/lib/schemas/recipe";
 import { ClockIcon, FlameIcon } from "@/components/icons";
 import { RecipePhoto } from "@/components/photo";
@@ -20,12 +21,13 @@ interface RecipeCardProps {
 export function RecipeCard({ recipe, onClick }: RecipeCardProps) {
   return (
     <div className="card recipe-card card-link" onClick={onClick}>
-      <div className="photo">
+      <div className="photo" style={{ position: "relative" }}>
         {recipe.photoId != null ? (
-          <img
+          <Image
             src={getRecipeThumbnailUrl(recipe.photoId)}
             alt={recipe.title}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            fill
+            style={{ objectFit: "cover" }}
           />
         ) : (
           <RecipePhoto seed={recipe.id} title={recipe.title} />

@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getRecipe } from "@/lib/bff/recipes";
@@ -72,12 +73,13 @@ export default async function RecipeDetailPage({ params }: Props) {
       <div className="detail-grid">
         {/* Left column */}
         <div className="gallery">
-          <div className="main-photo">
+          <div className="main-photo" style={{ position: "relative" }}>
             {recipe.photoId != null ? (
-              <img
+              <Image
                 src={getRecipePhotoUrl(recipe.photoId)}
                 alt={recipe.title}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                fill
+                style={{ objectFit: "cover" }}
               />
             ) : (
               <RecipePhoto seed={recipe.id} title={recipe.title} />

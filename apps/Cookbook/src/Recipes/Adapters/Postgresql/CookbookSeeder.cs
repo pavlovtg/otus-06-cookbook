@@ -8,10 +8,35 @@ internal static class CookbookSeeder
 {
     public static async Task SeedAsync(RecipeRepository db, string? photosPath = null, CancellationToken cancellationToken = default)
     {
+        await SeedCategoriesAsync(db, cancellationToken);
         await SeedIngredientsAsync(db, cancellationToken);
         await SeedRecipesAsync(db, cancellationToken);
         await SeedRecipeIngredientsAsync(db, cancellationToken);
         await SeedPhotosAsync(db, photosPath, cancellationToken);
+    }
+
+    private static async Task SeedCategoriesAsync(RecipeRepository db, CancellationToken cancellationToken)
+    {
+        await using var tx = await db.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            foreach (var category in SeedData.Categories)
+            {
+                var exists = await db.Categories.FindAsync([category.Id], cancellationToken);
+                if (exists is null)
+                    await db.Categories.AddAsync(category, cancellationToken);
+                else
+                    exists.Update(category.Name, category.Description);
+            }
+
+            await db.SaveChangesAsync(cancellationToken);
+            await tx.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await tx.RollbackAsync(cancellationToken);
+            throw;
+        }
     }
 
     private static async Task SeedIngredientsAsync(RecipeRepository db, CancellationToken cancellationToken)
