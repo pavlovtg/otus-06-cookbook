@@ -28,7 +28,11 @@ export function RecipeCard({
   return (
     <div className="card recipe-card card-link" onClick={onClick}>
       <div className="photo">
-        <RecipePhoto seed={r.id} title={r.title} />
+        {r.photo_url ? (
+          <img src={r.photo_url} alt={r.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <RecipePhoto seed={r.id} title={r.title} />
+        )}
         {!r.is_public && (
           <div className="photo-private" title="Приватный рецепт">
             <LockIcon size={16} />

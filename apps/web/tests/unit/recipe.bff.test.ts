@@ -2,10 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createRecipe,
   deleteRecipe,
+  deleteRecipePhoto,
   getRecipe,
   getRecipes,
   updateRecipe,
+  uploadRecipePhoto,
 } from "@/lib/bff/recipes";
+
+const PHOTO_ID = "aaaaaaaa-0000-0000-0000-000000000001";
 
 const mockRecipeShort = {
   id: "11111111-0000-0000-0000-000000000001",
@@ -13,6 +17,7 @@ const mockRecipeShort = {
   description: "Классический борщ",
   cookingTime: 120,
   difficulty: "everyday",
+  photoId: null,
 };
 
 const mockRecipe = {
@@ -24,6 +29,7 @@ const mockRecipe = {
   servings: 6,
   instructions: "1. Сварить бульон.",
   ingredients: [],
+  photoId: null,
 };
 
 const mockRequest = {
@@ -139,5 +145,51 @@ describe("deleteRecipe", () => {
     vi.mocked(fetch).mockResolvedValueOnce(new Response(null, { status: 404 }));
 
     await expect(deleteRecipe(mockRecipe.id)).rejects.toThrow("404");
+  });
+});
+
+describe("uploadRecipePhoto", () => {
+  it("отправляет POST multipart и вызывает PURGE", async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ photoId: PHOTO_ID }), { status: 200 })
+      )
+      .mockResolvedValue(new Response(null, { status: 200 }));
+
+    const file = new File(["data"], "photo.jpg", { type: "image/jpeg" });
+    await uploadRecipePhoto(mockRecipe.id, file);
+
+    expect(vi.mocked(fetch)).toHaveBeenCalledWith(
+      expect.stringContaining(`/recipes/${mockRecipe.id}/photo`),
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("выбрасывает ошибку при неуспешном ответе", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(new Response(null, { status: 400 }));
+
+    const file = new File(["data"], "photo.jpg", { type: "image/jpeg" });
+    await expect(uploadRecipePhoto(mockRecipe.id, file)).rejects.toThrow("400");
+  });
+});
+
+describe("deleteRecipePhoto", () => {
+  it("отправляет DELETE и вызывает PURGE", async () => {
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+      .mockResolvedValue(new Response(null, { status: 200 }));
+
+    await deleteRecipePhoto(mockRecipe.id, PHOTO_ID);
+
+    expect(vi.mocked(fetch)).toHaveBeenCalledWith(
+      expect.stringContaining(`/recipes/${mockRecipe.id}/photo`),
+      expect.objectContaining({ method: "DELETE" })
+    );
+  });
+
+  it("выбрасывает ошибку при неуспешном ответе", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(new Response(null, { status: 400 }));
+
+    await expect(deleteRecipePhoto(mockRecipe.id, PHOTO_ID)).rejects.toThrow("400");
   });
 });

@@ -8,4 +8,5 @@ internal sealed record RecipeDto(
     string Difficulty,
     int Servings,
     string Instructions,
-    IReadOnlyList<RecipeIngredientDto> Ingredients);
+    IReadOnlyList<RecipeIngredientDto> Ingredients,
+    Guid? PhotoId);

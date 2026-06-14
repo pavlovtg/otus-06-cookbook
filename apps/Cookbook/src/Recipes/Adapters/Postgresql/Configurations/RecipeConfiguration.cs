@@ -48,5 +48,12 @@ internal sealed class RecipeConfiguration : IEntityTypeConfiguration<Recipe>
             .HasColumnName("instructions")
             .HasMaxLength(RecipeConstraints.InstructionsMaxLength)
             .IsRequired();
+
+        entity.Property(r => r.PhotoId)
+            .HasColumnName("photo_id")
+            .HasConversion(
+                id => id.HasValue ? id.Value.Value : (Guid?)null,
+                value => value.HasValue ? RecipePhotoId.From(value.Value) : null)
+            .IsRequired(false);
     }
 }

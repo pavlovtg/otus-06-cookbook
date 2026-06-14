@@ -85,6 +85,10 @@
 | AR-0056: Изоляция DbContext в тестах репозитория | Каждый тест — новый инстанс `DbContext`; запись и чтение в одном тесте — разные инстансы | [AR-0056](docs/architecture/rules/dotnet/AR-0056-repository-test-dbcontext-isolation.md) | dotnet |
 | AR-0057: BFF — один файл на ресурс | Каждый ресурс BFF располагается в отдельном файле `apps/web/lib/bff/<resource>.ts`; общий файл-агрегатор запрещён | [AR-0057](docs/architecture/rules/frontend/AR-0057-bff-one-file-per-resource.md) | frontend |
 | AR-0058: Структура unit-тестов frontend | Для каждого ресурса — два файла: `<resource>.schema.test.ts` (Zod) и `<resource>.bff.test.ts` (fetch mock); объединять запрещено | [AR-0058](docs/architecture/rules/frontend/AR-0058-frontend-unit-test-structure.md) | frontend |
+| AR-0059: Таблица recipe_photos — структура и владение | Фото рецептов в отдельной таблице `recipe_photos` (bytea); CASCADE DELETE при удалении рецепта; только cookbook-сервис обращается к таблице | [AR-0059](docs/architecture/rules/database/AR-0059-recipe-photos-table.md) | database |
+| AR-0060: Загрузка фото — серверная валидация и генерация thumbnail | Серверная валидация MIME (jpeg/png) и размера (≤ 10 МБ); thumbnail 400×300 через ImageSharp; оригинал и thumbnail в одной строке | [AR-0060](docs/architecture/rules/backend/AR-0060-recipe-photo-upload-validation-thumbnail.md) | backend |
+| AR-0061: Раздача фотографий рецептов через публичный endpoint | Фото раздаются через backend endpoint без JWT; `Cache-Control: public, max-age=86400`; shared volume запрещён | [AR-0061](docs/architecture/rules/rest-api/AR-0061-recipe-photo-serving.md) | rest-api |
+| AR-0062: Seed-фотографии загружаются через CookbookSeeder | Seed-фото из `apps/seed/photos/` загружаются в `recipe_photos` через `CookbookSeeder` в транзакции с рецептами; идемпотентно | [AR-0062](docs/architecture/rules/backend/AR-0062-recipe-photo-seeding.md) | backend |
 
 ## Стандарты
 
@@ -141,6 +145,7 @@
 | ADR-0031: Чистый CSS из Storybook как система стилей фронтенда | Заменяет ADR-0018; `docs/design/storybook/src/styles.css` — единственный источник стилей; Tailwind и shadcn/ui не используются | [ADR-0031](docs/adr/frontend/ADR-0031-storybook-css-as-frontend-style-system.md) | frontend |
 | ADR-0032: Application-слой управляет транзакциями явно | Управление транзакцией — ответственность Application-слоя; репозитории накапливают изменения, но не фиксируют их самостоятельно | [ADR-0032](docs/adr/dotnet/ADR-0032-application-manages-transactions.md) | dotnet |
 | ADR-0033: Стратегия тестирования | Семиуровневая пирамида тестирования: unit, integration (DB/FS/classic), microservice, e2e API, UI e2e; coverage ≥ 80%; тесты пишутся сразу после кода | [ADR-0033](docs/adr/general/ADR-0033-testing-strategy.md) | general |
+| ADR-0034: Хранение фотографий рецептов в PostgreSQL | Фото хранятся в PostgreSQL (bytea) в отдельной таблице cookbook-сервиса; Docker volume для файлов не используется | [ADR-0034](docs/adr/database/ADR-0034-recipe-photos-in-postgresql.md) | database |
 
 ## Диаграммы
 

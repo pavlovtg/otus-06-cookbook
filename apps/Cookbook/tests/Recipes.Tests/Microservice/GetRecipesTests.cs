@@ -11,7 +11,7 @@ public sealed class GetRecipesTests : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
         .WithImage("postgres:16-alpine")
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
+        .WithOutputConsumer(Consume.DoNotConsumeStdoutAndStderr())
         .Build();
 
     private RecipeMicroserviceHost? _host;

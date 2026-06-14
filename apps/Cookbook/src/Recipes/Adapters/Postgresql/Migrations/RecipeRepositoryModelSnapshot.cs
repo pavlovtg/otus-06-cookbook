@@ -88,6 +88,10 @@ namespace Recipes.Adapters.Postgresql.Migrations
                         .HasColumnType("character varying(10000)")
                         .HasColumnName("instructions");
 
+                    b.Property<Guid?>("PhotoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("photo_id");
+
                     b.Property<int>("Servings")
                         .HasColumnType("integer")
                         .HasColumnName("servings");
@@ -121,10 +125,46 @@ namespace Recipes.Adapters.Postgresql.Migrations
                     b.ToTable("recipe_ingredients", "cookbook");
                 });
 
+            modelBuilder.Entity("Recipes.Domain.RecipePhoto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<byte[]>("OriginalData")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("original_data");
+
+                    b.Property<Guid>("RecipeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recipe_id");
+
+                    b.Property<byte[]>("ThumbnailData")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("thumbnail_data");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipeId");
+
+                    b.ToTable("recipe_photos", "cookbook");
+                });
+
             modelBuilder.Entity("Recipes.Domain.RecipeIngredient", b =>
                 {
                     b.HasOne("Recipes.Domain.Recipe", null)
                         .WithMany("Ingredients")
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Recipes.Domain.RecipePhoto", b =>
+                {
+                    b.HasOne("Recipes.Domain.Recipe", null)
+                        .WithMany()
                         .HasForeignKey("RecipeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

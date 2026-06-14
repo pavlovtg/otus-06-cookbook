@@ -15,7 +15,7 @@ public sealed class RecipeRepositoryTests : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
         .WithImage("postgres:16-alpine")
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
+        .WithOutputConsumer(Consume.DoNotConsumeStdoutAndStderr())
         .Build();
 
     private RepositoryFactory<RecipeRepository> _factory = null!;
@@ -340,5 +340,111 @@ public sealed class RecipeRepositoryTests : IAsyncLifetime
 
         Assert.Equal(12, result.TotalCount);
         Assert.Equal(10, result.TopTitles.Count);
+    }
+
+    // ── RecipePhoto (TEST-4) ─────────────────────────────────────────────────
+
+    private static RecipePhoto NewPhoto(RecipeId recipeId) =>
+        RecipePhoto.Create(
+            RecipePhotoId.New(),
+            recipeId,
+            "image/jpeg",
+            [0xFF, 0xD8, 0xFF, 0xE0, 0x01, 0x02, 0x03],
+            [0xFF, 0xD8, 0xFF, 0xE0, 0x04, 0x05]);
+
+    [Fact]
+    public async Task SaveAsync_ThenGetOriginalAsync_ReturnsOriginalData()
+    {
+        var recipe = NewRecipe();
+        await using (var ctx = _factory.Create())
+        {
+            await ctx.CreateAsync(recipe);
+            await ctx.CommitAsync();
+        }
+
+        var photo = NewPhoto(recipe.Id);
+        await using (var ctx = _factory.Create())
+        {
+            await ((IRecipePhotoRepository)ctx).SaveAsync(photo);
+            await ctx.CommitAsync();
+        }
+
+        await using var readCtx = _factory.Create();
+        var original = await ((IRecipePhotoRepository)readCtx).GetOriginalAsync(photo.Id);
+
+        Assert.NotNull(original);
+        Assert.Equal(photo.OriginalData, original);
+    }
+
+    [Fact]
+    public async Task GetOriginalAsync_DoesNotReturnThumbnailData_AndGetThumbnailAsync_ReturnsCorrectData()
+    {
+        var recipe = NewRecipe();
+        await using (var ctx = _factory.Create())
+        {
+            await ctx.CreateAsync(recipe);
+            await ctx.CommitAsync();
+        }
+
+        var photo = NewPhoto(recipe.Id);
+        await using (var ctx = _factory.Create())
+        {
+            await ((IRecipePhotoRepository)ctx).SaveAsync(photo);
+            await ctx.CommitAsync();
+        }
+
+        await using var readCtx = _factory.Create();
+        var original = await ((IRecipePhotoRepository)readCtx).GetOriginalAsync(photo.Id);
+        var thumbnail = await ((IRecipePhotoRepository)readCtx).GetThumbnailAsync(photo.Id);
+
+        Assert.NotNull(original);
+        Assert.NotNull(thumbnail);
+        Assert.Equal(photo.OriginalData, original);
+        Assert.Equal(photo.ThumbnailData, thumbnail);
+        Assert.NotEqual(original, thumbnail);
+    }
+
+    [Fact]
+    public async Task GetOriginalAsync_NonExistentId_ReturnsNull()
+    {
+        await using var ctx = _factory.Create();
+        var result = await ((IRecipePhotoRepository)ctx).GetOriginalAsync(RecipePhotoId.New());
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetThumbnailAsync_NonExistentId_ReturnsNull()
+    {
+        await using var ctx = _factory.Create();
+        var result = await ((IRecipePhotoRepository)ctx).GetThumbnailAsync(RecipePhotoId.New());
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task DeleteRecipe_CascadeDeletesPhoto()
+    {
+        var recipe = NewRecipe();
+        await using (var ctx = _factory.Create())
+        {
+            await ctx.CreateAsync(recipe);
+            await ctx.CommitAsync();
+        }
+
+        var photo = NewPhoto(recipe.Id);
+        await using (var ctx = _factory.Create())
+        {
+            await ((IRecipePhotoRepository)ctx).SaveAsync(photo);
+            await ctx.CommitAsync();
+        }
+
+        await using (var ctx = _factory.Create())
+        {
+            await ctx.DeleteAsync(recipe.Id);
+            await ctx.CommitAsync();
+        }
+
+        await using var readCtx = _factory.Create();
+        var result = await ((IRecipePhotoRepository)readCtx).GetOriginalAsync(photo.Id);
+        Assert.Null(result);
     }
 }

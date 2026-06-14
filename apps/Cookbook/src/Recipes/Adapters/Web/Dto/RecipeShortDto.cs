@@ -5,4 +5,5 @@ internal sealed record RecipeShortDto(
     string Title,
     string Description,
     int CookingTime,
-    string Difficulty);
+    string Difficulty,
+    Guid? PhotoId);

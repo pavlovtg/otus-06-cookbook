@@ -15,6 +15,7 @@ const validDto = {
   servings: 6,
   instructions: "1. Сварить бульон.",
   ingredients: [],
+  photoId: null,
 };
 
 const validRequest = {
@@ -33,6 +34,7 @@ const validShortDto = {
   description: "Классический борщ",
   cookingTime: 120,
   difficulty: "everyday",
+  photoId: null,
 };
 
 describe("RecipeDtoSchema", () => {
