@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Recipes.Domain;
 
 namespace Recipes.Adapters.Postgresql;
 
@@ -44,7 +45,17 @@ internal static class CookbookSeeder
             {
                 var exists = await db.Recipes.FindAsync([recipe.Id], cancellationToken);
                 if (exists is null)
-                    await db.Recipes.AddAsync(recipe, cancellationToken);
+                {
+                    var recipeWithoutIngredients = Recipe.Create(
+                        recipe.Id,
+                        recipe.Title,
+                        recipe.Description,
+                        recipe.CookingTime,
+                        recipe.Difficulty,
+                        recipe.Servings,
+                        recipe.Instructions);
+                    await db.Recipes.AddAsync(recipeWithoutIngredients, cancellationToken);
+                }
                 else
                     exists.Update(
                         recipe.Title,
