@@ -2,7 +2,7 @@
 
 ## Текущая задача
 
-Создан `scripts/restart.sh` — скрипт полного перезапуска приложения (stop → rebuild --no-cache → up --wait).
+Написаны и прошли UI-тесты для кнопок управления фото рецепта (TEST-7.1–7.6) в `tests/ui/test_recipes.py`. Исправлен баг: `uploadRecipePhoto`/`deleteRecipePhoto` использовали `SERVER_BASE` вместо `CLIENT_BASE`, из-за чего браузер не мог достучаться до API. Добавлен Route Handler `app/api/cookbook/v1/recipes/[id]/photo/route.ts`.
 
 ## Что было сделано в последней сессии (bugfix 2)
 

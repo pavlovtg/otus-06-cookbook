@@ -99,7 +99,7 @@ export async function uploadRecipePhoto(
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch(`${SERVER_BASE}/${recipeId}/photo`, {
+  const response = await fetch(`${CLIENT_BASE}/${recipeId}/photo`, {
     method: "POST",
     body: formData,
     cache: "no-store",
@@ -127,7 +127,7 @@ export async function deleteRecipePhoto(
   recipeId: string,
   photoId: string,
 ): Promise<void> {
-  const response = await fetch(`${SERVER_BASE}/${recipeId}/photo`, {
+  const response = await fetch(`${CLIENT_BASE}/${recipeId}/photo`, {
     method: "DELETE",
     cache: "no-store",
   });

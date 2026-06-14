@@ -162,3 +162,117 @@ def test_recipe_detail_photo_actions_visible(page: Page, base_url: str) -> None:
     # Должна быть хотя бы одна кнопка управления фото
     buttons = photo_actions.locator("button")
     expect(buttons.first).to_be_visible()
+
+
+# ── Photo buttons: upload / replace / delete (TEST-7.1–7.6) ──────────────────
+
+PHOTO_FILE = "apps/seed/photos/4384def7-6e8f-45a8-97f3-db9acadeb427.png"
+PHOTO_FILE_2 = "apps/seed/photos/0e2005ec-07ed-4b46-afe4-20920dc29698.jpeg"
+
+
+def _create_recipe_and_open(page: Page, base_url: str, title: str) -> None:
+    """Создаёт рецепт через UI и открывает его детальную страницу."""
+    page.goto(f"{base_url}/recipes/new")
+    page.fill("#title", title)
+    page.fill("#description", "Описание для теста фото")
+    page.fill("#cookingTime", "30")
+    page.fill("#servings", "2")
+    page.select_option("#difficulty", "everyday")
+    page.fill("#instructions", "Шаг 1.")
+    page.click("button[type=submit]")
+    expect(page).to_have_url(re.compile(r"/recipes/(?!new)"))
+
+
+def test_upload_photo_button_visible_when_no_photo(page: Page, base_url: str) -> None:
+    """TEST-7.1: Новый рецепт без фото показывает кнопку «Загрузить фото»."""
+    _create_recipe_and_open(page, base_url, "Тест фото 7.1")
+
+    upload_btn = page.locator(".photo-actions button", has_text="Загрузить фото")
+    expect(upload_btn).to_be_visible()
+
+    # Кнопок «Заменить» и «Удалить» быть не должно
+    expect(page.locator(".photo-actions button", has_text="Заменить фото")).not_to_be_visible()
+    expect(page.locator(".photo-actions button", has_text="Удалить фото")).not_to_be_visible()
+
+
+def test_upload_photo_uploads_file(page: Page, base_url: str) -> None:
+    """TEST-7.2: Загрузка фото через кнопку «Загрузить фото»."""
+    _create_recipe_and_open(page, base_url, "Тест фото 7.2")
+
+    # Загружаем файл через скрытый input
+    page.locator(".photo-actions input[type=file]").set_input_files(PHOTO_FILE)
+
+    # После загрузки должны появиться «Заменить фото» и «Удалить фото»
+    expect(page.locator(".photo-actions button", has_text="Заменить фото")).to_be_visible(timeout=15000)
+    expect(page.locator(".photo-actions button", has_text="Удалить фото")).to_be_visible()
+    expect(page.locator(".photo-actions button", has_text="Загрузить фото")).not_to_be_visible()
+
+    # Фото должно отображаться в галерее
+    expect(page.locator(".main-photo img")).to_be_visible()
+
+
+def test_replace_photo_button_visible_when_has_photo(page: Page, base_url: str) -> None:
+    """TEST-7.3: После загрузки фото видна кнопка «Заменить фото», но не «Загрузить фото»."""
+    _create_recipe_and_open(page, base_url, "Тест фото 7.3")
+
+    page.locator(".photo-actions input[type=file]").set_input_files(PHOTO_FILE)
+
+    replace_btn = page.locator(".photo-actions button", has_text="Заменить фото")
+    expect(replace_btn).to_be_visible(timeout=15000)
+    expect(replace_btn).to_be_enabled()
+
+    expect(page.locator(".photo-actions button", has_text="Загрузить фото")).not_to_be_visible()
+
+
+def test_replace_photo_uploads_new_file(page: Page, base_url: str) -> None:
+    """TEST-7.4: Кнопка «Заменить фото» загружает новый файл — фото остаётся видимым."""
+    _create_recipe_and_open(page, base_url, "Тест фото 7.4")
+
+    # Загружаем первое фото
+    page.locator(".photo-actions input[type=file]").set_input_files(PHOTO_FILE)
+    img = page.locator(".main-photo img")
+    expect(img).to_be_visible(timeout=15000)
+
+    # Заменяем на второе фото через кнопку «Заменить фото»
+    expect(page.locator(".photo-actions button", has_text="Заменить фото")).to_be_visible()
+    page.locator(".photo-actions input[type=file]").set_input_files(PHOTO_FILE_2)
+
+    # После замены фото по-прежнему отображается, кнопки «Заменить»/«Удалить» видны
+    expect(img).to_be_visible(timeout=15000)
+    expect(page.locator(".photo-actions button", has_text="Заменить фото")).to_be_visible()
+    expect(page.locator(".photo-actions button", has_text="Удалить фото")).to_be_visible()
+    expect(page.locator(".photo-actions button", has_text="Загрузить фото")).not_to_be_visible()
+
+
+def test_delete_photo_cancel(page: Page, base_url: str) -> None:
+    """TEST-7.5: Отмена удаления фото — фото остаётся."""
+    _create_recipe_and_open(page, base_url, "Тест фото 7.5")
+
+    page.locator(".photo-actions input[type=file]").set_input_files(PHOTO_FILE)
+    expect(page.locator(".main-photo img")).to_be_visible(timeout=15000)
+
+    # Отклоняем confirm-диалог
+    page.on("dialog", lambda d: d.dismiss())
+    page.locator(".photo-actions button", has_text="Удалить фото").click()
+
+    # Фото и кнопки «Заменить»/«Удалить» остаются
+    expect(page.locator(".main-photo img")).to_be_visible()
+    expect(page.locator(".photo-actions button", has_text="Удалить фото")).to_be_visible()
+
+
+def test_delete_photo_confirm(page: Page, base_url: str) -> None:
+    """TEST-7.6: Подтверждение удаления фото — фото удаляется, появляется «Загрузить фото»."""
+    _create_recipe_and_open(page, base_url, "Тест фото 7.6")
+
+    page.locator(".photo-actions input[type=file]").set_input_files(PHOTO_FILE)
+    expect(page.locator(".main-photo img")).to_be_visible(timeout=15000)
+    expect(page.locator(".photo-actions button", has_text="Удалить фото")).to_be_visible()
+
+    # Подтверждаем confirm-диалог
+    page.on("dialog", lambda d: d.accept())
+    page.locator(".photo-actions button", has_text="Удалить фото").click()
+
+    # Фото удалено — должна появиться кнопка «Загрузить фото»
+    expect(page.locator(".photo-actions button", has_text="Загрузить фото")).to_be_visible(timeout=15000)
+    expect(page.locator(".photo-actions button", has_text="Удалить фото")).not_to_be_visible()
+    expect(page.locator(".main-photo img")).not_to_be_visible()
