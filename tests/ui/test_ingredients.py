@@ -54,6 +54,10 @@ def test_create_ingredient_success(page: Page, base_url: str) -> None:
 
     expect(page.locator(".modal-backdrop.is-open")).not_to_be_visible()
     page.wait_for_load_state("networkidle")
+
+    # Фильтруем по уникальному названию чтобы найти на любой странице
+    page.goto(f"{base_url}/ingredients?title={title}")
+    page.wait_for_load_state("networkidle")
     expect(page.locator(".ingredients-list")).to_contain_text(title)
 
 
@@ -96,6 +100,7 @@ def test_edit_ingredient_success(page: Page, base_url: str) -> None:
     updated_title = _unique_title("UI-тест морковь обновлённая")
     page.goto(f"{base_url}/ingredients")
 
+    # Создаём ингредиент
     page.locator("[data-testid='create-ingredient-trigger']").click()
     modal = page.locator(".modal-backdrop.is-open")
     modal.locator("#ingredient-title").fill(title)
@@ -104,6 +109,10 @@ def test_edit_ingredient_success(page: Page, base_url: str) -> None:
     modal.locator("#ingredient-category").select_option(VALID_INGREDIENT["category"])
     modal.locator("button[type=submit]").click()
     expect(page.locator(".modal-backdrop.is-open")).not_to_be_visible()
+    page.wait_for_load_state("networkidle")
+
+    # Переходим на страницу с фильтром чтобы найти созданный ингредиент
+    page.goto(f"{base_url}/ingredients?title={title}")
     page.wait_for_load_state("networkidle")
 
     item = page.locator(".ingredient-item", has_text=title).first
@@ -116,6 +125,10 @@ def test_edit_ingredient_success(page: Page, base_url: str) -> None:
 
     expect(page.locator(".modal-backdrop.is-open")).not_to_be_visible()
     page.wait_for_load_state("networkidle")
+
+    # Фильтруем по обновлённому названию
+    page.goto(f"{base_url}/ingredients?title={updated_title}")
+    page.wait_for_load_state("networkidle")
     expect(page.locator(".ingredients-list")).to_contain_text(updated_title)
 
 
@@ -124,6 +137,7 @@ def test_delete_ingredient_with_confirmation(page: Page, base_url: str) -> None:
     title = _unique_title("UI-тест удаление")
     page.goto(f"{base_url}/ingredients")
 
+    # Создаём ингредиент
     page.locator("[data-testid='create-ingredient-trigger']").click()
     modal = page.locator(".modal-backdrop.is-open")
     modal.locator("#ingredient-title").fill(title)
@@ -132,6 +146,10 @@ def test_delete_ingredient_with_confirmation(page: Page, base_url: str) -> None:
     modal.locator("#ingredient-category").select_option(VALID_INGREDIENT["category"])
     modal.locator("button[type=submit]").click()
     expect(page.locator(".modal-backdrop.is-open")).not_to_be_visible()
+    page.wait_for_load_state("networkidle")
+
+    # Переходим на страницу с фильтром чтобы найти созданный ингредиент
+    page.goto(f"{base_url}/ingredients?title={title}")
     page.wait_for_load_state("networkidle")
 
     item = page.locator(".ingredient-item", has_text=title).first
