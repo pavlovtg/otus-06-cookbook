@@ -3,16 +3,20 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import logger from "@/lib/logger";
 import { getRecipes } from "@/lib/bff/recipes";
+import { getCategories } from "@/lib/bff/categories";
 import { RecipeCard } from "@/components/features/RecipeCard";
 import type { RecipeShortDto } from "@/lib/schemas/recipe";
+import type { Category } from "@/lib/schemas/category";
 
 export default async function HomePage() {
   let recipes: RecipeShortDto[] = [];
+  let categories: Category[] = [];
   try {
-    recipes = await getRecipes();
+    [recipes, categories] = await Promise.all([getRecipes(), getCategories()]);
   } catch (err) {
-    logger.error({ err }, "Failed to load recipes");
+    logger.error({ err }, "Failed to load recipes or categories");
     recipes = [];
+    categories = [];
   }
 
   return (
@@ -38,7 +42,7 @@ export default async function HomePage() {
         <div className="recipes-grid">
           {recipes.map((recipe) => (
             <Link key={recipe.id} href={`/recipes/${recipe.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-              <RecipeCard recipe={recipe} />
+              <RecipeCard recipe={recipe} categories={categories} />
             </Link>
           ))}
         </div>

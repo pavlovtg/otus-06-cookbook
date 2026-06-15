@@ -31,6 +31,7 @@ export function EditRecipeForm({ recipe }: Props) {
           ingredientId: ing.ingredientId,
           amount: ing.amount,
         })),
+        categoryIds: recipe.categoryIds,
       }}
       onSubmit={handleSubmit}
       submitLabel="Сохранить изменения"

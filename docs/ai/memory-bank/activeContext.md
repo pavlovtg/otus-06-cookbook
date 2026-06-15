@@ -2,26 +2,27 @@
 
 ## Текущая задача
 
-`categories-crud` полностью завершён (все 10 разделов). Все задачи выполнены.
+Багфикс: `CreateRecipe_WithNonExistentCategoryId_Returns400` — исправлен.
 
-## Что было сделано в последней сессии (categories-crud frontend)
+## Что было сделано в последней сессии (recipe-categories frontend)
 
-- **5.1** `lib/schemas/category.ts` — Zod-схемы `CategorySchema`, `CategoryRequestSchema`, enum `CategoryType` (7 значений), `CategoryTypeLabels`
-- **5.2** `lib/bff/categories.ts` — `getCategories`, `createCategory`, `updateCategory`, `deleteCategory`
-- **5.2** API routes: `app/api/cookbook/v1/categories/route.ts` (GET, POST) и `[id]/route.ts` (PUT, DELETE) — proxy к gateway
-- **6.1–6.3** `app/categories/page.tsx` — Server Component, 7 групп по типу, теги с кнопками; `CategoryModal.tsx` — модальная форма создания/редактирования; `DeleteCategoryButton.tsx` — подтверждение удаления с обработкой 409
-- **6.4** Навигация: добавлен пункт «Категории» в `app/layout.tsx`
-- **7.1** `docs/design/storybook/src/stories/Categories.stories.tsx` — 4 story: Page, Playground ★, EmptyGroup, SingleTag
-- **9.1** `tests/unit/category.schema.test.ts` — 20 тестов Zod-схем
-- **9.2** `tests/unit/category.bff.test.ts` — 10 тестов BFF с мокированным fetch
-
-## Что было сделано ранее (bugfix 2)
-
-- `/api/cookbook/photos/` → `/api/cookbook/v1/photos/` везде
+- **6.1–6.2** `lib/schemas/recipe.ts` — добавлен `categoryIds: z.array(z.string().uuid())` в `RecipeShortDtoSchema`, `RecipeDtoSchema`, `RecipeRequestSchema`
+- **6.3** `app/(public)/page.tsx` — `Promise.all([getRecipes(), getCategories()])`, `categories` пробрасывается в `RecipeCard`
+- **6.4** Инвалидация уже реализована через `window.location.assign` в `CategoryModal` и `DeleteCategoryButton`
+- **7.1** `components/features/CategoryTagInput.tsx` — `.tag-input` + `.chip` + `.autocomplete`, замена при совпадении типа
+- **7.2** `components/features/RecipeForm.tsx` — добавлен `CategoryTagInput`, загрузка `getCategories()` в `useEffect`, `categoryIds` в state
+- **7.2** `app/recipes/[id]/edit/EditRecipeForm.tsx` — `categoryIds` в `initialValues`
+- **7.3** `components/features/RecipeCard.tsx` — отображение до 3 тегов категорий из `categoryIds` + `categories[]`
+- **7.4** `app/recipes/[id]/page.tsx` — `Promise.all([getRecipe, getCategories])`, все теги в `.detail-tags`
+- **7.5** `docs/design/storybook/src/domain/CategoryTagInput.tsx` — компонент для Storybook
+- **7.5** `docs/design/storybook/src/stories/CategoryTagInput.stories.tsx` — 5 историй: Empty, AddChip, RemoveChip, ReplaceByType, Playground ★
+- **7.5** `docs/design/storybook/src/stories/RecipeCard.stories.tsx` — добавлены `WithTags` и `WithoutTags`
+- **8.1–8.2** `tests/ui/test_recipes.py` — 3 новых теста: создание с категориями → карточка, детальная; редактирование → обновление
 
 ## Ключевые решения
 
-- Тип категории нельзя менять при редактировании (select disabled)
-- Удаление: 409 → показываем сообщение «используется в рецептах» без кнопки «Удалить»
-- Страница: `force-dynamic`, Server Component, refresh через `window.location.assign`
-- Proxy routes: 204 → `new NextResponse(null, { status: 204 })`
+- `categoryIds` в схемах — required (не optional), т.к. backend всегда возвращает массив
+- `RecipeCard` fallback: если `categoryIds` пуст или категории не найдены — показывает тег сложности
+- `detail-tags` fallback: если нет категорий — показывает сложность/порции/время
+- Замена при совпадении типа реализована в `CategoryTagInput.addCategory`
+- E2E тесты используют `data-testid` атрибуты компонента

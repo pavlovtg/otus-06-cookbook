@@ -38,6 +38,10 @@
 
 ## Выполнено (последнее)
 
+- Багфикс `RecipesController`: `CategoryDomainException` не перехватывалась в `CreateRecipe`/`UpdateRecipe` → `500`. Добавлен `catch (CategoryDomainException)` перед `catch (RecipeDomainException)` в обоих методах → тест `CreateRecipe_WithNonExistentCategoryId_Returns400` проходит.
+
+## Выполнено (ранее)
+
 - Фикс UI-тестов ингредиентов и формы рецепта (четыре этапа):
   1. Добавлены BFF-роуты Next.js: `app/api/cookbook/v1/ingredients/route.ts` (GET, POST), `app/api/cookbook/v1/ingredients/[id]/route.ts` (GET, PUT, DELETE)
   2. Заменён `router.refresh()` на `router.push(pathname+search)` в `IngredientModal.tsx` и `DeleteIngredientButton.tsx`

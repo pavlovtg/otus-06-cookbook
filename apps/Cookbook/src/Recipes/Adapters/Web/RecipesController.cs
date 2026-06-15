@@ -63,6 +63,10 @@ internal sealed class RecipesController : ControllerBase
             var details = await _recipeService.GetByIdWithDetailsAsync(recipe.Id, cancellationToken);
             return CreatedAtAction(nameof(GetRecipe), new { id = recipe.Id.Value }, ToDto(details));
         }
+        catch (CategoryDomainException ex)
+        {
+            return BadRequest(ProblemDetailsFor(ex.GetType().Name));
+        }
         catch (RecipeDomainException ex)
         {
             return BadRequest(ProblemDetailsFor(ex));
@@ -93,6 +97,10 @@ internal sealed class RecipesController : ControllerBase
                 cancellationToken);
 
             return NoContent();
+        }
+        catch (CategoryDomainException ex)
+        {
+            return BadRequest(ProblemDetailsFor(ex.GetType().Name));
         }
         catch (RecipeDomainException ex)
         {

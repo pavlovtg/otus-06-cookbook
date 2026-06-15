@@ -9,7 +9,10 @@ import {
   type RecipeIngredientRequest,
 } from "@/lib/schemas/recipe";
 import { getIngredients } from "@/lib/bff/ingredients";
+import { getCategories } from "@/lib/bff/categories";
 import type { Ingredient } from "@/lib/schemas/ingredient";
+import type { Category } from "@/lib/schemas/category";
+import { CategoryTagInput } from "@/components/features/CategoryTagInput";
 
 const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [
   { value: "easy", label: "Просто" },
@@ -33,9 +36,8 @@ export function RecipeForm({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [availableIngredients, setAvailableIngredients] = useState<
-    Ingredient[]
-  >([]);
+  const [availableIngredients, setAvailableIngredients] = useState<Ingredient[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
 
   const [form, setForm] = useState<RecipeRequest>({
     title: initialValues?.title ?? "",
@@ -45,11 +47,15 @@ export function RecipeForm({
     servings: initialValues?.servings ?? 2,
     instructions: initialValues?.instructions ?? "",
     ingredients: initialValues?.ingredients ?? [],
+    categoryIds: initialValues?.categoryIds ?? [],
   });
 
   useEffect(() => {
     getIngredients({ pageSize: 1000 })
       .then((result) => setAvailableIngredients(result.items))
+      .catch(() => {});
+    getCategories()
+      .then((cats) => setAvailableCategories(cats))
       .catch(() => {});
   }, []);
 
@@ -167,6 +173,15 @@ export function RecipeForm({
             <span className="error-text">{errors.servings}</span>
           )}
         </div>
+      </div>
+
+      <div className="field">
+        <label>Категории</label>
+        <CategoryTagInput
+          categories={availableCategories}
+          value={form.categoryIds}
+          onChange={(ids) => set("categoryIds", ids)}
+        />
       </div>
 
       <div className="field">

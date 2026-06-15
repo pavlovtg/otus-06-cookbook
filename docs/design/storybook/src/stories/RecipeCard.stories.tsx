@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import * as React from 'react';
 import { RecipeCard } from '../domain/RecipeCard';
-import { recipes, getUser, avgRating, favorites } from '../mocks';
+import { recipes, categories, getUser, avgRating, favorites } from '../mocks';
 
 const meta: Meta<typeof RecipeCard> = {
   title: 'Domain/RecipeCard',
@@ -51,6 +51,24 @@ export const Private: S = {
 
 export const Guest: S = {
   args: { recipe: r, author: getUser(r.author_id), rating: avgRating(r.id), showFavorite: false },
+};
+
+export const WithTags: S = {
+  name: 'С тегами категорий',
+  args: {
+    recipe: recipes.find((x) => x.categories.length >= 3) ?? r,
+    author: getUser(r.author_id),
+    rating: avgRating(r.id),
+  },
+};
+
+export const WithoutTags: S = {
+  name: 'Без тегов категорий',
+  args: {
+    recipe: { ...r, categories: [] },
+    author: getUser(r.author_id),
+    rating: avgRating(r.id),
+  },
 };
 
 export const Playground: S = {
