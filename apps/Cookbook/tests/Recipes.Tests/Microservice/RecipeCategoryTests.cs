@@ -1,35 +1,18 @@
 using System.Net;
 using System.Net.Http.Json;
-using DotNet.Testcontainers.Builders;
 using Recipes.Adapters.Web.Dto;
-using Testcontainers.PostgreSql;
 using Xunit;
 
 namespace Recipes.Tests.Microservice;
 
-public sealed class RecipeCategoryTests : IAsyncLifetime
+[Collection("RecipeMicroservice")]
+public sealed class RecipeCategoryTests(RecipeMicroserviceFixture fixture) : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
-        .WithImage("postgres:16-alpine")
-        .WithOutputConsumer(Consume.DoNotConsumeStdoutAndStderr())
-        .Build();
+    private readonly HttpClient _client = fixture.Client;
 
-    private RecipeMicroserviceHost? _host;
-    private HttpClient? _client;
+    public Task InitializeAsync() => fixture.TruncateAsync();
 
-    public async Task InitializeAsync()
-    {
-        await _postgres.StartAsync();
-        _host = new RecipeMicroserviceHost(_postgres.GetConnectionString()).EnsureServer();
-        _client = _host.CreateClient();
-    }
-
-    public async Task DisposeAsync()
-    {
-        if (_host is not null)
-            await _host.DisposeAsync();
-        await _postgres.DisposeAsync();
-    }
+    public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
     public async Task CreateRecipe_WithCategoryIds_Returns201_WithCategoryIds()
@@ -46,7 +29,7 @@ public sealed class RecipeCategoryTests : IAsyncLifetime
             Ingredients: [],
             CategoryIds: [category.Id]);
 
-        var response = await _client!.PostAsJsonAsync("/api/v1/recipes", request);
+        var response = await _client.PostAsJsonAsync("/api/v1/recipes", request);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
@@ -72,7 +55,7 @@ public sealed class RecipeCategoryTests : IAsyncLifetime
             Ingredients: [],
             CategoryIds: [cat1.Id]);
 
-        var createResponse = await _client!.PostAsJsonAsync("/api/v1/recipes", createRequest);
+        var createResponse = await _client.PostAsJsonAsync("/api/v1/recipes", createRequest);
         var created = await createResponse.Content.ReadFromJsonAsync<RecipeDto>();
         Assert.NotNull(created);
 
@@ -86,10 +69,10 @@ public sealed class RecipeCategoryTests : IAsyncLifetime
             Ingredients: [],
             CategoryIds: [cat2.Id]);
 
-        var updateResponse = await _client!.PutAsJsonAsync($"/api/v1/recipes/{created.Id}", updateRequest);
+        var updateResponse = await _client.PutAsJsonAsync($"/api/v1/recipes/{created.Id}", updateRequest);
         Assert.Equal(HttpStatusCode.NoContent, updateResponse.StatusCode);
 
-        var getResponse = await _client!.GetAsync($"/api/v1/recipes/{created.Id}");
+        var getResponse = await _client.GetAsync($"/api/v1/recipes/{created.Id}");
         var updated = await getResponse.Content.ReadFromJsonAsync<RecipeDto>();
         Assert.NotNull(updated);
         Assert.Single(updated.CategoryIds);
@@ -112,11 +95,11 @@ public sealed class RecipeCategoryTests : IAsyncLifetime
             Ingredients: [],
             CategoryIds: [category.Id]);
 
-        var createResponse = await _client!.PostAsJsonAsync("/api/v1/recipes", createRequest);
+        var createResponse = await _client.PostAsJsonAsync("/api/v1/recipes", createRequest);
         var created = await createResponse.Content.ReadFromJsonAsync<RecipeDto>();
         Assert.NotNull(created);
 
-        var getResponse = await _client!.GetAsync($"/api/v1/recipes/{created.Id}");
+        var getResponse = await _client.GetAsync($"/api/v1/recipes/{created.Id}");
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
 
         var dto = await getResponse.Content.ReadFromJsonAsync<RecipeDto>();
@@ -138,7 +121,7 @@ public sealed class RecipeCategoryTests : IAsyncLifetime
             Ingredients: [],
             CategoryIds: [Guid.NewGuid()]);
 
-        var response = await _client!.PostAsJsonAsync("/api/v1/recipes", request);
+        var response = await _client.PostAsJsonAsync("/api/v1/recipes", request);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -158,12 +141,12 @@ public sealed class RecipeCategoryTests : IAsyncLifetime
             Ingredients: [],
             CategoryIds: [category.Id]);
 
-        var createResponse = await _client!.PostAsJsonAsync("/api/v1/recipes", createRequest);
+        var createResponse = await _client.PostAsJsonAsync("/api/v1/recipes", createRequest);
         createResponse.EnsureSuccessStatusCode();
         var created = await createResponse.Content.ReadFromJsonAsync<RecipeDto>();
         Assert.NotNull(created);
 
-        var listResponse = await _client!.GetAsync("/api/v1/recipes");
+        var listResponse = await _client.GetAsync("/api/v1/recipes");
         Assert.Equal(HttpStatusCode.OK, listResponse.StatusCode);
 
         var list = await listResponse.Content.ReadFromJsonAsync<List<RecipeShortDto>>();
@@ -180,7 +163,7 @@ public sealed class RecipeCategoryTests : IAsyncLifetime
         CategoryTypeDto type = CategoryTypeDto.MealRole)
     {
         var request = new CategoryRequest(Name: name, Description: "Описание", Type: type);
-        var response = await _client!.PostAsJsonAsync("/api/v1/categories", request);
+        var response = await _client.PostAsJsonAsync("/api/v1/categories", request);
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<CategoryDto>())!;
     }

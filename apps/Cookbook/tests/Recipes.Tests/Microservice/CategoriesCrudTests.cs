@@ -1,37 +1,18 @@
 using System.Net;
 using System.Net.Http.Json;
-using DotNet.Testcontainers.Builders;
 using Recipes.Adapters.Web.Dto;
-using Testcontainers.PostgreSql;
 using Xunit;
 
 namespace Recipes.Tests.Microservice;
 
-public sealed class CategoriesCrudTests : IAsyncLifetime
+[Collection("RecipeMicroservice")]
+public sealed class CategoriesCrudTests(RecipeMicroserviceFixture fixture) : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
-        .WithImage("postgres:16-alpine")
-        .WithOutputConsumer(Consume.DoNotConsumeStdoutAndStderr())
-        .Build();
+    private readonly HttpClient _client = fixture.Client;
 
-    private RecipeMicroserviceHost? _host;
-    private HttpClient? _client;
+    public Task InitializeAsync() => fixture.TruncateAsync();
 
-    public async Task InitializeAsync()
-    {
-        await _postgres.StartAsync();
-
-        _host = new RecipeMicroserviceHost(_postgres.GetConnectionString()).EnsureServer();
-        _client = _host.CreateClient();
-    }
-
-    public async Task DisposeAsync()
-    {
-        if (_host is not null)
-            await _host.DisposeAsync();
-
-        await _postgres.DisposeAsync();
-    }
+    public Task DisposeAsync() => Task.CompletedTask;
 
     private static CategoryRequest ValidRequest() => new(
         Name: "Первое блюдо",
@@ -44,7 +25,7 @@ public sealed class CategoriesCrudTests : IAsyncLifetime
     [Fact]
     public async Task GetCategories_Returns200_WithList()
     {
-        var response = await _client!.GetAsync("/api/v1/categories");
+        var response = await _client.GetAsync("/api/v1/categories");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -57,7 +38,7 @@ public sealed class CategoriesCrudTests : IAsyncLifetime
     {
         var created = await CreateTestCategoryAsync();
 
-        var response = await _client!.GetAsync("/api/v1/categories");
+        var response = await _client.GetAsync("/api/v1/categories");
         var list = await response.Content.ReadFromJsonAsync<List<CategoryDto>>();
 
         Assert.NotNull(list);
@@ -69,7 +50,7 @@ public sealed class CategoriesCrudTests : IAsyncLifetime
     [Fact]
     public async Task CreateCategory_Returns201_WithCategoryDto()
     {
-        var response = await _client!.PostAsJsonAsync("/api/v1/categories", ValidRequest());
+        var response = await _client.PostAsJsonAsync("/api/v1/categories", ValidRequest());
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
@@ -85,7 +66,7 @@ public sealed class CategoriesCrudTests : IAsyncLifetime
     public async Task CreateCategory_Returns400_WhenNameEmpty()
     {
         var request = ValidRequest() with { Name = "" };
-        var response = await _client!.PostAsJsonAsync("/api/v1/categories", request);
+        var response = await _client.PostAsJsonAsync("/api/v1/categories", request);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -94,7 +75,7 @@ public sealed class CategoriesCrudTests : IAsyncLifetime
     public async Task CreateCategory_Returns400_WhenNameTooLong()
     {
         var request = ValidRequest() with { Name = new string('А', 201) };
-        var response = await _client!.PostAsJsonAsync("/api/v1/categories", request);
+        var response = await _client.PostAsJsonAsync("/api/v1/categories", request);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -103,7 +84,7 @@ public sealed class CategoriesCrudTests : IAsyncLifetime
     public async Task CreateCategory_Returns400_WhenDescriptionTooLong()
     {
         var request = ValidRequest() with { Description = new string('А', 2001) };
-        var response = await _client!.PostAsJsonAsync("/api/v1/categories", request);
+        var response = await _client.PostAsJsonAsync("/api/v1/categories", request);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -111,7 +92,7 @@ public sealed class CategoriesCrudTests : IAsyncLifetime
     [Fact]
     public async Task CreateCategory_TypeIsSerializedAsSnakeCase()
     {
-        var response = await _client!.PostAsJsonAsync("/api/v1/categories", ValidRequest());
+        var response = await _client.PostAsJsonAsync("/api/v1/categories", ValidRequest());
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
         var json = await response.Content.ReadAsStringAsync();
@@ -126,11 +107,11 @@ public sealed class CategoriesCrudTests : IAsyncLifetime
         var created = await CreateTestCategoryAsync();
 
         var updateRequest = ValidRequest() with { Name = "Второе блюдо", Description = "Горячие блюда." };
-        var response = await _client!.PutAsJsonAsync($"/api/v1/categories/{created.Id}", updateRequest);
+        var response = await _client.PutAsJsonAsync($"/api/v1/categories/{created.Id}", updateRequest);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-        var getResponse = await _client!.GetAsync("/api/v1/categories");
+        var getResponse = await _client.GetAsync("/api/v1/categories");
         var list = await getResponse.Content.ReadFromJsonAsync<List<CategoryDto>>();
         Assert.NotNull(list);
         var updated = list.FirstOrDefault(c => c.Id == created.Id);
@@ -145,7 +126,7 @@ public sealed class CategoriesCrudTests : IAsyncLifetime
         var created = await CreateTestCategoryAsync();
 
         var updateRequest = ValidRequest() with { Name = "" };
-        var response = await _client!.PutAsJsonAsync($"/api/v1/categories/{created.Id}", updateRequest);
+        var response = await _client.PutAsJsonAsync($"/api/v1/categories/{created.Id}", updateRequest);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -153,7 +134,7 @@ public sealed class CategoriesCrudTests : IAsyncLifetime
     [Fact]
     public async Task UpdateCategory_Returns400_WhenNotFound()
     {
-        var response = await _client!.PutAsJsonAsync($"/api/v1/categories/{Guid.NewGuid()}", ValidRequest());
+        var response = await _client.PutAsJsonAsync($"/api/v1/categories/{Guid.NewGuid()}", ValidRequest());
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -165,11 +146,11 @@ public sealed class CategoriesCrudTests : IAsyncLifetime
     {
         var created = await CreateTestCategoryAsync();
 
-        var response = await _client!.DeleteAsync($"/api/v1/categories/{created.Id}");
+        var response = await _client.DeleteAsync($"/api/v1/categories/{created.Id}");
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-        var getResponse = await _client!.GetAsync("/api/v1/categories");
+        var getResponse = await _client.GetAsync("/api/v1/categories");
         var list = await getResponse.Content.ReadFromJsonAsync<List<CategoryDto>>();
         Assert.NotNull(list);
         Assert.DoesNotContain(list, c => c.Id == created.Id);
@@ -178,7 +159,7 @@ public sealed class CategoriesCrudTests : IAsyncLifetime
     [Fact]
     public async Task DeleteCategory_Returns400_WhenNotFound()
     {
-        var response = await _client!.DeleteAsync($"/api/v1/categories/{Guid.NewGuid()}");
+        var response = await _client.DeleteAsync($"/api/v1/categories/{Guid.NewGuid()}");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -187,7 +168,7 @@ public sealed class CategoriesCrudTests : IAsyncLifetime
 
     private async Task<CategoryDto> CreateTestCategoryAsync()
     {
-        var response = await _client!.PostAsJsonAsync("/api/v1/categories", ValidRequest());
+        var response = await _client.PostAsJsonAsync("/api/v1/categories", ValidRequest());
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<CategoryDto>())!;
     }

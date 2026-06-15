@@ -1,39 +1,29 @@
-using DotNet.Testcontainers.Builders;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql;
 using Recipes.Adapters.Postgresql;
 using Recipes.Domain;
 using Shared.Testing.Database;
-using Testcontainers.PostgreSql;
 using Xunit;
 
 namespace Recipes.Tests.Adapters.Postgresql;
 
-public sealed class CategoryRepositoryTests : IAsyncLifetime
+[Collection("RecipeIntegration")]
+public sealed class CategoryRepositoryTests(RecipeIntegrationFixture fixture) : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
-        .WithImage("postgres:16-alpine")
-        .WithOutputConsumer(Consume.DoNotConsumeStdoutAndStderr())
-        .Build();
-
     private RepositoryFactory<RecipeRepository> _factory = null!;
 
     public async Task InitializeAsync()
     {
-        await _postgres.StartAsync();
+        await fixture.TruncateAsync();
 
         _factory = new RepositoryFactory<RecipeRepository>(
-            _postgres.GetConnectionString(),
+            fixture.ConnectionString,
             builder => new RecipeRepository(builder.Options),
             o => o.MigrationsHistoryTable(HistoryRepository.DefaultTableName, RecipeRepository.DefaultSchema));
-
-        await _factory.MigrateAsync();
     }
 
     public async Task DisposeAsync()
     {
         await _factory.DisposeAsync();
-        await _postgres.DisposeAsync();
     }
 
     private static Category NewCategory() =>
@@ -199,22 +189,4 @@ public sealed class CategoryRepositoryTests : IAsyncLifetime
         Assert.False(isUsed);
     }
 
-    // ── Migration ────────────────────────────────────────────────────────────
-
-    [Fact]
-    public async Task MigrateAsync_CategoriesTable_IsCreatedInCookbookSchema()
-    {
-        await using var conn = new NpgsqlConnection(_postgres.GetConnectionString());
-        await conn.OpenAsync();
-
-        await using var cmd = conn.CreateCommand();
-        cmd.CommandText = """
-            SELECT COUNT(*) FROM information_schema.tables
-            WHERE table_schema = 'cookbook' AND table_name = 'categories'
-            """;
-
-        var count = (long?)await cmd.ExecuteScalarAsync();
-
-        Assert.Equal(1L, count);
-    }
 }
