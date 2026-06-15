@@ -7,16 +7,19 @@
 ## Что сделано
 
 ### Shared.Testing
+
 - `PostgresContainerFixture` — базовая фикстура с `WithOutputConsumer(Consume.DoNotConsumeStdoutAndStderr())`
 - `RepositoryFactory<T>` — фабрика контекстов с `MigrateAsync()`
 
 ### Recipes.Tests / Microservice
+
 - `RecipeMicroserviceFixture` — один контейнер + один `WebApplicationFactory` на всю коллекцию
   - `TruncateAsync()` — динамический TRUNCATE всех таблиц схемы `cookbook` (кроме `__EFMigrationsHistory`)
 - `RecipeMicroserviceCollection` — `[CollectionDefinition("RecipeMicroservice")]`
 - 6 тестовых классов переведены на `[Collection("RecipeMicroservice")]` + `IAsyncLifetime` с `TruncateAsync`
 
 ### Recipes.Tests / Integration
+
 - `RecipeIntegrationFixture` — один контейнер + одна миграция на всю коллекцию + `TruncateAsync()`
 - `RecipeIntegrationCollection` — `[CollectionDefinition("RecipeIntegration")]`
 - `RecipeMigrationFixture` — свежий контейнер на каждый тестовый класс (для тестов миграций)
@@ -24,6 +27,7 @@
 - 4 тестовых класса репозиториев: `CategoryRepositoryTests`, `IngredientRepositoryTests`, `RecipeRepositoryTests`, `RecipePhotoRepositoryTests`
 
 ### Shared.Testing.Tests
+
 - `RepositoryFactoryTests` — обновлён: `WithWaitStrategy` → `WithOutputConsumer`, добавлен write-read тест
 
 ## Ключевые решения
