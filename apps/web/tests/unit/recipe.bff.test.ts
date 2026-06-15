@@ -18,6 +18,7 @@ const mockRecipeShort = {
   cookingTime: 120,
   difficulty: "everyday",
   photoId: null,
+  categoryIds: [],
 };
 
 const mockRecipe = {
@@ -30,6 +31,7 @@ const mockRecipe = {
   instructions: "1. Сварить бульон.",
   ingredients: [],
   photoId: null,
+  categoryIds: [],
 };
 
 const mockRequest = {
@@ -40,6 +42,7 @@ const mockRequest = {
   servings: 6,
   instructions: "1. Сварить бульон.",
   ingredients: [],
+  categoryIds: [],
 };
 
 beforeEach(() => {

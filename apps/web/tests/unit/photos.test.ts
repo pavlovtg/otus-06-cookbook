@@ -30,6 +30,7 @@ describe("RecipeDtoSchema — photoId", () => {
     servings: 6,
     instructions: "1. Сварить бульон.",
     ingredients: [],
+    categoryIds: [],
   };
 
   it("принимает photoId: null", () => {
@@ -63,6 +64,7 @@ describe("RecipeShortDtoSchema — photoId", () => {
     description: "Классический борщ",
     cookingTime: 120,
     difficulty: "everyday",
+    categoryIds: [],
   };
 
   it("принимает photoId: null", () => {

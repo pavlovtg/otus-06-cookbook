@@ -13,6 +13,7 @@ describe("RecipeCard", () => {
       cookingTime: 120,
       difficulty: "everyday" as const,
       photoId: null,
+      categoryIds: [],
     };
 
     render(<RecipeCard recipe={recipe} />);
@@ -31,6 +32,7 @@ describe("RecipeCard", () => {
       cookingTime: 120,
       difficulty: "everyday" as const,
       photoId: PHOTO_ID,
+      categoryIds: [],
     };
 
     render(<RecipeCard recipe={recipe} />);
@@ -53,6 +55,7 @@ describe("RecipeCard", () => {
       cookingTime: 120,
       difficulty: "everyday" as const,
       photoId: null,
+      categoryIds: [],
     };
 
     const { container } = render(<RecipeCard recipe={recipe} />);
