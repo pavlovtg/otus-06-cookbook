@@ -18,6 +18,10 @@
 
 Нет активных задач.
 
+## Заархивировано
+
+- `recipe-categories` (31/31 задач) → `openspec/changes/archive/2026-06-16-recipe-categories/`
+
 ## Выполнено (UI-тесты фото)
 
 - TEST-7.1–7.6: UI-тесты кнопок «Загрузить фото», «Заменить фото», «Удалить фото» в `tests/ui/test_recipes.py`
