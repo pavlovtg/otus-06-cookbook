@@ -154,8 +154,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
-      - name: Build Docker image (Cookbook)
-        run: docker build -f apps/Cookbook/Dockerfile apps/
+      - uses: docker/setup-buildx-action@v3.10.0
+      - uses: docker/build-push-action@v6.16.0
+        with:
+          context: apps/
+          file: apps/Cookbook/Dockerfile
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   build-apigateway:
     needs: [lint-backend, test-backend]
@@ -166,8 +172,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
-      - name: Build Docker image (ApiGateway)
-        run: docker build -f apps/ApiGateway/Dockerfile apps/
+      - uses: docker/setup-buildx-action@v3.10.0
+      - uses: docker/build-push-action@v6.16.0
+        with:
+          context: apps/
+          file: apps/ApiGateway/Dockerfile
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   build-web:
     needs: [lint-web, test-web]
@@ -178,8 +190,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
-      - name: Build Docker image (web)
-        run: docker build apps/web
+      - uses: docker/setup-buildx-action@v3.10.0
+      - uses: docker/build-push-action@v6.16.0
+        with:
+          context: apps/web
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   # ─── E2e ──────────────────────────────────────────────────────────────────
   # Запускается если изменились инфраструктура (e2e filter) или любой из компонентов.
