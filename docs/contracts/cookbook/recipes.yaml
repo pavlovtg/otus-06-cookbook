@@ -616,6 +616,7 @@ components:
         - cookingTime
         - difficulty
         - photoId
+        - categoryIds
       properties:
         id:
           type: string
@@ -641,6 +642,13 @@ components:
           nullable: true
           description: Идентификатор фото рецепта (null если фото нет)
           example: null
+        categoryIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Идентификаторы категорий рецепта
+          example: ["33333333-0000-0000-0000-000000000001"]
     RecipeIngredientDto:
       type: object
       required:
@@ -693,6 +701,7 @@ components:
         - instructions
         - ingredients
         - photoId
+        - categoryIds
       properties:
         id:
           type: string
@@ -732,6 +741,13 @@ components:
           nullable: true
           description: Идентификатор фото рецепта (null если фото нет)
           example: null
+        categoryIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Идентификаторы категорий рецепта
+          example: ["33333333-0000-0000-0000-000000000001"]
     RecipeRequest:
       type: object
       required:
@@ -741,6 +757,7 @@ components:
         - servings
         - instructions
         - ingredients
+        - categoryIds
       properties:
         title:
           type: string
@@ -774,6 +791,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RecipeIngredientRequest"
+        categoryIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Идентификаторы категорий рецепта
+          example: ["33333333-0000-0000-0000-000000000001"]
     ProblemDetails:
       description: RFC 7807 Problem Details
       type: object
