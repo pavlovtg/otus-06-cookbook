@@ -332,6 +332,51 @@ def test_create_recipe_with_categories_shows_tags_on_detail(page: Page, base_url
     expect(detail_tags.first).to_be_visible()
 
 
+def test_recipe_without_categories_card_shows_no_tags(page: Page, base_url: str) -> None:
+    """8.3: Рецепт без категорий — карточка не показывает теги."""
+    title = "Тест без категорий 8.3 карточка"
+    # Создаём рецепт без категорий
+    page.goto(f"{base_url}/recipes/new")
+    page.fill("#title", title)
+    page.fill("#description", "Описание без категорий")
+    page.fill("#cookingTime", "90")
+    page.fill("#servings", "6")
+    page.select_option("#difficulty", "everyday")
+    page.fill("#instructions", "Шаг 1.")
+    page.click("button[type=submit]")
+    expect(page).to_have_url(re.compile(r"/recipes/(?!new)"), timeout=10000)
+
+    # Возвращаемся на список
+    page.goto(base_url)
+
+    # Находим карточку
+    card = page.locator(".recipe-card", has=page.locator("h3", has_text=title))
+    expect(card).to_be_visible(timeout=10000)
+
+    # В карточке не должно быть тегов
+    tags = card.locator(".tags .tag")
+    expect(tags).to_have_count(0)
+
+
+def test_recipe_without_categories_detail_shows_no_tags(page: Page, base_url: str) -> None:
+    """8.3: Рецепт без категорий — детальная страница не показывает теги."""
+    title = "Тест без категорий 8.3 детальная"
+    # Создаём рецепт без категорий
+    page.goto(f"{base_url}/recipes/new")
+    page.fill("#title", title)
+    page.fill("#description", "Описание без категорий")
+    page.fill("#cookingTime", "90")
+    page.fill("#servings", "6")
+    page.select_option("#difficulty", "everyday")
+    page.fill("#instructions", "Шаг 1.")
+    page.click("button[type=submit]")
+    expect(page).to_have_url(re.compile(r"/recipes/(?!new)"), timeout=10000)
+
+    # На детальной странице .detail-tags не должен содержать тегов
+    detail_tags = page.locator(".detail-tags .tag")
+    expect(detail_tags).to_have_count(0)
+
+
 def test_edit_recipe_categories_update(page: Page, base_url: str) -> None:
     """8.2: Редактировать рецепт → категории обновляются."""
     title = "Тест категорий 8.2"

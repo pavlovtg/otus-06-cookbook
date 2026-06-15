@@ -61,15 +61,7 @@ export default async function RecipeDetailPage({ params }: Props) {
 
       <div className="detail-toolbar">
         <div className="detail-tags">
-          {recipeCats.length > 0 ? (
-            recipeCats.map((c) => <Tag key={c.id}>{c.name}</Tag>)
-          ) : (
-            <>
-              <Tag>{DIFFICULTY_LABELS[recipe.difficulty] ?? recipe.difficulty}</Tag>
-              <Tag>{recipe.servings} порц.</Tag>
-              <Tag>{recipe.cookingTime} мин</Tag>
-            </>
-          )}
+          {recipeCats.map((c) => <Tag key={c.id}>{c.name}</Tag>)}
         </div>
         <div className="detail-actions">
           <Link

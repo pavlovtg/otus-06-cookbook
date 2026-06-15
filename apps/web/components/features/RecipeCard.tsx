@@ -44,11 +44,7 @@ export function RecipeCard({ recipe, categories = [], onClick }: RecipeCardProps
       <div className="body">
         <h3>{recipe.title}</h3>
         <div className="tags">
-          {recipeCats.length > 0 ? (
-            recipeCats.map((c) => <Tag key={c.id}>{c.name}</Tag>)
-          ) : (
-            <Tag>{DIFFICULTY_LABELS[recipe.difficulty] ?? recipe.difficulty}</Tag>
-          )}
+          {recipeCats.map((c) => <Tag key={c.id}>{c.name}</Tag>)}
         </div>
         <div className="meta">
           <span>

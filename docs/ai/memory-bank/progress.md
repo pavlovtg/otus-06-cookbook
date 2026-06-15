@@ -41,6 +41,7 @@
 - Багфикс `RecipesController`: `CategoryDomainException` не перехватывалась в `CreateRecipe`/`UpdateRecipe` → `500`. Добавлен `catch (CategoryDomainException)` перед `catch (RecipeDomainException)` в обоих методах → тест `CreateRecipe_WithNonExistentCategoryId_Returns400` проходит.
 - Багфикс unit-тестов фронтенда: фикстуры в 4 файлах (`recipe.schema.test.ts`, `recipe.bff.test.ts`, `photos.test.ts`, `RecipeCard.test.tsx`) не содержали `categoryIds` → Zod-парсинг падал → в рантайме `categories = []` → все карточки показывали fallback-сложность. Добавлен `categoryIds: []` во все фикстуры.
 - Багфикс e2e-тестов: `VALID_RECIPE` в `tests/e2e/test_recipes_api.py` не содержал `categoryIds` → backend `[ApiController]` возвращал `400` (model binding failure для non-nullable `IReadOnlyList<Guid>`). Добавлен `"categoryIds": []`.
+- Багфикс fallback-тегов: рецепт без категорий показывал сложность/порции/время как теги. Убран fallback из `RecipeCard.tsx` и `app/recipes/[id]/page.tsx` — теперь пустой `categoryIds` → пустой блок тегов. Добавлены UI-тесты `test_recipe_without_categories_card_shows_no_tags` и `test_recipe_without_categories_detail_shows_no_tags`.
 
 ## Выполнено (ранее)
 
