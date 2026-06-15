@@ -143,6 +143,38 @@ public sealed class RecipeCategoryTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task GetRecipesList_AfterCreateWithCategory_ContainsCategoryId()
+    {
+        var category = await CreateTestCategoryAsync();
+
+        var createRequest = new RecipeRequest(
+            Title: "Рецепт в списке",
+            Description: "Описание",
+            CookingTime: 30,
+            Difficulty: "easy",
+            Servings: 2,
+            Instructions: "Шаг 1.",
+            Ingredients: [],
+            CategoryIds: [category.Id]);
+
+        var createResponse = await _client!.PostAsJsonAsync("/api/v1/recipes", createRequest);
+        createResponse.EnsureSuccessStatusCode();
+        var created = await createResponse.Content.ReadFromJsonAsync<RecipeDto>();
+        Assert.NotNull(created);
+
+        var listResponse = await _client!.GetAsync("/api/v1/recipes");
+        Assert.Equal(HttpStatusCode.OK, listResponse.StatusCode);
+
+        var list = await listResponse.Content.ReadFromJsonAsync<List<RecipeShortDto>>();
+        Assert.NotNull(list);
+
+        var found = list.FirstOrDefault(r => r.Id == created.Id);
+        Assert.NotNull(found);
+        Assert.Single(found.CategoryIds);
+        Assert.Contains(category.Id, found.CategoryIds);
+    }
+
     private async Task<CategoryDto> CreateTestCategoryAsync(
         string name = "Тестовая категория",
         CategoryTypeDto type = CategoryTypeDto.MealRole)

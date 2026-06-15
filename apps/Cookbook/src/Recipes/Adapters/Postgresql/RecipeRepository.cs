@@ -33,6 +33,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var recipe in Recipes
+            .Include(r => r.Categories)
             .AsNoTracking()
             .AsAsyncEnumerable()
             .WithCancellation(cancellationToken))

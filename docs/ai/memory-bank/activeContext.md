@@ -2,22 +2,14 @@
 
 ## Текущая задача
 
-Багфикс: `CreateRecipe_WithNonExistentCategoryId_Returns400` — исправлен.
+Багфикс: `categoryIds` не возвращались в списке рецептов (`GET /api/v1/recipes`).
 
-## Что было сделано в последней сессии (recipe-categories frontend)
+## Что было сделано в последней сессии
 
-- **6.1–6.2** `lib/schemas/recipe.ts` — добавлен `categoryIds: z.array(z.string().uuid())` в `RecipeShortDtoSchema`, `RecipeDtoSchema`, `RecipeRequestSchema`
-- **6.3** `app/(public)/page.tsx` — `Promise.all([getRecipes(), getCategories()])`, `categories` пробрасывается в `RecipeCard`
-- **6.4** Инвалидация уже реализована через `window.location.assign` в `CategoryModal` и `DeleteCategoryButton`
-- **7.1** `components/features/CategoryTagInput.tsx` — `.tag-input` + `.chip` + `.autocomplete`, замена при совпадении типа
-- **7.2** `components/features/RecipeForm.tsx` — добавлен `CategoryTagInput`, загрузка `getCategories()` в `useEffect`, `categoryIds` в state
-- **7.2** `app/recipes/[id]/edit/EditRecipeForm.tsx` — `categoryIds` в `initialValues`
-- **7.3** `components/features/RecipeCard.tsx` — отображение до 3 тегов категорий из `categoryIds` + `categories[]`
-- **7.4** `app/recipes/[id]/page.tsx` — `Promise.all([getRecipe, getCategories])`, все теги в `.detail-tags`
-- **7.5** `docs/design/storybook/src/domain/CategoryTagInput.tsx` — компонент для Storybook
-- **7.5** `docs/design/storybook/src/stories/CategoryTagInput.stories.tsx` — 5 историй: Empty, AddChip, RemoveChip, ReplaceByType, Playground ★
-- **7.5** `docs/design/storybook/src/stories/RecipeCard.stories.tsx` — добавлены `WithTags` и `WithoutTags`
-- **8.1–8.2** `tests/ui/test_recipes.py` — 3 новых теста: создание с категориями → карточка, детальная; редактирование → обновление
+- **Баг**: `RecipeRepository.GetRecipesAsync` не делал `.Include(r => r.Categories)` → `recipe.Categories` пустой → `categoryIds: []` в `RecipeShortDto`
+- **Тест**: добавлен `GetRecipesList_AfterCreateWithCategory_ContainsCategoryId` в `RecipeCategoryTests.cs` — воспроизводит баг
+- **Фикс**: `RecipeRepository.cs` — добавлен `.Include(r => r.Categories)` в `GetRecipesAsync`
+- Все 11 тестов `RecipeCategoryTests` проходят
 
 ## Ключевые решения
 
