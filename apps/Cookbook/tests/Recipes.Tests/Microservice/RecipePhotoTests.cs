@@ -116,7 +116,8 @@ public sealed class RecipePhotoTests : IAsyncLifetime
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
-            Ingredients: []
+            Ingredients: [],
+            CategoryIds: []
         );
 
         var response = await _client!.PostAsJsonAsync("/api/v1/recipes", request);

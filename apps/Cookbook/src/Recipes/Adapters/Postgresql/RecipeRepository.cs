@@ -24,6 +24,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         modelBuilder.ApplyConfiguration(new RecipeConfiguration());
         modelBuilder.ApplyConfiguration(new IngredientConfiguration());
         modelBuilder.ApplyConfiguration(new RecipeIngredientConfiguration());
+        modelBuilder.ApplyConfiguration(new RecipeCategoryConfiguration());
         modelBuilder.ApplyConfiguration(new RecipePhotoConfiguration());
         modelBuilder.ApplyConfiguration(new CategoryConfiguration());
     }
@@ -44,6 +45,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
     {
         return await Recipes
             .Include(r => r.Ingredients)
+            .Include(r => r.Categories)
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
     }
 
@@ -53,6 +55,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
     {
         var recipe = await Recipes
             .Include(r => r.Ingredients)
+            .Include(r => r.Categories)
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
 
         if (recipe is null)
@@ -218,6 +221,15 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         return await Categories.FindAsync([id], cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Category>> GetByIdsAsync(IEnumerable<CategoryId> ids, CancellationToken cancellationToken = default)
+    {
+        var idList = ids.ToList();
+        return await Categories
+            .AsNoTracking()
+            .Where(c => idList.Contains(c.Id))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
         return await Categories.CountAsync(cancellationToken);
@@ -225,8 +237,9 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
 
     public Task<bool> IsUsedInRecipesAsync(CategoryId id, CancellationToken cancellationToken = default)
     {
-        // TODO: implement when Recipe.CategoryId is added
-        return Task.FromResult(false);
+        return Recipes
+            .AsNoTracking()
+            .AnyAsync(r => r.Categories.Any(c => c.CategoryId == id), cancellationToken);
     }
 
     public async Task CreateAsync(Category category, CancellationToken cancellationToken = default)

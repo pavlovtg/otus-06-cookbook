@@ -12,6 +12,7 @@ internal static class CookbookSeeder
         await SeedIngredientsAsync(db, cancellationToken);
         await SeedRecipesAsync(db, cancellationToken);
         await SeedRecipeIngredientsAsync(db, cancellationToken);
+        await SeedRecipeCategoriesAsync(db, cancellationToken);
         await SeedPhotosAsync(db, photosPath, cancellationToken);
     }
 
@@ -123,6 +124,50 @@ internal static class CookbookSeeder
                         exists.Servings,
                         exists.Instructions,
                         recipe.Ingredients);
+            }
+
+            await db.SaveChangesAsync(cancellationToken);
+            await tx.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await tx.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
+
+    private static async Task SeedRecipeCategoriesAsync(RecipeRepository db, CancellationToken cancellationToken)
+    {
+        if (SeedData.RecipeCategorySeeds.Length == 0)
+            return;
+
+        await using var tx = await db.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            foreach (var (recipeId, categoryTypes) in SeedData.RecipeCategorySeeds)
+            {
+                var recipe = await db.Recipes
+                    .Include(r => r.Categories)
+                    .FirstOrDefaultAsync(r => r.Id == recipeId, cancellationToken);
+
+                if (recipe is null)
+                    continue;
+
+                // Идемпотентно: обновляем только если набор категорий изменился
+                var existingIds = recipe.Categories.Select(c => c.CategoryId).ToHashSet();
+                var newIds = categoryTypes.Keys.ToHashSet();
+                if (existingIds.SetEquals(newIds))
+                    continue;
+
+                recipe.Update(
+                    recipe.Title,
+                    recipe.Description,
+                    recipe.CookingTime,
+                    recipe.Difficulty,
+                    recipe.Servings,
+                    recipe.Instructions,
+                    recipe.Ingredients,
+                    categoryTypes);
             }
 
             await db.SaveChangesAsync(cancellationToken);

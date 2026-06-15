@@ -259,7 +259,8 @@ public sealed class IngredientsCrudTests : IAsyncLifetime
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
-            Ingredients: [new RecipeIngredientRequest(ingredient.Id, 100m)]
+            Ingredients: [new RecipeIngredientRequest(ingredient.Id, 100m)],
+            CategoryIds: []
         );
         var recipeResponse = await _client!.PostAsJsonAsync("/api/v1/recipes", recipeRequest);
         recipeResponse.EnsureSuccessStatusCode();
@@ -281,7 +282,8 @@ public sealed class IngredientsCrudTests : IAsyncLifetime
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
-            Ingredients: [new RecipeIngredientRequest(ingredient.Id, 100m)]
+            Ingredients: [new RecipeIngredientRequest(ingredient.Id, 100m)],
+            CategoryIds: []
         );
         var recipeResponse = await _client!.PostAsJsonAsync("/api/v1/recipes", recipeRequest);
         recipeResponse.EnsureSuccessStatusCode();

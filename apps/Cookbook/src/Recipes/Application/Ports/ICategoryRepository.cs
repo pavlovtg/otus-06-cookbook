@@ -6,6 +6,7 @@ internal interface ICategoryRepository : IUnitOfWorkRepository
 {
     Task<IReadOnlyList<Category>> GetCategoriesAsync(CancellationToken cancellationToken = default);
     Task<Category?> GetByIdAsync(CategoryId id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Category>> GetByIdsAsync(IEnumerable<CategoryId> ids, CancellationToken cancellationToken = default);
     Task<int> CountAsync(CancellationToken cancellationToken = default);
     Task<bool> IsUsedInRecipesAsync(CategoryId id, CancellationToken cancellationToken = default);
     Task CreateAsync(Category category, CancellationToken cancellationToken = default);

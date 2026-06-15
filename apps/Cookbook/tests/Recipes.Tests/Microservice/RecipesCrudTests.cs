@@ -43,7 +43,8 @@ public sealed class RecipesCrudTests : IAsyncLifetime
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1. Приготовить.",
-            Ingredients: []
+            Ingredients: [],
+            CategoryIds: []
         );
 
         var response = await _client!.PostAsJsonAsync("/api/v1/recipes", request);
@@ -69,7 +70,8 @@ public sealed class RecipesCrudTests : IAsyncLifetime
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Инструкции",
-            Ingredients: []
+            Ingredients: [],
+            CategoryIds: []
         );
 
         var response = await _client!.PostAsJsonAsync("/api/v1/recipes", request);
@@ -112,7 +114,8 @@ public sealed class RecipesCrudTests : IAsyncLifetime
             Difficulty: "festive",
             Servings: 4,
             Instructions: "Новые инструкции",
-            Ingredients: []
+            Ingredients: [],
+            CategoryIds: []
         );
 
         var response = await _client!.PutAsJsonAsync($"/api/v1/recipes/{created.Id}", updateRequest);
@@ -138,7 +141,8 @@ public sealed class RecipesCrudTests : IAsyncLifetime
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Инструкции",
-            Ingredients: []
+            Ingredients: [],
+            CategoryIds: []
         );
 
         var response = await _client!.PutAsJsonAsync($"/api/v1/recipes/{created.Id}", updateRequest);
@@ -181,7 +185,8 @@ public sealed class RecipesCrudTests : IAsyncLifetime
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
-            Ingredients: [new RecipeIngredientRequest(ingredient.Id, 150m)]
+            Ingredients: [new RecipeIngredientRequest(ingredient.Id, 150m)],
+            CategoryIds: []
         );
 
         var createResponse = await _client!.PostAsJsonAsync("/api/v1/recipes", request);
@@ -215,7 +220,8 @@ public sealed class RecipesCrudTests : IAsyncLifetime
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
-            Ingredients: [new RecipeIngredientRequest(ingredient1.Id, 100m)]
+            Ingredients: [new RecipeIngredientRequest(ingredient1.Id, 100m)],
+            CategoryIds: []
         );
 
         var createResponse = await _client!.PostAsJsonAsync("/api/v1/recipes", createRequest);
@@ -232,7 +238,8 @@ public sealed class RecipesCrudTests : IAsyncLifetime
             Ingredients: [
                 new RecipeIngredientRequest(ingredient1.Id, 200m),
                 new RecipeIngredientRequest(ingredient2.Id, 3m),
-            ]
+            ],
+            CategoryIds: []
         );
 
         var updateResponse = await _client!.PutAsJsonAsync($"/api/v1/recipes/{created.Id}", updateRequest);
@@ -256,7 +263,8 @@ public sealed class RecipesCrudTests : IAsyncLifetime
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
-            Ingredients: [new RecipeIngredientRequest(ingredient.Id, 100m)]
+            Ingredients: [new RecipeIngredientRequest(ingredient.Id, 100m)],
+            CategoryIds: []
         );
 
         var createResponse = await _client!.PostAsJsonAsync("/api/v1/recipes", createRequest);
@@ -270,7 +278,8 @@ public sealed class RecipesCrudTests : IAsyncLifetime
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
-            Ingredients: []
+            Ingredients: [],
+            CategoryIds: []
         );
 
         await _client!.PutAsJsonAsync($"/api/v1/recipes/{created.Id}", updateRequest);
@@ -290,7 +299,8 @@ public sealed class RecipesCrudTests : IAsyncLifetime
             Difficulty: "everyday",
             Servings: 3,
             Instructions: "Шаг 1. Тест.",
-            Ingredients: []
+            Ingredients: [],
+            CategoryIds: []
         );
 
         var response = await _client!.PostAsJsonAsync("/api/v1/recipes", request);

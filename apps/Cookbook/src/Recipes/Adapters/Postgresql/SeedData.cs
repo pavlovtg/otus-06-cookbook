@@ -224,6 +224,105 @@ internal static class SeedData
         Ingredient.Create(IngredientId.From(new Guid("22222222-0000-0000-0000-000000000107")), "Вустерский соус", "мл", 15f, IngredientCategory.SaucesAndPastes, isSystem: true),
     ];
 
+    private static RecipeId RId(int n) =>
+        RecipeId.From(new Guid($"11111111-0000-0000-0000-{n:D12}"));
+
+    private static CategoryId CatId(int n) =>
+        CategoryId.From(new Guid($"33333333-0000-0000-0000-{n:D12}"));
+
+    // RecipeId → { CategoryId → CategoryType }
+    // Идемпотентно: назначаем категории существующим рецептам
+    public static readonly (RecipeId RecipeId, IReadOnlyDictionary<CategoryId, CategoryType> CategoryTypes)[] RecipeCategorySeeds =
+    [
+        // Борщ: Первое блюдо (MealRole), Варка (CookingMethod), Мясо (MainIngredient), Русская кухня (Cuisine)
+        (RId(1), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(1)]  = CategoryType.MealRole,
+            [CatId(10)] = CategoryType.CookingMethod,
+            [CatId(18)] = CategoryType.MainIngredient,
+            [CatId(29)] = CategoryType.Cuisine,
+        }),
+
+        // Оливье: Салат (MealRole), Без термообработки (CookingMethod), Русская кухня (Cuisine)
+        (RId(2), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(4)]  = CategoryType.MealRole,
+            [CatId(16)] = CategoryType.CookingMethod,
+            [CatId(29)] = CategoryType.Cuisine,
+        }),
+
+        // Пельмени: Второе блюдо (MealRole), Варка (CookingMethod), Тесто и мука (MainIngredient), Русская кухня (Cuisine)
+        (RId(3), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(2)]  = CategoryType.MealRole,
+            [CatId(10)] = CategoryType.CookingMethod,
+            [CatId(26)] = CategoryType.MainIngredient,
+            [CatId(29)] = CategoryType.Cuisine,
+        }),
+
+        // Блины: Выпечка (MealRole), Жарка (CookingMethod), Тесто и мука (MainIngredient), Русская кухня (Cuisine)
+        (RId(4), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(9)]  = CategoryType.MealRole,
+            [CatId(11)] = CategoryType.CookingMethod,
+            [CatId(26)] = CategoryType.MainIngredient,
+            [CatId(29)] = CategoryType.Cuisine,
+        }),
+
+        // Котлеты по-киевски: Второе блюдо (MealRole), Фритюр (CookingMethod), Птица (MainIngredient), Русская кухня (Cuisine)
+        (RId(5), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(2)]  = CategoryType.MealRole,
+            [CatId(17)] = CategoryType.CookingMethod,
+            [CatId(19)] = CategoryType.MainIngredient,
+            [CatId(29)] = CategoryType.Cuisine,
+        }),
+
+        // Солянка: Первое блюдо (MealRole), Варка (CookingMethod), Мясо (MainIngredient), Русская кухня (Cuisine)
+        (RId(6), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(1)]  = CategoryType.MealRole,
+            [CatId(10)] = CategoryType.CookingMethod,
+            [CatId(18)] = CategoryType.MainIngredient,
+            [CatId(29)] = CategoryType.Cuisine,
+        }),
+
+        // Шашлык: Второе блюдо (MealRole), Гриль (CookingMethod), Мясо (MainIngredient), Кавказская кухня (Cuisine)
+        (RId(7), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(2)]  = CategoryType.MealRole,
+            [CatId(14)] = CategoryType.CookingMethod,
+            [CatId(18)] = CategoryType.MainIngredient,
+            [CatId(35)] = CategoryType.Cuisine,
+        }),
+
+        // Окрошка: Первое блюдо (MealRole), Без термообработки (CookingMethod), Русская кухня (Cuisine)
+        (RId(8), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(1)]  = CategoryType.MealRole,
+            [CatId(16)] = CategoryType.CookingMethod,
+            [CatId(29)] = CategoryType.Cuisine,
+        }),
+
+        // Плов: Второе блюдо (MealRole), Тушение (CookingMethod), Мясо (MainIngredient), Азиатская кухня (Cuisine)
+        (RId(9), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(2)]  = CategoryType.MealRole,
+            [CatId(13)] = CategoryType.CookingMethod,
+            [CatId(18)] = CategoryType.MainIngredient,
+            [CatId(31)] = CategoryType.Cuisine,
+        }),
+
+        // Медовик: Десерт (MealRole), Запекание (CookingMethod), Тесто и мука (MainIngredient), Русская кухня (Cuisine)
+        (RId(10), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(5)]  = CategoryType.MealRole,
+            [CatId(12)] = CategoryType.CookingMethod,
+            [CatId(26)] = CategoryType.MainIngredient,
+            [CatId(29)] = CategoryType.Cuisine,
+        }),
+    ];
+
     public static readonly (RecipeId RecipeId, RecipePhotoId PhotoId)[] RecipePhotoSeeds =
     [
         (RecipeId.From(new Guid("11111111-0000-0000-0000-000000000001")), RecipePhotoId.From(new Guid("38f85723-5de0-4523-b9e9-48dbd8705f2b"))),
