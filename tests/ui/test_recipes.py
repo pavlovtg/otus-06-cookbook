@@ -1,5 +1,6 @@
 import re
 
+import httpx
 from playwright.sync_api import Page, expect
 
 
@@ -537,3 +538,67 @@ def test_edit_recipe_categories_update(page: Page, base_url: str) -> None:
     # На детальной странице должно быть минимум 2 тега
     detail_tags = page.locator(".detail-tags .tag")
     expect(detail_tags).to_have_count(2, timeout=5000)
+
+
+# ── Ingredients Scale UI (recipe-scale) ──────────────────────────────────────
+
+_API_BASE = "/api/cookbook/v1"
+
+
+def _api_create_ingredient(base_url: str, title: str) -> str:
+    """Создаёт ингредиент через API и возвращает его id."""
+    resp = httpx.post(
+        f"{base_url}{_API_BASE}/ingredients",
+        json={"title": title, "unit": "г", "defaultAmount": 100.0, "category": "vegetables"},
+    )
+    assert resp.status_code == 201, resp.text
+    return resp.json()["id"]
+
+
+def _api_create_recipe_with_ingredient(base_url: str, title: str, ingredient_id: str, amount: float, servings: int) -> str:
+    """Создаёт рецепт с одним ингредиентом через API и возвращает его id."""
+    resp = httpx.post(
+        f"{base_url}{_API_BASE}/recipes",
+        json={
+            "title": title,
+            "description": "Тест масштабирования",
+            "cookingTime": 30,
+            "difficulty": "everyday",
+            "servings": servings,
+            "instructions": "Шаг 1.",
+            "ingredients": [{"ingredientId": ingredient_id, "amount": amount}],
+            "categoryIds": [],
+        },
+    )
+    assert resp.status_code == 201, resp.text
+    return resp.json()["id"]
+
+
+def test_ingredients_scale_plus_button(page: Page, base_url: str) -> None:
+    """recipe-scale 3.6: Нажатие «+» на детальной странице пересчитывает количество ингредиента."""
+    # Создаём данные через API
+    ingredient_id = _api_create_ingredient(base_url, "Морковь scale-тест")
+    recipe_id = _api_create_recipe_with_ingredient(
+        base_url, "Рецепт scale-тест", ingredient_id, amount=100.0, servings=4
+    )
+
+    # Открываем детальную страницу
+    page.goto(f"{base_url}/recipes/{recipe_id}")
+    expect(page.locator(".detail-bar")).to_be_visible()
+
+    # Запоминаем исходное количество первого ингредиента
+    amount_locator = page.locator(".ingredients-list .ingredient-row .amount").first
+    expect(amount_locator).to_be_visible()
+    initial_amount = amount_locator.inner_text()
+
+    # Нажимаем «+»
+    plus_btn = page.locator(".servings-control button[aria-label='Увеличить порции']")
+    expect(plus_btn).to_be_visible()
+    expect(plus_btn).to_be_enabled()
+    plus_btn.click()
+
+    # Количество должно измениться
+    new_amount = amount_locator.inner_text()
+    assert new_amount != initial_amount, (
+        f"Ожидали изменение количества после нажатия «+»: было «{initial_amount}», стало «{new_amount}»"
+    )

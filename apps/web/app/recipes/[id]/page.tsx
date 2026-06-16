@@ -11,6 +11,7 @@ import { ArrowLeftIcon, ClockIcon, FlameIcon } from "@/components/icons";
 import { DeleteRecipeButton } from "./DeleteRecipeButton";
 import { RecipePhotoActions } from "./RecipePhotoActions";
 import { getRecipePhotoUrl } from "@/lib/bff/photos";
+import { IngredientsCard } from "@/components/features/IngredientsCard";
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   easy: "Просто",
@@ -112,41 +113,10 @@ export default async function RecipeDetailPage({ params, searchParams }: Props) 
         {/* Right column */}
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           {/* Ingredients card */}
-          <div className="card card-pad-lg">
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 14,
-              }}
-            >
-              <h3 className="t-subheading">Ингредиенты</h3>
-              <div className="servings-control">
-                <span
-                  className="value"
-                  style={{ padding: "0 8px", fontVariantNumeric: "tabular-nums" }}
-                >
-                  {recipe.servings} порц.
-                </span>
-              </div>
-            </div>
-
-            {recipe.ingredients.length === 0 ? (
-              <p className="t-small">Ингредиенты не указаны</p>
-            ) : (
-              <div className="ingredients-list">
-                {recipe.ingredients.map((ing) => (
-                  <div key={ing.ingredientId} className="ingredient-row">
-                    <span className="name">{ing.title}</span>
-                    <span className="amount">
-                      {ing.amount} {ing.unit}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <IngredientsCard
+            ingredients={recipe.ingredients}
+            baseServings={recipe.servings}
+          />
 
           {/* Info card */}
           <div className="card card-pad-lg">
