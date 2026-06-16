@@ -2,9 +2,9 @@
 
 ## 1. OpenAPI контракт
 
-- [ ] 1.1 Добавить эндпоинты `POST /api/v1/auth/register`, `POST /api/v1/auth/login`, `POST /api/v1/auth/logout`, `GET /api/v1/auth/me` в `docs/contracts/cookbook/recipes.yaml`
-- [ ] 1.2 Добавить схемы `RegisterRequest`, `LoginRequest`, `AuthResponse`, `UserDto` в контракт
-- [ ] 1.3 Пометить эндпоинты создания/редактирования/удаления рецептов как требующие Bearer-авторизации
+- [x] 1.1 Добавить эндпоинты `POST /api/v1/auth/register`, `POST /api/v1/auth/login`, `POST /api/v1/auth/logout`, `GET /api/v1/auth/me` в `docs/contracts/cookbook/recipes.yaml`
+- [x] 1.2 Добавить схемы `RegisterRequest`, `LoginRequest`, `AuthResponse`, `UserDto` в контракт
+- [x] 1.3 Пометить эндпоинты создания/редактирования/удаления рецептов как требующие Bearer-авторизации
 
 ## 2. Backend — домен и приложение
 

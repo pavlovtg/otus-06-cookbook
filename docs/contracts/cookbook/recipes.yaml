@@ -61,6 +61,8 @@ paths:
       operationId: createRecipe
       tags:
         - Recipes
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -76,6 +78,12 @@ paths:
                 $ref: "#/components/schemas/RecipeDto"
         "400":
           description: Ошибка валидации
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Не авторизован
           content:
             application/problem+json:
               schema:
@@ -282,6 +290,8 @@ paths:
       operationId: updateRecipe
       tags:
         - Recipes
+      security:
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -304,6 +314,12 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Не авторизован
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
         "500":
           description: Внутренняя ошибка сервера
           content:
@@ -315,6 +331,8 @@ paths:
       operationId: deleteRecipe
       tags:
         - Recipes
+      security:
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -327,6 +345,130 @@ paths:
           description: Рецепт удалён
         "400":
           description: Некорректный идентификатор или рецепт не найден
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Не авторизован
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/auth/register:
+    post:
+      summary: Зарегистрировать нового пользователя
+      operationId: register
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: Пользователь зарегистрирован и вошёл в систему
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Ошибка валидации или email уже зарегистрирован
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/auth/login:
+    post:
+      summary: Войти в систему
+      operationId: login
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Успешный вход
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Неверные учётные данные
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/auth/logout:
+    post:
+      summary: Выйти из системы
+      operationId: logout
+      tags:
+        - Auth
+      security:
+        - BearerAuth: []
+      responses:
+        "204":
+          description: Сессия завершена
+        "401":
+          description: Не авторизован
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/auth/me:
+    get:
+      summary: Получить профиль текущего пользователя
+      operationId: getMe
+      tags:
+        - Auth
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Профиль пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDto"
+        "401":
+          description: Не авторизован
           content:
             application/problem+json:
               schema:
@@ -1030,3 +1172,81 @@ components:
           example: Блюда для утреннего приёма пищи
         type:
           $ref: "#/components/schemas/CategoryType"
+    UserRole:
+      type: string
+      enum:
+        - user
+        - admin
+      example: user
+    UserDto:
+      type: object
+      required:
+        - id
+        - email
+        - displayName
+        - role
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 11111111-0000-0000-0000-000000000001
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        displayName:
+          type: string
+          example: Иван Иванов
+        role:
+          $ref: "#/components/schemas/UserRole"
+    RegisterRequest:
+      type: object
+      required:
+        - displayName
+        - email
+        - password
+      properties:
+        displayName:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: Иван Иванов
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          minLength: 8
+          example: s3cr3tP@ss
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          minLength: 1
+          example: s3cr3tP@ss
+    AuthResponse:
+      type: object
+      required:
+        - token
+        - user
+      properties:
+        token:
+          type: string
+          description: JWT Bearer-токен
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        user:
+          $ref: "#/components/schemas/UserDto"
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
