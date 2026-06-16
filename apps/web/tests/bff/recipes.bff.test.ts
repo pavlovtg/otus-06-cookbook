@@ -86,6 +86,72 @@ describe("getRecipes с пагинацией", () => {
   });
 });
 
+describe("getRecipes с поиском и сортировкой", () => {
+  it("передаёт q в URL", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify(mockPagedResult), { status: 200 }),
+    );
+
+    await getRecipes(1, 18, "борщ");
+
+    expect(vi.mocked(fetch)).toHaveBeenCalledWith(
+      expect.stringContaining("q=%D0%B1%D0%BE%D1%80%D1%89"),
+      expect.any(Object),
+    );
+  });
+
+  it("передаёт sort в URL", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify(mockPagedResult), { status: 200 }),
+    );
+
+    await getRecipes(1, 18, undefined, "title_asc");
+
+    expect(vi.mocked(fetch)).toHaveBeenCalledWith(
+      expect.stringContaining("sort=title_asc"),
+      expect.any(Object),
+    );
+  });
+
+  it("передаёт q и sort одновременно", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify(mockPagedResult), { status: 200 }),
+    );
+
+    await getRecipes(1, 18, "суп", "title_desc");
+
+    const calledUrl = vi.mocked(fetch).mock.calls[0]?.[0] as string;
+    expect(calledUrl).toContain("sort=title_desc");
+    expect(calledUrl).toContain("q=");
+  });
+
+  it("не добавляет q в URL если не передан", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify(mockPagedResult), { status: 200 }),
+    );
+
+    await getRecipes(1, 18);
+
+    expect(vi.mocked(fetch)).not.toHaveBeenCalledWith(
+      expect.stringContaining("q="),
+      expect.any(Object),
+    );
+  });
+
+  it("не добавляет sort в URL если не передан", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify(mockPagedResult), { status: 200 }),
+    );
+
+    await getRecipes(1, 18);
+
+    expect(vi.mocked(fetch)).not.toHaveBeenCalledWith(
+      expect.stringContaining("sort="),
+      expect.any(Object),
+    );
+  });
+});
+
 describe("RecipePagedResultSchema", () => {
   it("парсит корректный PagedResult", () => {
     const result = RecipePagedResultSchema.parse(mockPagedResult);

@@ -26,8 +26,15 @@ async function purgePhotoCache(photoId: string): Promise<void> {
 export async function getRecipes(
   page = 1,
   pageSize = 18,
+  q?: string,
+  sort?: string,
 ): Promise<RecipePagedResult> {
-  const url = `${SERVER_BASE}?page=${page}&pageSize=${pageSize}`;
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  params.set("pageSize", String(pageSize));
+  if (q) params.set("q", q);
+  if (sort) params.set("sort", sort);
+  const url = `${SERVER_BASE}?${params.toString()}`;
   const response = await fetch(url, { cache: "no-store" });
 
   if (!response.ok) {

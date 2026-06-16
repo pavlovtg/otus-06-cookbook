@@ -33,7 +33,8 @@ paths:
           required: false
           schema:
             type: string
-          description: Поисковый запрос (по title, description, категориям, ингредиентам; AND-логика по словам)
+            maxLength: 300
+          description: Поисковый запрос (по title, description, категориям, ингредиентам; AND-логика по словам; максимум 300 символов)
         - name: sort
           in: query
           required: false

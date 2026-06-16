@@ -97,6 +97,22 @@ public sealed class GetRecipesTests(RecipeMicroserviceFixture fixture) : IAsyncL
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task GetRecipes_QueryTooLong_Returns400()
+    {
+        var response = await _client.GetAsync($"/api/v1/recipes?q={new string('а', 301)}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetRecipes_QueryExactlyMaxLength_Returns200()
+    {
+        var response = await _client.GetAsync($"/api/v1/recipes?q={new string('а', 300)}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
     // ── Search (q) ───────────────────────────────────────────────────────────
 
     [Fact]

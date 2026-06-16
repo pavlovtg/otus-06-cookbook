@@ -40,6 +40,9 @@ internal sealed class RecipesController : ControllerBase
 
         pageSize = Math.Min(pageSize, MaxPageSize);
 
+        if (q is not null && q.Length > 300)
+            return BadRequest(ProblemDetailsFor("'q' must not exceed 300 characters."));
+
         var sortOrder = sort switch
         {
             "title_desc" => RecipeSortOrder.TitleDesc,

@@ -7,10 +7,14 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const page = searchParams.get("page");
   const pageSize = searchParams.get("pageSize");
+  const q = searchParams.get("q");
+  const sort = searchParams.get("sort");
 
   const upstreamUrl = new URL(UPSTREAM);
   if (page) upstreamUrl.searchParams.set("page", page);
   if (pageSize) upstreamUrl.searchParams.set("pageSize", pageSize);
+  if (q) upstreamUrl.searchParams.set("q", q);
+  if (sort) upstreamUrl.searchParams.set("sort", sort);
 
   const res = await fetch(upstreamUrl.toString(), { cache: "no-store" });
   const data: unknown = await res.json();
