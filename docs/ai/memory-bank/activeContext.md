@@ -2,24 +2,22 @@
 
 ## Текущая задача
 
-Исправление падающих UI-тестов в `tests/ui/test_recipes.py`.
+Пересмотр архитектурного решения по auth — замена выделенного auth-service на модуль внутри recipes-сервиса.
 
 ## Что сделано
 
-### Тест 1: `test_recipe_detail_back_button_returns_to_list`
-
-- Причина: `backHref = "/?page=1"` при клике с первой страницы, тест ожидал `/`
-- Фикс: assertion изменён на regex `^base_url(/\?page=\d+|/?)$`
-
-### Тесты 2/3: `test_create_recipe_with_categories_shows_tags_in_card`, `test_recipe_without_categories_card_shows_no_tags`
-
-- Причина 1: рецепты сортируются по `Title ASC`, страница = 18 карточек. Названия "Тест..." начинаются на "Т" → попадают на страницу 3+.
-- Фикс 1: добавлена `_navigate_to_recipe_card` — перебирает страницы пагинации пока не найдёт карточку.
-- Причина 2: `wait_for_load_state("networkidle")` не ждёт обновления DOM при Next.js client-side navigation — цикл пропускал страницы.
-- Фикс 2: заменено на `page.wait_for_url(lambda url, p=current_page: f"page={p}" in url)` + `button[aria-label='Вперёд']` вместо `has_text="→"`.
+- ADR-0021 (dedicated auth-service) и ADR-0022 (S2S client_credentials) — архивированы
+- Создан ADR-0035: auth как модуль внутри recipes-сервиса
+- AR-0012 (auth-service sole issuer) — удалён
+- AR-0013 — переформулирован: JWT-валидация в recipes-сервисе; YARP — чистый прокси
+- Диаграммы `c4-component-auth-service.md` и `flow-s2s-client-credentials.md` — удалены
+- Обновлены: `c4-containers.md`, `flow-user-login.md`, `c4-component-backend.md`
+- Обновлены: `service-registry.md`, `NFR-0001-auth.md`
+- Обновлён `ARCHITECTURE.md`: таблицы AR, ADR, диаграмм
 
 ## Ключевые решения
 
-- Тесты исправлены без изменения приложения
-- `_navigate_to_recipe_card` — устойчивый паттерн для тестов с пагинацией
-- При client-side navigation нужно ждать изменения URL, а не `networkidle`
+- Auth-модуль — инфраструктурный cross-cutting слой внутри recipes-сервиса
+- Пользователи хранятся в схеме `cookbook` той же PostgreSQL
+- JWT выпускается и валидируется recipes-сервисом
+- S2S не нужен (один доменный сервис в MVP)
