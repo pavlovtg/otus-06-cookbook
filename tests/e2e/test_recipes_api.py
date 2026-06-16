@@ -23,25 +23,63 @@ VALID_INGREDIENT = {
 }
 
 
+def test_recipes_list_returns_paged_result(base_url: str) -> None:
+    response = httpx.get(f"{base_url}{BASE}")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert "items" in data
+    assert "total" in data
+    assert "page" in data
+    assert "pageSize" in data
+    assert isinstance(data["items"], list)
+    assert data["total"] > 0
+    assert data["page"] == 1
+
+
 def test_recipes_list_is_not_empty(base_url: str) -> None:
     response = httpx.get(f"{base_url}{BASE}")
 
     assert response.status_code == 200
-    recipes = response.json()
-    assert isinstance(recipes, list)
-    assert len(recipes) > 0
+    data = response.json()
+    assert len(data["items"]) > 0
 
 
 def test_recipes_list_items_have_required_fields(base_url: str) -> None:
     response = httpx.get(f"{base_url}{BASE}")
-    recipes = response.json()
+    data = response.json()
 
-    for recipe in recipes:
+    for recipe in data["items"]:
         assert "id" in recipe
         assert "title" in recipe
         assert "description" in recipe
         assert "cookingTime" in recipe
         assert "difficulty" in recipe
+
+
+def test_recipes_list_page2_returns_different_items(base_url: str) -> None:
+    # Создаём два рецепта, чтобы гарантировать наличие хотя бы 2 записей
+    r1 = httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": "Пагинация рецепт 1"})
+    r2 = httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": "Пагинация рецепт 2"})
+    assert r1.status_code == 201
+    assert r2.status_code == 201
+
+    resp1 = httpx.get(f"{base_url}{BASE}", params={"page": 1, "pageSize": 1})
+    resp2 = httpx.get(f"{base_url}{BASE}", params={"page": 2, "pageSize": 1})
+
+    assert resp1.status_code == 200
+    assert resp2.status_code == 200
+
+    data1 = resp1.json()
+    data2 = resp2.json()
+
+    assert data1["page"] == 1
+    assert data2["page"] == 2
+    assert data1["pageSize"] == 1
+    assert data2["pageSize"] == 1
+    assert len(data1["items"]) == 1
+    assert len(data2["items"]) == 1
+    assert data1["items"][0]["id"] != data2["items"][0]["id"]
 
 
 def test_create_recipe_returns_201(base_url: str) -> None:
@@ -278,3 +316,122 @@ def test_upload_invalid_format_returns_400(base_url: str) -> None:
     )
 
     assert response.status_code == 400
+
+
+# ── Search & Sort ─────────────────────────────────────────────────────────────
+
+def test_search_by_single_word(base_url: str) -> None:
+    unique = uuid.uuid4().hex[:8]
+    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"Рецепт {unique}"})
+
+    resp = httpx.get(f"{base_url}{BASE}", params={"q": unique, "pageSize": 1000})
+
+    assert resp.status_code == 200
+    data = resp.json()
+    ids_found = [r["title"] for r in data["items"]]
+    assert any(unique in t for t in ids_found)
+
+
+def test_search_by_multiple_words(base_url: str) -> None:
+    word1 = uuid.uuid4().hex[:8]
+    word2 = uuid.uuid4().hex[:8]
+    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{word1} {word2} суп"})
+
+    resp = httpx.get(f"{base_url}{BASE}", params={"q": f"{word1} {word2}", "pageSize": 1000})
+
+    assert resp.status_code == 200
+    data = resp.json()
+    titles = [r["title"] for r in data["items"]]
+    assert any(word1 in t and word2 in t for t in titles)
+
+
+def test_search_empty_result(base_url: str) -> None:
+    nonexistent = "zzz_" + uuid.uuid4().hex
+
+    resp = httpx.get(f"{base_url}{BASE}", params={"q": nonexistent})
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total"] == 0
+    assert data["items"] == []
+
+
+def test_sort_title_asc(base_url: str) -> None:
+    prefix = uuid.uuid4().hex[:8]
+    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{prefix} Б"})
+    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{prefix} А"})
+
+    resp = httpx.get(f"{base_url}{BASE}", params={"q": prefix, "sort": "title_asc", "pageSize": 1000})
+
+    assert resp.status_code == 200
+    titles = [r["title"] for r in resp.json()["items"]]
+    assert titles == sorted(titles)
+
+
+def test_sort_title_desc(base_url: str) -> None:
+    prefix = uuid.uuid4().hex[:8]
+    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{prefix} А"})
+    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{prefix} Б"})
+
+    resp = httpx.get(f"{base_url}{BASE}", params={"q": prefix, "sort": "title_desc", "pageSize": 1000})
+
+    assert resp.status_code == 200
+    titles = [r["title"] for r in resp.json()["items"]]
+    assert titles == sorted(titles, reverse=True)
+
+
+def test_search_by_two_ingredients_returns_only_recipe_with_both(base_url: str) -> None:
+    """Рецепт с двумя ингредиентами находится только при поиске по обоим."""
+    ing1_title = "Морковь_" + uuid.uuid4().hex[:6]
+    ing2_title = "Картофель_" + uuid.uuid4().hex[:6]
+
+    ing1 = httpx.post(f"{base_url}{INGREDIENTS_BASE}", json={
+        "title": ing1_title, "unit": "г", "defaultAmount": 100.0, "category": "vegetables",
+    })
+    ing2 = httpx.post(f"{base_url}{INGREDIENTS_BASE}", json={
+        "title": ing2_title, "unit": "г", "defaultAmount": 100.0, "category": "vegetables",
+    })
+    assert ing1.status_code == 201
+    assert ing2.status_code == 201
+    ing1_id = ing1.json()["id"]
+    ing2_id = ing2.json()["id"]
+
+    # Рецепт с обоими ингредиентами
+    r_both = httpx.post(f"{base_url}{BASE}", json={
+        **VALID_RECIPE,
+        "title": f"Суп {ing1_title} {ing2_title}",
+        "ingredients": [
+            {"ingredientId": ing1_id, "amount": 100.0},
+            {"ingredientId": ing2_id, "amount": 150.0},
+        ],
+    })
+    # Рецепт только с первым ингредиентом
+    r_only1 = httpx.post(f"{base_url}{BASE}", json={
+        **VALID_RECIPE,
+        "title": f"Салат {ing1_title}",
+        "ingredients": [{"ingredientId": ing1_id, "amount": 100.0}],
+    })
+    # Рецепт только со вторым ингредиентом
+    r_only2 = httpx.post(f"{base_url}{BASE}", json={
+        **VALID_RECIPE,
+        "title": f"Пюре {ing2_title}",
+        "ingredients": [{"ingredientId": ing2_id, "amount": 200.0}],
+    })
+    assert r_both.status_code == 201
+    assert r_only1.status_code == 201
+    assert r_only2.status_code == 201
+
+    resp = httpx.get(f"{base_url}{BASE}", params={
+        "q": f"{ing1_title} {ing2_title}",
+        "pageSize": 1000,
+    })
+
+    assert resp.status_code == 200
+    data = resp.json()
+    titles = [r["title"] for r in data["items"]]
+    # Только рецепт с обоими ингредиентами должен попасть в результат
+    assert len([t for t in titles if ing1_title in t and ing2_title in t]) == 1
+    assert all(ing1_title in t or ing2_title in t for t in titles if ing1_title in t or ing2_title in t)
+    # Рецепты только с одним ингредиентом не должны попасть
+    assert not any(t == f"Салат {ing1_title}" for t in titles)
+    assert not any(t == f"Пюре {ing2_title}" for t in titles)

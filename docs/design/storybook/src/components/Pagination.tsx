@@ -6,6 +6,37 @@ export interface PaginationProps {
   total: number;
   onChange?: (page: number) => void;
 }
+
+function getPages(current: number, total: number): (number | '…')[] {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  const delta = 2;
+  const left = current - delta;
+  const right = current + delta;
+
+  const pages: (number | '…')[] = [];
+
+  pages.push(1);
+
+  if (left > 2) {
+    pages.push('…');
+  }
+
+  for (let i = Math.max(2, left); i <= Math.min(total - 1, right); i++) {
+    pages.push(i);
+  }
+
+  if (right < total - 1) {
+    pages.push('…');
+  }
+
+  pages.push(total);
+
+  return pages;
+}
+
 export function Pagination({ page, defaultPage = 1, total, onChange }: PaginationProps) {
   const [inner, setInner] = React.useState(defaultPage);
   const v = page !== undefined ? page : inner;
@@ -13,21 +44,31 @@ export function Pagination({ page, defaultPage = 1, total, onChange }: Paginatio
     if (page === undefined) setInner(n);
     onChange?.(n);
   };
+
   if (total <= 1) return null;
+
+  const pages = getPages(v, total);
+
   return (
     <div className="pagination">
       <button className="page-btn" disabled={v === 1} onClick={() => set(v - 1)} aria-label="Назад">
         ←
       </button>
-      {Array.from({ length: total }).map((_, i) => (
-        <button
-          key={i}
-          className={['page-btn', i + 1 === v ? 'is-active' : ''].filter(Boolean).join(' ')}
-          onClick={() => set(i + 1)}
-        >
-          {i + 1}
-        </button>
-      ))}
+      {pages.map((p, i) =>
+        p === '…' ? (
+          <span key={`ellipsis-${i}`} className="page-btn" style={{ cursor: 'default', opacity: 0.5 }}>
+            …
+          </span>
+        ) : (
+          <button
+            key={p}
+            className={['page-btn', p === v ? 'is-active' : ''].filter(Boolean).join(' ')}
+            onClick={() => set(p)}
+          >
+            {p}
+          </button>
+        )
+      )}
       <button className="page-btn" disabled={v === total} onClick={() => set(v + 1)} aria-label="Вперёд">
         →
       </button>

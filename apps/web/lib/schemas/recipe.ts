@@ -57,6 +57,15 @@ export type RecipeDto = z.infer<typeof RecipeDtoSchema>;
 
 export const RecipeListSchema = z.array(RecipeShortDtoSchema);
 
+export const RecipePagedResultSchema = z.object({
+  items: z.array(RecipeShortDtoSchema),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+});
+
+export type RecipePagedResult = z.infer<typeof RecipePagedResultSchema>;
+
 export const RecipeRequestSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().min(1).max(2000),

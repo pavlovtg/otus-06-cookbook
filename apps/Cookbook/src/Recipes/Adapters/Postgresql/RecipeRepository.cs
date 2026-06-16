@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
 using Recipes.Adapters.Postgresql.Configurations;
 using Recipes.Application;
@@ -29,17 +28,43 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         modelBuilder.ApplyConfiguration(new CategoryConfiguration());
     }
 
-    public async IAsyncEnumerable<Recipe> GetRecipesAsync(
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<PagedResult<Recipe>> GetRecipesPagedAsync(
+        int page,
+        int pageSize,
+        string? q = null,
+        RecipeSortOrder sort = RecipeSortOrder.TitleAsc,
+        CancellationToken cancellationToken = default)
     {
-        await foreach (var recipe in Recipes
+        var query = Recipes
             .Include(r => r.Categories)
-            .AsNoTracking()
-            .AsAsyncEnumerable()
-            .WithCancellation(cancellationToken))
+            .AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(q))
         {
-            yield return recipe;
+            var words = q.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            foreach (var word in words)
+            {
+                var w = word.ToLower();
+                query = query.Where(r =>
+                    r.Title.ToLower().Contains(w) ||
+                    r.Description.ToLower().Contains(w) ||
+                    r.Categories.Any(rc => Categories.Any(c => c.Id == rc.CategoryId && c.Name.ToLower().Contains(w))) ||
+                    r.Ingredients.Any(ri => Ingredients.Any(i => i.Id == ri.IngredientId && i.Title.ToLower().Contains(w))));
+            }
         }
+
+        var total = await query.CountAsync(cancellationToken);
+
+        var ordered = sort == RecipeSortOrder.TitleDesc
+            ? query.OrderByDescending(r => r.Title)
+            : query.OrderBy(r => r.Title);
+
+        var items = await ordered
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<Recipe>(items, total, page, pageSize);
     }
 
     public async Task<Recipe?> GetByIdAsync(RecipeId id, CancellationToken cancellationToken = default)

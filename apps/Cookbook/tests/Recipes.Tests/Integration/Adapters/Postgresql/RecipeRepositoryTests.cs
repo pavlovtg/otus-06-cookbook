@@ -66,10 +66,10 @@ public sealed class RecipeRepositoryTests(RecipeIntegrationFixture fixture) : IA
         Assert.Null(result);
     }
 
-    // ── GetRecipesAsync ──────────────────────────────────────────────────────
+    // ── GetRecipesPagedAsync ─────────────────────────────────────────────────
 
     [Fact]
-    public async Task GetRecipesAsync_ReturnsAllPersistedRecipes()
+    public async Task GetRecipesPagedAsync_ReturnsAllPersistedRecipes()
     {
         var r1 = NewRecipe();
         var r2 = NewRecipe();
@@ -82,12 +82,50 @@ public sealed class RecipeRepositoryTests(RecipeIntegrationFixture fixture) : IA
         }
 
         await using var readCtx = _factory.Create();
-        var all = new List<Recipe>();
-        await foreach (var r in readCtx.GetRecipesAsync())
-            all.Add(r);
+        var result = await readCtx.GetRecipesPagedAsync(1, 1000);
 
-        Assert.Contains(all, r => r.Id == r1.Id);
-        Assert.Contains(all, r => r.Id == r2.Id);
+        Assert.Contains(result.Items, r => r.Id == r1.Id);
+        Assert.Contains(result.Items, r => r.Id == r2.Id);
+    }
+
+    [Fact]
+    public async Task GetRecipesPagedAsync_ReturnsCorrectTotal()
+    {
+        await using (var writeCtx = _factory.Create())
+        {
+            for (var i = 1; i <= 5; i++)
+                await writeCtx.CreateAsync(NewRecipe());
+            await writeCtx.CommitAsync();
+        }
+
+        await using var readCtx = _factory.Create();
+        var result = await readCtx.GetRecipesPagedAsync(1, 2);
+
+        Assert.Equal(5, result.Total);
+        Assert.Equal(2, result.Items.Count);
+        Assert.Equal(1, result.Page);
+        Assert.Equal(2, result.PageSize);
+    }
+
+    [Fact]
+    public async Task GetRecipesPagedAsync_SecondPage_ReturnsDistinctItems()
+    {
+        await using (var writeCtx = _factory.Create())
+        {
+            for (var i = 1; i <= 5; i++)
+                await writeCtx.CreateAsync(NewRecipe());
+            await writeCtx.CommitAsync();
+        }
+
+        await using var readCtx = _factory.Create();
+        var page1 = await readCtx.GetRecipesPagedAsync(1, 2);
+        var page2 = await readCtx.GetRecipesPagedAsync(2, 2);
+
+        Assert.Equal(2, page1.Items.Count);
+        Assert.Equal(2, page2.Items.Count);
+
+        var page1Ids = page1.Items.Select(r => r.Id).ToHashSet();
+        Assert.All(page2.Items, r => Assert.DoesNotContain(r.Id, page1Ids));
     }
 
     // ── UpdateAsync ──────────────────────────────────────────────────────────

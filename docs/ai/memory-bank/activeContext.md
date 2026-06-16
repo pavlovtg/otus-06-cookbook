@@ -2,37 +2,24 @@
 
 ## Текущая задача
 
-Рефакторинг тестов Testcontainers — ускорение интеграционных и микросервисных тестов.
+Исправление падающих UI-тестов в `tests/ui/test_recipes.py`.
 
 ## Что сделано
 
-### Shared.Testing
+### Тест 1: `test_recipe_detail_back_button_returns_to_list`
 
-- `PostgresContainerFixture` — базовая фикстура с `WithOutputConsumer(Consume.DoNotConsumeStdoutAndStderr())`
-- `RepositoryFactory<T>` — фабрика контекстов с `MigrateAsync()`
+- Причина: `backHref = "/?page=1"` при клике с первой страницы, тест ожидал `/`
+- Фикс: assertion изменён на regex `^base_url(/\?page=\d+|/?)$`
 
-### Recipes.Tests / Microservice
+### Тесты 2/3: `test_create_recipe_with_categories_shows_tags_in_card`, `test_recipe_without_categories_card_shows_no_tags`
 
-- `RecipeMicroserviceFixture` — один контейнер + один `WebApplicationFactory` на всю коллекцию
-  - `TruncateAsync()` — динамический TRUNCATE всех таблиц схемы `cookbook` (кроме `__EFMigrationsHistory`)
-- `RecipeMicroserviceCollection` — `[CollectionDefinition("RecipeMicroservice")]`
-- 6 тестовых классов переведены на `[Collection("RecipeMicroservice")]` + `IAsyncLifetime` с `TruncateAsync`
-
-### Recipes.Tests / Integration
-
-- `RecipeIntegrationFixture` — один контейнер + одна миграция на всю коллекцию + `TruncateAsync()`
-- `RecipeIntegrationCollection` — `[CollectionDefinition("RecipeIntegration")]`
-- `RecipeMigrationFixture` — свежий контейнер на каждый тестовый класс (для тестов миграций)
-- `RecipeMigrationTests` — тесты схемы/таблиц + write-read через разные контексты
-- 4 тестовых класса репозиториев: `CategoryRepositoryTests`, `IngredientRepositoryTests`, `RecipeRepositoryTests`, `RecipePhotoRepositoryTests`
-
-### Shared.Testing.Tests
-
-- `RepositoryFactoryTests` — обновлён: `WithWaitStrategy` → `WithOutputConsumer`, добавлен write-read тест
+- Причина 1: рецепты сортируются по `Title ASC`, страница = 18 карточек. Названия "Тест..." начинаются на "Т" → попадают на страницу 3+.
+- Фикс 1: добавлена `_navigate_to_recipe_card` — перебирает страницы пагинации пока не найдёт карточку.
+- Причина 2: `wait_for_load_state("networkidle")` не ждёт обновления DOM при Next.js client-side navigation — цикл пропускал страницы.
+- Фикс 2: заменено на `page.wait_for_url(lambda url, p=current_page: f"page={p}" in url)` + `button[aria-label='Вперёд']` вместо `has_text="→"`.
 
 ## Ключевые решения
 
-- **Изоляция**: `TRUNCATE ... RESTART IDENTITY CASCADE` в `InitializeAsync` каждого тестового класса
-- **Динамический список таблиц**: `information_schema.tables WHERE table_schema = 'cookbook' AND table_name != '__EFMigrationsHistory'`
-- **Тесты миграций**: отдельная фикстура `RecipeMigrationFixture` (контейнер поднимается заново для каждого класса)
-- **Ускорение**: 1 контейнер вместо N на всю коллекцию → экономия ~30-60 сек на старте
+- Тесты исправлены без изменения приложения
+- `_navigate_to_recipe_card` — устойчивый паттерн для тестов с пагинацией
+- При client-side navigation нужно ждать изменения URL, а не `networkidle`

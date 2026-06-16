@@ -20,9 +20,45 @@ internal sealed class RecipesController : ControllerBase
         _photoService = photoService;
     }
 
+    private const int DefaultPage = 1;
+    private const int DefaultPageSize = 18;
+    private const int MaxPageSize = 1000;
+
     [HttpGet]
-    public IAsyncEnumerable<RecipeShortDto> GetRecipes(CancellationToken cancellationToken)
-        => _recipeService.GetRecipesAsync(cancellationToken).Select(ToShortDto);
+    public async Task<IActionResult> GetRecipes(
+        [FromQuery] int page = DefaultPage,
+        [FromQuery] int pageSize = DefaultPageSize,
+        [FromQuery] string? q = null,
+        [FromQuery] string? sort = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (page < 1)
+            return BadRequest(ProblemDetailsFor("'page' must be greater than or equal to 1."));
+
+        if (pageSize < 1)
+            return BadRequest(ProblemDetailsFor("'pageSize' must be greater than or equal to 1."));
+
+        pageSize = Math.Min(pageSize, MaxPageSize);
+
+        if (q is not null && q.Length > 300)
+            return BadRequest(ProblemDetailsFor("'q' must not exceed 300 characters."));
+
+        var sortOrder = sort switch
+        {
+            "title_desc" => RecipeSortOrder.TitleDesc,
+            _ => RecipeSortOrder.TitleAsc,
+        };
+
+        var result = await _recipeService.GetRecipesPagedAsync(page, pageSize, q, sortOrder, cancellationToken);
+
+        var dto = new PagedResult<RecipeShortDto>(
+            result.Items.Select(ToShortDto).ToList(),
+            result.Total,
+            result.Page,
+            result.PageSize);
+
+        return Ok(dto);
+    }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetRecipe(Guid id, CancellationToken cancellationToken)

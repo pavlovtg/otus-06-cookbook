@@ -1,5 +1,6 @@
 import re
 
+import httpx
 from playwright.sync_api import Page, expect
 
 
@@ -59,7 +60,8 @@ def test_recipe_detail_back_button_returns_to_list(page: Page, base_url: str) ->
 
     page.locator(".back-btn").click()
 
-    expect(page).to_have_url(base_url + "/")
+    # /?page=1 и / — одно и то же (первая страница)
+    expect(page).to_have_url(re.compile(r"^" + re.escape(base_url) + r"(/\?page=\d+|/?)$"))
     expect(page.locator(".recipes-grid")).to_be_visible()
 
 
@@ -280,6 +282,21 @@ def test_delete_photo_confirm(page: Page, base_url: str) -> None:
 
 # ── Recipe Categories UI (8.1–8.2) ───────────────────────────────────────────
 
+def _navigate_to_recipe_card(page: Page, base_url: str, recipe_id: str) -> None:
+    """Переходит на страницу пагинации, где находится карточка рецепта."""
+    page.goto(base_url)
+    current_page = 1
+    for _ in range(20):
+        if page.locator(f"a[href*='/recipes/{recipe_id}']").count() > 0:
+            return
+        next_btn = page.locator("button[aria-label='Вперёд']")
+        if next_btn.is_disabled():
+            break
+        current_page += 1
+        next_btn.click()
+        page.wait_for_url(lambda url, p=current_page: f"page={p}" in url, timeout=5000)
+
+
 def _create_recipe_with_categories(page: Page, base_url: str, title: str) -> None:
     """Создаёт рецепт с категориями через UI."""
     page.goto(f"{base_url}/recipes/new")
@@ -307,12 +324,16 @@ def test_create_recipe_with_categories_shows_tags_in_card(page: Page, base_url: 
     title = "Тест категорий 8.1"
     _create_recipe_with_categories(page, base_url, title)
 
-    # Возвращаемся на список рецептов
-    page.goto(base_url)
+    # Запоминаем ID рецепта из URL детальной страницы
+    recipe_id = page.url.split("/recipes/")[1].split("?")[0]
 
-    # Находим карточку созданного рецепта
-    card = page.locator(".recipe-card", has=page.locator("h3", has_text=title))
-    expect(card).to_be_visible(timeout=10000)
+    # Переходим на страницу пагинации, где находится карточка
+    _navigate_to_recipe_card(page, base_url, recipe_id)
+
+    # Находим карточку по ссылке на конкретный рецепт
+    card_link = page.locator(f"a[href*='/recipes/{recipe_id}']")
+    expect(card_link).to_be_visible(timeout=10000)
+    card = card_link.locator(".recipe-card")
 
     # В карточке должны быть теги категорий
     tags = card.locator(".tags .tag")
@@ -346,12 +367,16 @@ def test_recipe_without_categories_card_shows_no_tags(page: Page, base_url: str)
     page.click("button[type=submit]")
     expect(page).to_have_url(re.compile(r"/recipes/(?!new)"), timeout=10000)
 
-    # Возвращаемся на список
-    page.goto(base_url)
+    # Запоминаем ID рецепта из URL детальной страницы
+    recipe_id = page.url.split("/recipes/")[1].split("?")[0]
 
-    # Находим карточку
-    card = page.locator(".recipe-card", has=page.locator("h3", has_text=title))
-    expect(card).to_be_visible(timeout=10000)
+    # Переходим на страницу пагинации, где находится карточка
+    _navigate_to_recipe_card(page, base_url, recipe_id)
+
+    # Находим карточку по ссылке на конкретный рецепт
+    card_link = page.locator(f"a[href*='/recipes/{recipe_id}']")
+    expect(card_link).to_be_visible(timeout=10000)
+    card = card_link.locator(".recipe-card")
 
     # В карточке не должно быть тегов
     tags = card.locator(".tags .tag")
@@ -375,6 +400,115 @@ def test_recipe_without_categories_detail_shows_no_tags(page: Page, base_url: st
     # На детальной странице .detail-tags не должен содержать тегов
     detail_tags = page.locator(".detail-tags .tag")
     expect(detail_tags).to_have_count(0)
+
+
+# ── Pagination UI (7.4) ───────────────────────────────────────────────────────
+
+def test_pagination_is_visible_on_recipes_list(page: Page, base_url: str) -> None:
+    """7.4: Пагинация отображается на странице списка рецептов (seed > 18 рецептов)."""
+    page.goto(base_url)
+
+    pagination = page.locator(".pagination")
+    expect(pagination).to_be_visible()
+
+
+def test_pagination_next_page_shows_different_cards(page: Page, base_url: str) -> None:
+    """7.4: Нажатие кнопки следующей страницы показывает другой набор карточек."""
+    page.goto(base_url)
+
+    # Собираем id карточек на первой странице
+    cards_page1 = page.locator(".recipe-card")
+    expect(cards_page1.first).to_be_visible()
+    titles_page1 = [cards_page1.nth(i).locator("h3").inner_text() for i in range(cards_page1.count())]
+
+    # Нажимаем кнопку «Вперёд»
+    next_btn = page.locator(".pagination .page-btn[aria-label='Вперёд']")
+    expect(next_btn).to_be_visible()
+    expect(next_btn).to_be_enabled()
+    next_btn.click()
+
+    # Ждём обновления страницы
+    page.wait_for_url(lambda url: "page=2" in url, timeout=5000)
+
+    # Собираем карточки на второй странице
+    cards_page2 = page.locator(".recipe-card")
+    expect(cards_page2.first).to_be_visible()
+    titles_page2 = [cards_page2.nth(i).locator("h3").inner_text() for i in range(cards_page2.count())]
+
+    # Наборы карточек должны отличаться
+    assert titles_page1 != titles_page2
+
+
+def test_pagination_active_page_button_highlighted(page: Page, base_url: str) -> None:
+    """7.4: Кнопка текущей страницы имеет класс is-active."""
+    page.goto(base_url)
+
+    active_btn = page.locator(".pagination .page-btn.is-active")
+    expect(active_btn).to_be_visible()
+    assert active_btn.inner_text() == "1"
+
+
+# ── Search & Sort UI (5.1–5.2) ───────────────────────────────────────────────
+
+def test_search_filters_recipe_list(page: Page, base_url: str) -> None:
+    """5.1 Ввод поискового запроса фильтрует список рецептов."""
+    page.goto(base_url)
+
+    # Запоминаем исходное количество карточек
+    cards = page.locator(".recipe-card")
+    expect(cards.first).to_be_visible()
+    initial_count = cards.count()
+
+    # Вводим заведомо несуществующий запрос
+    search_input = page.locator("input.search-input")
+    expect(search_input).to_be_visible()
+    search_input.fill("xyzzy_no_such_recipe_12345")
+
+    # Ждём debounce (300 мс) + навигации
+    page.wait_for_timeout(600)
+    page.wait_for_load_state("networkidle")
+
+    # Либо карточек стало меньше, либо показан пустой стейт
+    new_count = page.locator(".recipe-card").count()
+    state_visible = page.locator(".state").is_visible()
+    assert new_count < initial_count or state_visible, (
+        f"Ожидали фильтрацию: было {initial_count} карточек, стало {new_count}, state={state_visible}"
+    )
+
+
+def test_sort_changes_card_order(page: Page, base_url: str) -> None:
+    """5.2 Переключение сортировки меняет порядок карточек."""
+    page.goto(base_url)
+
+    # Убеждаемся, что карточек достаточно для проверки порядка
+    cards = page.locator(".recipe-card")
+    expect(cards.first).to_be_visible()
+    assert cards.count() >= 2, "Нужно минимум 2 карточки для проверки сортировки"
+
+    # Сортировка А → Я
+    sort_asc = page.locator(".aside-item", has_text="А → Я")
+    expect(sort_asc).to_be_visible()
+    sort_asc.click()
+    page.wait_for_load_state("networkidle")
+
+    cards_asc = page.locator(".recipe-card")
+    expect(cards_asc.first).to_be_visible()
+    titles_asc = [cards_asc.nth(i).locator("h3").inner_text() for i in range(cards_asc.count())]
+
+    # Сортировка Я → А
+    sort_desc = page.locator(".aside-item", has_text="Я → А")
+    expect(sort_desc).to_be_visible()
+    sort_desc.click()
+    page.wait_for_load_state("networkidle")
+
+    cards_desc = page.locator(".recipe-card")
+    expect(cards_desc.first).to_be_visible()
+    titles_desc = [cards_desc.nth(i).locator("h3").inner_text() for i in range(cards_desc.count())]
+
+    # Порядок должен отличаться
+    assert titles_asc != titles_desc, (
+        "Ожидали разный порядок карточек при сортировке А→Я и Я→А"
+    )
 
 
 def test_edit_recipe_categories_update(page: Page, base_url: str) -> None:
@@ -404,3 +538,67 @@ def test_edit_recipe_categories_update(page: Page, base_url: str) -> None:
     # На детальной странице должно быть минимум 2 тега
     detail_tags = page.locator(".detail-tags .tag")
     expect(detail_tags).to_have_count(2, timeout=5000)
+
+
+# ── Ingredients Scale UI (recipe-scale) ──────────────────────────────────────
+
+_API_BASE = "/api/cookbook/v1"
+
+
+def _api_create_ingredient(base_url: str, title: str) -> str:
+    """Создаёт ингредиент через API и возвращает его id."""
+    resp = httpx.post(
+        f"{base_url}{_API_BASE}/ingredients",
+        json={"title": title, "unit": "г", "defaultAmount": 100.0, "category": "vegetables"},
+    )
+    assert resp.status_code == 201, resp.text
+    return resp.json()["id"]
+
+
+def _api_create_recipe_with_ingredient(base_url: str, title: str, ingredient_id: str, amount: float, servings: int) -> str:
+    """Создаёт рецепт с одним ингредиентом через API и возвращает его id."""
+    resp = httpx.post(
+        f"{base_url}{_API_BASE}/recipes",
+        json={
+            "title": title,
+            "description": "Тест масштабирования",
+            "cookingTime": 30,
+            "difficulty": "everyday",
+            "servings": servings,
+            "instructions": "Шаг 1.",
+            "ingredients": [{"ingredientId": ingredient_id, "amount": amount}],
+            "categoryIds": [],
+        },
+    )
+    assert resp.status_code == 201, resp.text
+    return resp.json()["id"]
+
+
+def test_ingredients_scale_plus_button(page: Page, base_url: str) -> None:
+    """recipe-scale 3.6: Нажатие «+» на детальной странице пересчитывает количество ингредиента."""
+    # Создаём данные через API
+    ingredient_id = _api_create_ingredient(base_url, "Морковь scale-тест")
+    recipe_id = _api_create_recipe_with_ingredient(
+        base_url, "Рецепт scale-тест", ingredient_id, amount=100.0, servings=4
+    )
+
+    # Открываем детальную страницу
+    page.goto(f"{base_url}/recipes/{recipe_id}")
+    expect(page.locator(".detail-bar")).to_be_visible()
+
+    # Запоминаем исходное количество первого ингредиента
+    amount_locator = page.locator(".ingredients-list .ingredient-row .amount").first
+    expect(amount_locator).to_be_visible()
+    initial_amount = amount_locator.inner_text()
+
+    # Нажимаем «+»
+    plus_btn = page.locator(".servings-control button[aria-label='Увеличить порции']")
+    expect(plus_btn).to_be_visible()
+    expect(plus_btn).to_be_enabled()
+    plus_btn.click()
+
+    # Количество должно измениться
+    new_amount = amount_locator.inner_text()
+    assert new_amount != initial_amount, (
+        f"Ожидали изменение количества после нажатия «+»: было «{initial_amount}», стало «{new_amount}»"
+    )

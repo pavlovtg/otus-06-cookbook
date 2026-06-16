@@ -56,13 +56,17 @@ afterEach(() => {
 describe("getRecipes", () => {
   it("возвращает список рецептов", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
-      new Response(JSON.stringify([mockRecipeShort]), { status: 200 })
+      new Response(
+        JSON.stringify({ items: [mockRecipeShort], total: 1, page: 1, pageSize: 18 }),
+        { status: 200 }
+      )
     );
 
     const result = await getRecipes();
 
-    expect(result).toHaveLength(1);
-    expect(result[0]?.title).toBe("Борщ");
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]?.title).toBe("Борщ");
+    expect(result.total).toBe(1);
   });
 
   it("выбрасывает ошибку при неуспешном ответе", async () => {
