@@ -208,6 +208,27 @@ public sealed class GetRecipesTests(RecipeMicroserviceFixture fixture) : IAsyncL
         Assert.Equal(titles.OrderBy(t => t).ToList(), titles);
     }
 
+    // ── Search by ingredients ─────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetRecipes_WithQuery_TwoIngredients_ReturnsOnlyRecipeContainingBoth()
+    {
+        var carrotId = await CreateIngredientAsync("Морковь");
+        var potatoId = await CreateIngredientAsync("Картофель");
+
+        await CreateRecipeWithIngredientsAsync("Суп с морковью и картофелем", [carrotId, potatoId]);
+        await CreateRecipeWithIngredientsAsync("Морковный салат", [carrotId]);
+        await CreateRecipeWithIngredientsAsync("Картофельное пюре", [potatoId]);
+
+        var response = await _client.GetAsync("/api/v1/recipes?q=морковь+картофель");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<PagedResult<RecipeShortDto>>();
+        Assert.NotNull(result);
+        Assert.Single(result.Items);
+        Assert.Equal("Суп с морковью и картофелем", result.Items[0].Title);
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private async Task CreateRecipeAsync(string title, string description)
@@ -220,6 +241,36 @@ public sealed class GetRecipesTests(RecipeMicroserviceFixture fixture) : IAsyncL
             Servings: 2,
             Instructions: "Шаг 1.",
             Ingredients: [],
+            CategoryIds: []);
+        (await _client.PostAsJsonAsync("/api/v1/recipes", req)).EnsureSuccessStatusCode();
+    }
+
+    private async Task<Guid> CreateIngredientAsync(string title)
+    {
+        var req = new IngredientRequest(
+            Title: title,
+            Unit: "г",
+            DefaultAmount: 100f,
+            Category: "vegetables");
+        var response = await _client.PostAsJsonAsync("/api/v1/ingredients", req);
+        response.EnsureSuccessStatusCode();
+        var dto = await response.Content.ReadFromJsonAsync<IngredientDto>();
+        return dto!.Id;
+    }
+
+    private async Task CreateRecipeWithIngredientsAsync(string title, IEnumerable<Guid> ingredientIds)
+    {
+        var ingredients = ingredientIds
+            .Select(id => new RecipeIngredientRequest(IngredientId: id, Amount: 100m))
+            .ToList();
+        var req = new RecipeRequest(
+            Title: title,
+            Description: "Описание",
+            CookingTime: 30,
+            Difficulty: "easy",
+            Servings: 2,
+            Instructions: "Шаг 1.",
+            Ingredients: ingredients,
             CategoryIds: []);
         (await _client.PostAsJsonAsync("/api/v1/recipes", req)).EnsureSuccessStatusCode();
     }

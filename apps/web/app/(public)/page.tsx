@@ -33,17 +33,22 @@ export default async function HomePage({
   let total = 0;
 
   try {
-    const [pagedResult, cats, ings] = await Promise.all([
+    const [pagedResult, cats] = await Promise.all([
       getRecipes(page, pageSize, q || undefined, sort || undefined),
       getCategories(),
-      getIngredients({ pageSize: 200 }),
     ]);
     recipes = pagedResult.items;
     total = pagedResult.total;
     categories = cats;
-    ingredients = ings.items;
   } catch (err) {
     logger.error({ err }, "Failed to load recipes or categories");
+  }
+
+  try {
+    const ings = await getIngredients({ pageSize: 200 });
+    ingredients = ings.items;
+  } catch (err) {
+    logger.error({ err }, "Failed to load ingredients for autocomplete");
   }
 
   const totalPages = Math.ceil(total / pageSize);

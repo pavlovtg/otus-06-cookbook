@@ -378,3 +378,60 @@ def test_sort_title_desc(base_url: str) -> None:
     assert resp.status_code == 200
     titles = [r["title"] for r in resp.json()["items"]]
     assert titles == sorted(titles, reverse=True)
+
+
+def test_search_by_two_ingredients_returns_only_recipe_with_both(base_url: str) -> None:
+    """Рецепт с двумя ингредиентами находится только при поиске по обоим."""
+    ing1_title = "Морковь_" + uuid.uuid4().hex[:6]
+    ing2_title = "Картофель_" + uuid.uuid4().hex[:6]
+
+    ing1 = httpx.post(f"{base_url}{INGREDIENTS_BASE}", json={
+        "title": ing1_title, "unit": "г", "defaultAmount": 100.0, "category": "vegetables",
+    })
+    ing2 = httpx.post(f"{base_url}{INGREDIENTS_BASE}", json={
+        "title": ing2_title, "unit": "г", "defaultAmount": 100.0, "category": "vegetables",
+    })
+    assert ing1.status_code == 201
+    assert ing2.status_code == 201
+    ing1_id = ing1.json()["id"]
+    ing2_id = ing2.json()["id"]
+
+    # Рецепт с обоими ингредиентами
+    r_both = httpx.post(f"{base_url}{BASE}", json={
+        **VALID_RECIPE,
+        "title": f"Суп {ing1_title} {ing2_title}",
+        "ingredients": [
+            {"ingredientId": ing1_id, "amount": 100.0},
+            {"ingredientId": ing2_id, "amount": 150.0},
+        ],
+    })
+    # Рецепт только с первым ингредиентом
+    r_only1 = httpx.post(f"{base_url}{BASE}", json={
+        **VALID_RECIPE,
+        "title": f"Салат {ing1_title}",
+        "ingredients": [{"ingredientId": ing1_id, "amount": 100.0}],
+    })
+    # Рецепт только со вторым ингредиентом
+    r_only2 = httpx.post(f"{base_url}{BASE}", json={
+        **VALID_RECIPE,
+        "title": f"Пюре {ing2_title}",
+        "ingredients": [{"ingredientId": ing2_id, "amount": 200.0}],
+    })
+    assert r_both.status_code == 201
+    assert r_only1.status_code == 201
+    assert r_only2.status_code == 201
+
+    resp = httpx.get(f"{base_url}{BASE}", params={
+        "q": f"{ing1_title} {ing2_title}",
+        "pageSize": 1000,
+    })
+
+    assert resp.status_code == 200
+    data = resp.json()
+    titles = [r["title"] for r in data["items"]]
+    # Только рецепт с обоими ингредиентами должен попасть в результат
+    assert len([t for t in titles if ing1_title in t and ing2_title in t]) == 1
+    assert all(ing1_title in t or ing2_title in t for t in titles if ing1_title in t or ing2_title in t)
+    # Рецепты только с одним ингредиентом не должны попасть
+    assert not any(t == f"Салат {ing1_title}" for t in titles)
+    assert not any(t == f"Пюре {ing2_title}" for t in titles)
