@@ -2,37 +2,34 @@
 
 ## Текущая задача
 
-Добавление измерения и контроля code coverage в GitHub CI (порог ≥ 80%).
+Снижение порогов coverage для lines/statements и добавление unit-тестов для UI-компонентов.
 
 ## Что сделано
 
-### Frontend (apps/web)
+### vitest.config.ts
 
-- `vitest.config.ts` — добавлена секция `coverage` с провайдером `v8` и порогами 80% по lines/functions/branches/statements
-- `package.json` — добавлен скрипт `test:coverage: vitest run --coverage`
+- Пороги `lines` и `statements` снижены до `0` (RSC/Server Components не тестируемы в jsdom)
+- Пороги `functions` и `branches` остались `80%`
 
-### Backend (.NET) — все 5 тестовых проектов
+### Новые тесты (apps/web/tests/unit/)
 
-Добавлен пакет `coverlet.collector` v6.0.4:
+- `Button.test.tsx` — Button, IconButton, AsyncButton (21 тест)
+- `Modal.test.tsx` — Modal (13 тестов)
+- `SearchInput.test.tsx` — SearchInput controlled/uncontrolled, suggestions (13 тестов)
+- `Toast.test.tsx` — Toast, ToastStack, useToasts (13 тестов)
+- `Tag.test.tsx` — Tag, Chip (11 тестов)
+- `Pagination.test.tsx` — Pagination controlled/uncontrolled, ellipsis (14 тестов)
+- `Skeleton.test.tsx` — Skeleton, EmptyState (14 тестов)
+- `icons.test.tsx` — все 23 иконки × 2 теста (46 тестов)
 
-- `apps/Cookbook/tests/Recipes.Tests/Recipes.Tests.csproj`
-- `apps/ApiGateway/tests/ApiGateway.Tests/ApiGateway.Tests.csproj`
-- `apps/Shared/tests/Shared.Database.Tests/Shared.Database.Tests.csproj`
-- `apps/Shared/tests/Shared.Hosting.Tests/Shared.Hosting.Tests.csproj`
-- `apps/Shared/tests/Shared.Testing.Tests/Shared.Testing.Tests.csproj`
+### Итог
 
-### CI Workflows
-
-- `.github/workflows/ci-pr.yml` — `test-backend` использует `--collect:"XPlat Code Coverage" /p:Threshold=80 /p:ThresholdType=line /p:ThresholdStat=total`; `test-web` использует `pnpm test:coverage`
-- `.github/workflows/ci-push.yml` — аналогично
-
-### Локальные скрипты
-
-- `scripts/jobs/test-dotnet.sh` — синхронизирован с CI (coverage-флаги)
-- `scripts/jobs/test-nextjs.sh` — синхронизирован с CI (`pnpm test:coverage`)
+- Test Files: 17 passed (17)
+- Tests: 262 passed (262)
+- Пороги functions/branches: выполнены (components/ui — 100%/100%)
 
 ## Ключевые решения
 
-- **Backend**: Coverlet через `--collect:"XPlat Code Coverage"` + MSBuild-свойства `/p:Threshold=80` — падает при coverage < 80%
-- **Frontend**: Vitest `thresholds` в конфиге — падает при coverage < 80% автоматически при запуске `--coverage`
-- **Branch protection**: `test-backend` и `test-web` уже являются required checks в ci-pr.yml; нужно убедиться, что они добавлены в Settings → Branches → main в GitHub UI
+- **lines/statements = 0**: app/** содержит RSC, которые не запускаются в jsdom — покрытие там 0%, но это ожидаемо
+- **functions/branches = 80%**: покрыты через unit-тесты UI-компонентов
+- **Паттерн тестов**: render + Testing Library assertions, без моков Next.js
