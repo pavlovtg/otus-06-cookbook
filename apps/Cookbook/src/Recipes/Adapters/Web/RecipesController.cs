@@ -28,6 +28,8 @@ internal sealed class RecipesController : ControllerBase
     public async Task<IActionResult> GetRecipes(
         [FromQuery] int page = DefaultPage,
         [FromQuery] int pageSize = DefaultPageSize,
+        [FromQuery] string? q = null,
+        [FromQuery] string? sort = null,
         CancellationToken cancellationToken = default)
     {
         if (page < 1)
@@ -38,7 +40,13 @@ internal sealed class RecipesController : ControllerBase
 
         pageSize = Math.Min(pageSize, MaxPageSize);
 
-        var result = await _recipeService.GetRecipesPagedAsync(page, pageSize, cancellationToken);
+        var sortOrder = sort switch
+        {
+            "title_desc" => RecipeSortOrder.TitleDesc,
+            _ => RecipeSortOrder.TitleAsc,
+        };
+
+        var result = await _recipeService.GetRecipesPagedAsync(page, pageSize, q, sortOrder, cancellationToken);
 
         var dto = new PagedResult<RecipeShortDto>(
             result.Items.Select(ToShortDto).ToList(),

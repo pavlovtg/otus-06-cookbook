@@ -31,15 +31,35 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
     public async Task<PagedResult<Recipe>> GetRecipesPagedAsync(
         int page,
         int pageSize,
+        string? q = null,
+        RecipeSortOrder sort = RecipeSortOrder.TitleAsc,
         CancellationToken cancellationToken = default)
     {
         var query = Recipes
             .Include(r => r.Categories)
             .AsNoTracking();
 
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var words = q.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            foreach (var word in words)
+            {
+                var w = word.ToLower();
+                query = query.Where(r =>
+                    r.Title.ToLower().Contains(w) ||
+                    r.Description.ToLower().Contains(w) ||
+                    r.Categories.Any(rc => Categories.Any(c => c.Id == rc.CategoryId && c.Name.ToLower().Contains(w))) ||
+                    r.Ingredients.Any(ri => Ingredients.Any(i => i.Id == ri.IngredientId && i.Title.ToLower().Contains(w))));
+            }
+        }
+
         var total = await query.CountAsync(cancellationToken);
-        var items = await query
-            .OrderBy(r => r.Title)
+
+        var ordered = sort == RecipeSortOrder.TitleDesc
+            ? query.OrderByDescending(r => r.Title)
+            : query.OrderBy(r => r.Title);
+
+        var items = await ordered
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);

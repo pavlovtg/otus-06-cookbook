@@ -316,3 +316,65 @@ def test_upload_invalid_format_returns_400(base_url: str) -> None:
     )
 
     assert response.status_code == 400
+
+
+# ── Search & Sort ─────────────────────────────────────────────────────────────
+
+def test_search_by_single_word(base_url: str) -> None:
+    unique = uuid.uuid4().hex[:8]
+    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"Рецепт {unique}"})
+
+    resp = httpx.get(f"{base_url}{BASE}", params={"q": unique, "pageSize": 1000})
+
+    assert resp.status_code == 200
+    data = resp.json()
+    ids_found = [r["title"] for r in data["items"]]
+    assert any(unique in t for t in ids_found)
+
+
+def test_search_by_multiple_words(base_url: str) -> None:
+    word1 = uuid.uuid4().hex[:8]
+    word2 = uuid.uuid4().hex[:8]
+    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{word1} {word2} суп"})
+
+    resp = httpx.get(f"{base_url}{BASE}", params={"q": f"{word1} {word2}", "pageSize": 1000})
+
+    assert resp.status_code == 200
+    data = resp.json()
+    titles = [r["title"] for r in data["items"]]
+    assert any(word1 in t and word2 in t for t in titles)
+
+
+def test_search_empty_result(base_url: str) -> None:
+    nonexistent = "zzz_" + uuid.uuid4().hex
+
+    resp = httpx.get(f"{base_url}{BASE}", params={"q": nonexistent})
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total"] == 0
+    assert data["items"] == []
+
+
+def test_sort_title_asc(base_url: str) -> None:
+    prefix = uuid.uuid4().hex[:8]
+    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{prefix} Б"})
+    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{prefix} А"})
+
+    resp = httpx.get(f"{base_url}{BASE}", params={"q": prefix, "sort": "title_asc", "pageSize": 1000})
+
+    assert resp.status_code == 200
+    titles = [r["title"] for r in resp.json()["items"]]
+    assert titles == sorted(titles)
+
+
+def test_sort_title_desc(base_url: str) -> None:
+    prefix = uuid.uuid4().hex[:8]
+    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{prefix} А"})
+    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{prefix} Б"})
+
+    resp = httpx.get(f"{base_url}{BASE}", params={"q": prefix, "sort": "title_desc", "pageSize": 1000})
+
+    assert resp.status_code == 200
+    titles = [r["title"] for r in resp.json()["items"]]
+    assert titles == sorted(titles, reverse=True)

@@ -281,6 +281,19 @@ def test_delete_photo_confirm(page: Page, base_url: str) -> None:
 
 # ── Recipe Categories UI (8.1–8.2) ───────────────────────────────────────────
 
+def _navigate_to_recipe_card(page: Page, base_url: str, recipe_id: str) -> None:
+    """Переходит на страницу пагинации, где находится карточка рецепта."""
+    page.goto(base_url)
+    for _ in range(10):
+        if page.locator(f"a[href*='/recipes/{recipe_id}']").count() > 0:
+            return
+        next_btn = page.locator("button", has_text="→")
+        if next_btn.is_disabled():
+            break
+        next_btn.click()
+        page.wait_for_load_state("networkidle")
+
+
 def _create_recipe_with_categories(page: Page, base_url: str, title: str) -> None:
     """Создаёт рецепт с категориями через UI."""
     page.goto(f"{base_url}/recipes/new")
@@ -311,10 +324,10 @@ def test_create_recipe_with_categories_shows_tags_in_card(page: Page, base_url: 
     # Запоминаем ID рецепта из URL детальной страницы
     recipe_id = page.url.split("/recipes/")[1].split("?")[0]
 
-    # Возвращаемся на список рецептов
-    page.goto(base_url)
+    # Переходим на страницу пагинации, где находится карточка
+    _navigate_to_recipe_card(page, base_url, recipe_id)
 
-    # Находим карточку по ссылке на конкретный рецепт (не зависит от страницы пагинации)
+    # Находим карточку по ссылке на конкретный рецепт
     card_link = page.locator(f"a[href*='/recipes/{recipe_id}']")
     expect(card_link).to_be_visible(timeout=10000)
     card = card_link.locator(".recipe-card")
@@ -354,10 +367,10 @@ def test_recipe_without_categories_card_shows_no_tags(page: Page, base_url: str)
     # Запоминаем ID рецепта из URL детальной страницы
     recipe_id = page.url.split("/recipes/")[1].split("?")[0]
 
-    # Возвращаемся на список
-    page.goto(base_url)
+    # Переходим на страницу пагинации, где находится карточка
+    _navigate_to_recipe_card(page, base_url, recipe_id)
 
-    # Находим карточку по ссылке на конкретный рецепт (не зависит от страницы пагинации)
+    # Находим карточку по ссылке на конкретный рецепт
     card_link = page.locator(f"a[href*='/recipes/{recipe_id}']")
     expect(card_link).to_be_visible(timeout=10000)
     card = card_link.locator(".recipe-card")

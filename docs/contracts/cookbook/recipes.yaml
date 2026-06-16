@@ -28,6 +28,20 @@ paths:
             maximum: 1000
             default: 18
           description: Размер страницы (максимум 1000; если передано больше — используется 1000)
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Поисковый запрос (по title, description, категориям, ингредиентам; AND-логика по словам)
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [title_asc, title_desc]
+            default: title_asc
+          description: Порядок сортировки по названию
       responses:
         "200":
           description: Постраничный список рецептов

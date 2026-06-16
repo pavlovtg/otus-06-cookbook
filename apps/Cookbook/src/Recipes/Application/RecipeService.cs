@@ -18,9 +18,11 @@ internal sealed class RecipeService : IRecipeService
     public async Task<PagedResult<Recipe>> GetRecipesPagedAsync(
         int page,
         int pageSize,
+        string? q = null,
+        RecipeSortOrder sort = RecipeSortOrder.TitleAsc,
         CancellationToken cancellationToken = default)
     {
-        return await _repository.GetRecipesPagedAsync(page, pageSize, cancellationToken);
+        return await _repository.GetRecipesPagedAsync(page, pageSize, q, sort, cancellationToken);
     }
 
     public async Task<Recipe> GetByIdAsync(RecipeId id, CancellationToken cancellationToken = default)
