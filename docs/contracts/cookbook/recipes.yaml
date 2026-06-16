@@ -10,15 +10,31 @@ paths:
       operationId: getRecipes
       tags:
         - Recipes
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Номер страницы (начиная с 1)
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 18
+          description: Размер страницы (максимум 1000; если передано больше — используется 1000)
       responses:
         "200":
-          description: Список рецептов
+          description: Постраничный список рецептов
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/RecipeShortDto"
+                $ref: "#/components/schemas/PagedResultRecipeShortDto"
         "500":
           description: Внутренняя ошибка сервера
           content:
@@ -876,6 +892,30 @@ components:
         isSystem:
           type: boolean
           example: true
+    PagedResultRecipeShortDto:
+      type: object
+      required:
+        - items
+        - total
+        - page
+        - pageSize
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecipeShortDto"
+        total:
+          type: integer
+          description: Общее количество рецептов
+          example: 42
+        page:
+          type: integer
+          description: Текущая страница
+          example: 1
+        pageSize:
+          type: integer
+          description: Размер страницы
+          example: 18
     PagedResultIngredientDto:
       type: object
       required:

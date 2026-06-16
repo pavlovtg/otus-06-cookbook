@@ -3,4 +3,4 @@ set -e
 
 cd "$(dirname "$0")/../../apps/web"
 
-pnpm test
+pnpm test:coverage

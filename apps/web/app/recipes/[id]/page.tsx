@@ -22,10 +22,13 @@ const DIFFICULTY_LABELS: Record<string, string> = {
 
 interface Props {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
-export default async function RecipeDetailPage({ params }: Props) {
+export default async function RecipeDetailPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const { page } = await searchParams;
+  const backHref = page ? `/?page=${page}` : "/";
 
   let recipe;
   let allCategories;
@@ -42,7 +45,7 @@ export default async function RecipeDetailPage({ params }: Props) {
   return (
     <>
       <div className="detail-bar">
-        <Link href="/" className="btn btn-ghost btn-sm back-btn">
+        <Link href={backHref} className="btn btn-ghost btn-sm back-btn">
           <ArrowLeftIcon size={14} /> Назад
         </Link>
         <span className="title">{recipe.title}</span>

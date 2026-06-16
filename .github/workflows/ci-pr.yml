@@ -79,7 +79,12 @@ jobs:
         with:
           dotnet-version: '10.0.x'
       - name: Test (Backend)
-        run: dotnet test apps/Backend.slnx
+        run: >
+          dotnet test apps/Backend.slnx
+          --collect:"XPlat Code Coverage"
+          /p:Threshold=80
+          /p:ThresholdType=line
+          /p:ThresholdStat=total
 
   test-web:
     runs-on: ubuntu-latest
@@ -99,7 +104,7 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Test (Next.js)
         working-directory: apps/web
-        run: pnpm test
+        run: pnpm test:coverage
 
   # ─── Build ────────────────────────────────────────────────────────────────
   build-cookbook:

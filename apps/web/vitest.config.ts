@@ -8,6 +8,17 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./tests/setup.ts"],
+    coverage: {
+      provider: "v8",
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 80,
+        statements: 80,
+      },
+      include: ["lib/**", "components/**", "app/**"],
+      exclude: ["**/*.test.*", "**/*.spec.*", "tests/**"],
+    },
   },
   resolve: {
     alias: {

@@ -1,10 +1,10 @@
 import {
   RecipeDtoSchema,
-  RecipeListSchema,
+  RecipePagedResultSchema,
   RecipeRequestSchema,
   type RecipeDto,
+  type RecipePagedResult,
   type RecipeRequest,
-  type RecipeShortDto,
 } from "@/lib/schemas/recipe";
 
 const GATEWAY_URL = process.env["GATEWAY_URL"] ?? "http://api-gateway";
@@ -23,15 +23,19 @@ async function purgePhotoCache(photoId: string): Promise<void> {
   );
 }
 
-export async function getRecipes(): Promise<RecipeShortDto[]> {
-  const response = await fetch(SERVER_BASE, { cache: "no-store" });
+export async function getRecipes(
+  page = 1,
+  pageSize = 18,
+): Promise<RecipePagedResult> {
+  const url = `${SERVER_BASE}?page=${page}&pageSize=${pageSize}`;
+  const response = await fetch(url, { cache: "no-store" });
 
   if (!response.ok) {
     throw new Error(`Failed to fetch recipes: ${response.status}`);
   }
 
   const data: unknown = await response.json();
-  return RecipeListSchema.parse(data);
+  return RecipePagedResultSchema.parse(data);
 }
 
 export async function getRecipe(id: string): Promise<RecipeDto> {

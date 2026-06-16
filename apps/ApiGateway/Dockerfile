@@ -8,7 +8,7 @@ RUN dotnet restore ApiGateway/src/ApiGateway/ApiGateway.csproj
 
 COPY ApiGateway/src/ ApiGateway/src/
 COPY Shared/src/ Shared/src/
-RUN dotnet publish ApiGateway/src/ApiGateway/ApiGateway.csproj -c Release --no-restore -o /app/publish
+RUN dotnet publish ApiGateway/src/ApiGateway/ApiGateway.csproj -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app

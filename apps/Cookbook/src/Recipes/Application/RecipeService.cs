@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using Recipes.Application.Ports;
 using Recipes.Domain;
 using Recipes.Domain.Exceptions;
@@ -16,11 +15,12 @@ internal sealed class RecipeService : IRecipeService
         _categoryRepository = categoryRepository;
     }
 
-    public async IAsyncEnumerable<Recipe> GetRecipesAsync(
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<PagedResult<Recipe>> GetRecipesPagedAsync(
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
     {
-        await foreach (var recipe in _repository.GetRecipesAsync(cancellationToken))
-            yield return recipe;
+        return await _repository.GetRecipesPagedAsync(page, pageSize, cancellationToken);
     }
 
     public async Task<Recipe> GetByIdAsync(RecipeId id, CancellationToken cancellationToken = default)

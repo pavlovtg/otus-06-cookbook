@@ -377,6 +377,52 @@ def test_recipe_without_categories_detail_shows_no_tags(page: Page, base_url: st
     expect(detail_tags).to_have_count(0)
 
 
+# ── Pagination UI (7.4) ───────────────────────────────────────────────────────
+
+def test_pagination_is_visible_on_recipes_list(page: Page, base_url: str) -> None:
+    """7.4: Пагинация отображается на странице списка рецептов (seed > 18 рецептов)."""
+    page.goto(base_url)
+
+    pagination = page.locator(".pagination")
+    expect(pagination).to_be_visible()
+
+
+def test_pagination_next_page_shows_different_cards(page: Page, base_url: str) -> None:
+    """7.4: Нажатие кнопки следующей страницы показывает другой набор карточек."""
+    page.goto(base_url)
+
+    # Собираем id карточек на первой странице
+    cards_page1 = page.locator(".recipe-card")
+    expect(cards_page1.first).to_be_visible()
+    titles_page1 = [cards_page1.nth(i).locator("h3").inner_text() for i in range(cards_page1.count())]
+
+    # Нажимаем кнопку «Вперёд»
+    next_btn = page.locator(".pagination .page-btn[aria-label='Вперёд']")
+    expect(next_btn).to_be_visible()
+    expect(next_btn).to_be_enabled()
+    next_btn.click()
+
+    # Ждём обновления страницы
+    page.wait_for_url(lambda url: "page=2" in url, timeout=5000)
+
+    # Собираем карточки на второй странице
+    cards_page2 = page.locator(".recipe-card")
+    expect(cards_page2.first).to_be_visible()
+    titles_page2 = [cards_page2.nth(i).locator("h3").inner_text() for i in range(cards_page2.count())]
+
+    # Наборы карточек должны отличаться
+    assert titles_page1 != titles_page2
+
+
+def test_pagination_active_page_button_highlighted(page: Page, base_url: str) -> None:
+    """7.4: Кнопка текущей страницы имеет класс is-active."""
+    page.goto(base_url)
+
+    active_btn = page.locator(".pagination .page-btn.is-active")
+    expect(active_btn).to_be_visible()
+    assert active_btn.inner_text() == "1"
+
+
 def test_edit_recipe_categories_update(page: Page, base_url: str) -> None:
     """8.2: Редактировать рецепт → категории обновляются."""
     title = "Тест категорий 8.2"

@@ -3,8 +3,16 @@ import { NextRequest, NextResponse } from "next/server";
 const GATEWAY_URL = process.env["GATEWAY_URL"] ?? "http://api-gateway";
 const UPSTREAM = `${GATEWAY_URL}/api/cookbook/v1/recipes`;
 
-export async function GET() {
-  const res = await fetch(UPSTREAM, { cache: "no-store" });
+export async function GET(req: NextRequest) {
+  const { searchParams } = req.nextUrl;
+  const page = searchParams.get("page");
+  const pageSize = searchParams.get("pageSize");
+
+  const upstreamUrl = new URL(UPSTREAM);
+  if (page) upstreamUrl.searchParams.set("page", page);
+  if (pageSize) upstreamUrl.searchParams.set("pageSize", pageSize);
+
+  const res = await fetch(upstreamUrl.toString(), { cache: "no-store" });
   const data: unknown = await res.json();
   return NextResponse.json(data, { status: res.status });
 }

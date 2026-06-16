@@ -8,7 +8,7 @@ RUN dotnet restore Cookbook/src/Recipes/Recipes.csproj
 
 COPY Cookbook/src/ Cookbook/src/
 COPY Shared/src/ Shared/src/
-RUN dotnet publish Cookbook/src/Recipes/Recipes.csproj -c Release --no-restore -o /app/publish
+RUN dotnet publish Cookbook/src/Recipes/Recipes.csproj -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app

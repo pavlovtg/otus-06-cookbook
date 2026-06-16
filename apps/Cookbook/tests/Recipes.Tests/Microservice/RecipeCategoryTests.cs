@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Recipes.Adapters.Web.Dto;
+using Recipes.Application;
 using Xunit;
 
 namespace Recipes.Tests.Microservice;
@@ -149,10 +150,10 @@ public sealed class RecipeCategoryTests(RecipeMicroserviceFixture fixture) : IAs
         var listResponse = await _client.GetAsync("/api/v1/recipes");
         Assert.Equal(HttpStatusCode.OK, listResponse.StatusCode);
 
-        var list = await listResponse.Content.ReadFromJsonAsync<List<RecipeShortDto>>();
+        var list = await listResponse.Content.ReadFromJsonAsync<PagedResult<RecipeShortDto>>();
         Assert.NotNull(list);
 
-        var found = list.FirstOrDefault(r => r.Id == created.Id);
+        var found = list.Items.FirstOrDefault(r => r.Id == created.Id);
         Assert.NotNull(found);
         Assert.Single(found.CategoryIds);
         Assert.Contains(category.Id, found.CategoryIds);

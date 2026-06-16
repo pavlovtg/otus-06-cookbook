@@ -35,6 +35,8 @@ export const TabsBasic: S = {
 
 export const PaginationBasic: S = { render: () => <Pagination total={7} defaultPage={3} /> };
 
+export const PaginationLong: S = { render: () => <Pagination total={20} defaultPage={6} /> };
+
 export const Playground: S = {
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
