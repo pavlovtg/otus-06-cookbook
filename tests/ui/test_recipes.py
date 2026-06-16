@@ -445,6 +445,69 @@ def test_pagination_active_page_button_highlighted(page: Page, base_url: str) ->
     assert active_btn.inner_text() == "1"
 
 
+# ── Search & Sort UI (5.1–5.2) ───────────────────────────────────────────────
+
+def test_search_filters_recipe_list(page: Page, base_url: str) -> None:
+    """5.1 Ввод поискового запроса фильтрует список рецептов."""
+    page.goto(base_url)
+
+    # Запоминаем исходное количество карточек
+    cards = page.locator(".recipe-card")
+    expect(cards.first).to_be_visible()
+    initial_count = cards.count()
+
+    # Вводим заведомо несуществующий запрос
+    search_input = page.locator("input.search-input")
+    expect(search_input).to_be_visible()
+    search_input.fill("xyzzy_no_such_recipe_12345")
+
+    # Ждём debounce (300 мс) + навигации
+    page.wait_for_timeout(600)
+    page.wait_for_load_state("networkidle")
+
+    # Либо карточек стало меньше, либо показан пустой стейт
+    new_count = page.locator(".recipe-card").count()
+    state_visible = page.locator(".state").is_visible()
+    assert new_count < initial_count or state_visible, (
+        f"Ожидали фильтрацию: было {initial_count} карточек, стало {new_count}, state={state_visible}"
+    )
+
+
+def test_sort_changes_card_order(page: Page, base_url: str) -> None:
+    """5.2 Переключение сортировки меняет порядок карточек."""
+    page.goto(base_url)
+
+    # Убеждаемся, что карточек достаточно для проверки порядка
+    cards = page.locator(".recipe-card")
+    expect(cards.first).to_be_visible()
+    assert cards.count() >= 2, "Нужно минимум 2 карточки для проверки сортировки"
+
+    # Сортировка А → Я
+    sort_asc = page.locator(".aside-item", has_text="А → Я")
+    expect(sort_asc).to_be_visible()
+    sort_asc.click()
+    page.wait_for_load_state("networkidle")
+
+    cards_asc = page.locator(".recipe-card")
+    expect(cards_asc.first).to_be_visible()
+    titles_asc = [cards_asc.nth(i).locator("h3").inner_text() for i in range(cards_asc.count())]
+
+    # Сортировка Я → А
+    sort_desc = page.locator(".aside-item", has_text="Я → А")
+    expect(sort_desc).to_be_visible()
+    sort_desc.click()
+    page.wait_for_load_state("networkidle")
+
+    cards_desc = page.locator(".recipe-card")
+    expect(cards_desc.first).to_be_visible()
+    titles_desc = [cards_desc.nth(i).locator("h3").inner_text() for i in range(cards_desc.count())]
+
+    # Порядок должен отличаться
+    assert titles_asc != titles_desc, (
+        "Ожидали разный порядок карточек при сортировке А→Я и Я→А"
+    )
+
+
 def test_edit_recipe_categories_update(page: Page, base_url: str) -> None:
     """8.2: Редактировать рецепт → категории обновляются."""
     title = "Тест категорий 8.2"
