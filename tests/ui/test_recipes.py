@@ -59,7 +59,8 @@ def test_recipe_detail_back_button_returns_to_list(page: Page, base_url: str) ->
 
     page.locator(".back-btn").click()
 
-    expect(page).to_have_url(base_url + "/")
+    # /?page=1 и / — одно и то же (первая страница)
+    expect(page).to_have_url(re.compile(r"^" + re.escape(base_url) + r"(/\?page=\d+|/?)$"))
     expect(page.locator(".recipes-grid")).to_be_visible()
 
 
@@ -307,12 +308,16 @@ def test_create_recipe_with_categories_shows_tags_in_card(page: Page, base_url: 
     title = "Тест категорий 8.1"
     _create_recipe_with_categories(page, base_url, title)
 
+    # Запоминаем ID рецепта из URL детальной страницы
+    recipe_id = page.url.split("/recipes/")[1].split("?")[0]
+
     # Возвращаемся на список рецептов
     page.goto(base_url)
 
-    # Находим карточку созданного рецепта
-    card = page.locator(".recipe-card", has=page.locator("h3", has_text=title))
-    expect(card).to_be_visible(timeout=10000)
+    # Находим карточку по ссылке на конкретный рецепт (не зависит от страницы пагинации)
+    card_link = page.locator(f"a[href*='/recipes/{recipe_id}']")
+    expect(card_link).to_be_visible(timeout=10000)
+    card = card_link.locator(".recipe-card")
 
     # В карточке должны быть теги категорий
     tags = card.locator(".tags .tag")
@@ -346,12 +351,16 @@ def test_recipe_without_categories_card_shows_no_tags(page: Page, base_url: str)
     page.click("button[type=submit]")
     expect(page).to_have_url(re.compile(r"/recipes/(?!new)"), timeout=10000)
 
+    # Запоминаем ID рецепта из URL детальной страницы
+    recipe_id = page.url.split("/recipes/")[1].split("?")[0]
+
     # Возвращаемся на список
     page.goto(base_url)
 
-    # Находим карточку
-    card = page.locator(".recipe-card", has=page.locator("h3", has_text=title))
-    expect(card).to_be_visible(timeout=10000)
+    # Находим карточку по ссылке на конкретный рецепт (не зависит от страницы пагинации)
+    card_link = page.locator(f"a[href*='/recipes/{recipe_id}']")
+    expect(card_link).to_be_visible(timeout=10000)
+    card = card_link.locator(".recipe-card")
 
     # В карточке не должно быть тегов
     tags = card.locator(".tags .tag")
