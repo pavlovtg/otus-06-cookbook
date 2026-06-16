@@ -284,14 +284,16 @@ def test_delete_photo_confirm(page: Page, base_url: str) -> None:
 def _navigate_to_recipe_card(page: Page, base_url: str, recipe_id: str) -> None:
     """Переходит на страницу пагинации, где находится карточка рецепта."""
     page.goto(base_url)
-    for _ in range(10):
+    current_page = 1
+    for _ in range(20):
         if page.locator(f"a[href*='/recipes/{recipe_id}']").count() > 0:
             return
-        next_btn = page.locator("button", has_text="→")
+        next_btn = page.locator("button[aria-label='Вперёд']")
         if next_btn.is_disabled():
             break
+        current_page += 1
         next_btn.click()
-        page.wait_for_load_state("networkidle")
+        page.wait_for_url(lambda url, p=current_page: f"page={p}" in url, timeout=5000)
 
 
 def _create_recipe_with_categories(page: Page, base_url: str, title: str) -> None:
