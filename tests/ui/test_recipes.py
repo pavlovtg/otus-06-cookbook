@@ -276,3 +276,131 @@ def test_delete_photo_confirm(page: Page, base_url: str) -> None:
     expect(page.locator(".photo-actions button", has_text="Загрузить фото")).to_be_visible(timeout=15000)
     expect(page.locator(".photo-actions button", has_text="Удалить фото")).not_to_be_visible()
     expect(page.locator(".main-photo img")).not_to_be_visible()
+
+
+# ── Recipe Categories UI (8.1–8.2) ───────────────────────────────────────────
+
+def _create_recipe_with_categories(page: Page, base_url: str, title: str) -> None:
+    """Создаёт рецепт с категориями через UI."""
+    page.goto(f"{base_url}/recipes/new")
+    page.fill("#title", title)
+    page.fill("#description", "Описание для теста категорий")
+    page.fill("#cookingTime", "30")
+    page.fill("#servings", "2")
+    page.select_option("#difficulty", "everyday")
+    page.fill("#instructions", "Шаг 1.")
+
+    # Добавляем категорию через CategoryTagInput
+    cat_input = page.locator("[data-testid='category-search-input']")
+    cat_input.fill("вар")
+    # Ждём появления подсказок и выбираем первую
+    suggestion = page.locator("[data-testid='category-suggestion']").first
+    expect(suggestion).to_be_visible(timeout=5000)
+    suggestion.click()
+
+    page.click("button[type=submit]")
+    expect(page).to_have_url(re.compile(r"/recipes/(?!new)"), timeout=10000)
+
+
+def test_create_recipe_with_categories_shows_tags_in_card(page: Page, base_url: str) -> None:
+    """8.1: Создать рецепт с категориями → категории отображаются в карточке."""
+    title = "Тест категорий 8.1"
+    _create_recipe_with_categories(page, base_url, title)
+
+    # Возвращаемся на список рецептов
+    page.goto(base_url)
+
+    # Находим карточку созданного рецепта
+    card = page.locator(".recipe-card", has=page.locator("h3", has_text=title))
+    expect(card).to_be_visible(timeout=10000)
+
+    # В карточке должны быть теги категорий
+    tags = card.locator(".tags .tag")
+    expect(tags.first).to_be_visible()
+
+
+def test_create_recipe_with_categories_shows_tags_on_detail(page: Page, base_url: str) -> None:
+    """8.1: Создать рецепт с категориями → категории отображаются на детальной странице."""
+    title = "Тест категорий 8.1 detail"
+    _create_recipe_with_categories(page, base_url, title)
+
+    # Уже на детальной странице после создания
+    expect(page).to_have_url(re.compile(r"/recipes/(?!new)"))
+
+    # В .detail-tags должны быть теги категорий
+    detail_tags = page.locator(".detail-tags .tag")
+    expect(detail_tags.first).to_be_visible()
+
+
+def test_recipe_without_categories_card_shows_no_tags(page: Page, base_url: str) -> None:
+    """8.3: Рецепт без категорий — карточка не показывает теги."""
+    title = "Тест без категорий 8.3 карточка"
+    # Создаём рецепт без категорий
+    page.goto(f"{base_url}/recipes/new")
+    page.fill("#title", title)
+    page.fill("#description", "Описание без категорий")
+    page.fill("#cookingTime", "90")
+    page.fill("#servings", "6")
+    page.select_option("#difficulty", "everyday")
+    page.fill("#instructions", "Шаг 1.")
+    page.click("button[type=submit]")
+    expect(page).to_have_url(re.compile(r"/recipes/(?!new)"), timeout=10000)
+
+    # Возвращаемся на список
+    page.goto(base_url)
+
+    # Находим карточку
+    card = page.locator(".recipe-card", has=page.locator("h3", has_text=title))
+    expect(card).to_be_visible(timeout=10000)
+
+    # В карточке не должно быть тегов
+    tags = card.locator(".tags .tag")
+    expect(tags).to_have_count(0)
+
+
+def test_recipe_without_categories_detail_shows_no_tags(page: Page, base_url: str) -> None:
+    """8.3: Рецепт без категорий — детальная страница не показывает теги."""
+    title = "Тест без категорий 8.3 детальная"
+    # Создаём рецепт без категорий
+    page.goto(f"{base_url}/recipes/new")
+    page.fill("#title", title)
+    page.fill("#description", "Описание без категорий")
+    page.fill("#cookingTime", "90")
+    page.fill("#servings", "6")
+    page.select_option("#difficulty", "everyday")
+    page.fill("#instructions", "Шаг 1.")
+    page.click("button[type=submit]")
+    expect(page).to_have_url(re.compile(r"/recipes/(?!new)"), timeout=10000)
+
+    # На детальной странице .detail-tags не должен содержать тегов
+    detail_tags = page.locator(".detail-tags .tag")
+    expect(detail_tags).to_have_count(0)
+
+
+def test_edit_recipe_categories_update(page: Page, base_url: str) -> None:
+    """8.2: Редактировать рецепт → категории обновляются."""
+    title = "Тест категорий 8.2"
+    _create_recipe_with_categories(page, base_url, title)
+
+    # Открываем редактирование
+    page.locator("a", has_text="Редактировать").click()
+    expect(page).to_have_url(re.compile(r"/recipes/.+/edit"), timeout=10000)
+
+    # Проверяем, что категория предзаполнена (чип присутствует)
+    chip = page.locator("[data-testid='category-chip']").first
+    expect(chip).to_be_visible()
+
+    # Добавляем ещё одну категорию другого типа
+    cat_input = page.locator("[data-testid='category-search-input']")
+    cat_input.fill("итал")
+    suggestion = page.locator("[data-testid='category-suggestion']").first
+    expect(suggestion).to_be_visible(timeout=5000)
+    suggestion.click()
+
+    # Сохраняем
+    page.click("button[type=submit]")
+    expect(page).to_have_url(re.compile(r"/recipes/(?!.+/edit)"), timeout=10000)
+
+    # На детальной странице должно быть минимум 2 тега
+    detail_tags = page.locator(".detail-tags .tag")
+    expect(detail_tags).to_have_count(2, timeout=5000)

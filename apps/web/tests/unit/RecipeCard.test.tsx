@@ -13,6 +13,7 @@ describe("RecipeCard", () => {
       cookingTime: 120,
       difficulty: "everyday" as const,
       photoId: null,
+      categoryIds: [],
     };
 
     render(<RecipeCard recipe={recipe} />);
@@ -31,16 +32,19 @@ describe("RecipeCard", () => {
       cookingTime: 120,
       difficulty: "everyday" as const,
       photoId: PHOTO_ID,
+      categoryIds: [],
     };
 
     render(<RecipeCard recipe={recipe} />);
 
     const img = screen.getByRole("img", { name: "Борщ" });
     expect(img).toBeInTheDocument();
-    expect(img).toHaveAttribute(
-      "src",
-      `/api/cookbook/v1/photos/${PHOTO_ID}/thumbnail`
-    );
+    const src = img.getAttribute("src") ?? "";
+    // next/image с unoptimized передаёт src напрямую; без него — через /_next/image?url=...
+    const resolvedSrc = src.startsWith("/_next/image")
+      ? decodeURIComponent(new URL(src, "http://localhost").searchParams.get("url") ?? "")
+      : src;
+    expect(resolvedSrc).toBe(`/api/cookbook/v1/photos/${PHOTO_ID}/thumbnail`);
   });
 
   it("рендерит SVG-заглушку если photoId == null", () => {
@@ -51,6 +55,7 @@ describe("RecipeCard", () => {
       cookingTime: 120,
       difficulty: "everyday" as const,
       photoId: null,
+      categoryIds: [],
     };
 
     const { container } = render(<RecipeCard recipe={recipe} />);

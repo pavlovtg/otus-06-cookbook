@@ -7,4 +7,5 @@ internal sealed record RecipeRequest(
     string Difficulty,
     int Servings,
     string Instructions,
-    IReadOnlyList<RecipeIngredientRequest> Ingredients);
+    IReadOnlyList<RecipeIngredientRequest> Ingredients,
+    IReadOnlyList<Guid> CategoryIds);

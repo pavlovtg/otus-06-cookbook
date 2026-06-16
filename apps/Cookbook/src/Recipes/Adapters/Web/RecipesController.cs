@@ -47,6 +47,7 @@ internal sealed class RecipesController : ControllerBase
                 return BadRequest(ProblemDetailsFor($"Invalid difficulty value: '{request.Difficulty}'."));
 
             var ingredientInputs = MapIngredientInputs(request.Ingredients);
+            var categoryIds = MapCategoryIds(request.CategoryIds);
 
             var recipe = await _recipeService.CreateAsync(
                 request.Title,
@@ -56,10 +57,15 @@ internal sealed class RecipesController : ControllerBase
                 request.Servings,
                 request.Instructions,
                 ingredientInputs,
+                categoryIds,
                 cancellationToken);
 
             var details = await _recipeService.GetByIdWithDetailsAsync(recipe.Id, cancellationToken);
             return CreatedAtAction(nameof(GetRecipe), new { id = recipe.Id.Value }, ToDto(details));
+        }
+        catch (CategoryDomainException ex)
+        {
+            return BadRequest(ProblemDetailsFor(ex.GetType().Name));
         }
         catch (RecipeDomainException ex)
         {
@@ -76,6 +82,7 @@ internal sealed class RecipesController : ControllerBase
                 return BadRequest(ProblemDetailsFor($"Invalid difficulty value: '{request.Difficulty}'."));
 
             var ingredientInputs = MapIngredientInputs(request.Ingredients);
+            var categoryIds = MapCategoryIds(request.CategoryIds);
 
             await _recipeService.UpdateAsync(
                 RecipeId.From(id),
@@ -86,9 +93,14 @@ internal sealed class RecipesController : ControllerBase
                 request.Servings,
                 request.Instructions,
                 ingredientInputs,
+                categoryIds,
                 cancellationToken);
 
             return NoContent();
+        }
+        catch (CategoryDomainException ex)
+        {
+            return BadRequest(ProblemDetailsFor(ex.GetType().Name));
         }
         catch (RecipeDomainException ex)
         {
@@ -146,13 +158,17 @@ internal sealed class RecipesController : ControllerBase
         IReadOnlyList<RecipeIngredientRequest> items)
         => items.Select(i => new RecipeIngredientInput(IngredientId.From(i.IngredientId), i.Amount));
 
+    private static IEnumerable<CategoryId> MapCategoryIds(IReadOnlyList<Guid> ids)
+        => ids.Select(CategoryId.From);
+
     private static RecipeShortDto ToShortDto(Recipe recipe) => new(
         recipe.Id.Value,
         recipe.Title,
         recipe.Description,
         recipe.CookingTime,
         recipe.Difficulty.ToString().ToLowerInvariant(),
-        recipe.PhotoId?.Value);
+        recipe.PhotoId?.Value,
+        recipe.Categories.Select(c => c.CategoryId.Value).ToList());
 
     private static RecipeDto ToDto(RecipeWithIngredientDetails details) => new(
         details.Recipe.Id.Value,
@@ -165,7 +181,8 @@ internal sealed class RecipesController : ControllerBase
         details.Ingredients
             .Select(i => new RecipeIngredientDto(i.IngredientId.Value, i.Title, i.Amount, i.Unit))
             .ToList(),
-        details.Recipe.PhotoId?.Value);
+        details.Recipe.PhotoId?.Value,
+        details.Recipe.Categories.Select(c => c.CategoryId.Value).ToList());
 
     private ProblemDetails ProblemDetailsFor(RecipeDomainException ex) =>
         ProblemDetailsFor(ex.GetType().Name);

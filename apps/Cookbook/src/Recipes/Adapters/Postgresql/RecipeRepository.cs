@@ -7,13 +7,14 @@ using Recipes.Domain;
 
 namespace Recipes.Adapters.Postgresql;
 
-internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredientRepository, IRecipePhotoRepository
+internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredientRepository, IRecipePhotoRepository, ICategoryRepository
 {
     public const string DefaultSchema = "cookbook";
 
     public DbSet<Recipe> Recipes => Set<Recipe>();
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
     public DbSet<RecipePhoto> RecipePhotos => Set<RecipePhoto>();
+    public DbSet<Category> Categories => Set<Category>();
 
     public RecipeRepository(DbContextOptions<RecipeRepository> options) : base(options) { }
 
@@ -23,13 +24,16 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         modelBuilder.ApplyConfiguration(new RecipeConfiguration());
         modelBuilder.ApplyConfiguration(new IngredientConfiguration());
         modelBuilder.ApplyConfiguration(new RecipeIngredientConfiguration());
+        modelBuilder.ApplyConfiguration(new RecipeCategoryConfiguration());
         modelBuilder.ApplyConfiguration(new RecipePhotoConfiguration());
+        modelBuilder.ApplyConfiguration(new CategoryConfiguration());
     }
 
     public async IAsyncEnumerable<Recipe> GetRecipesAsync(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await foreach (var recipe in Recipes
+            .Include(r => r.Categories)
             .AsNoTracking()
             .AsAsyncEnumerable()
             .WithCancellation(cancellationToken))
@@ -42,6 +46,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
     {
         return await Recipes
             .Include(r => r.Ingredients)
+            .Include(r => r.Categories)
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
     }
 
@@ -51,6 +56,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
     {
         var recipe = await Recipes
             .Include(r => r.Ingredients)
+            .Include(r => r.Categories)
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
 
         if (recipe is null)
@@ -199,5 +205,59 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         var photo = await RecipePhotos.FindAsync([id], cancellationToken);
         if (photo is not null)
             RecipePhotos.Remove(photo);
+    }
+
+    // ── ICategoryRepository ──────────────────────────────────────────────────
+
+    public async Task<IReadOnlyList<Category>> GetCategoriesAsync(CancellationToken cancellationToken = default)
+    {
+        return await Categories
+            .AsNoTracking()
+            .OrderBy(c => c.Name)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Category?> GetByIdAsync(CategoryId id, CancellationToken cancellationToken = default)
+    {
+        return await Categories.FindAsync([id], cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Category>> GetByIdsAsync(IEnumerable<CategoryId> ids, CancellationToken cancellationToken = default)
+    {
+        var idList = ids.ToList();
+        return await Categories
+            .AsNoTracking()
+            .Where(c => idList.Contains(c.Id))
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> CountAsync(CancellationToken cancellationToken = default)
+    {
+        return await Categories.CountAsync(cancellationToken);
+    }
+
+    public Task<bool> IsUsedInRecipesAsync(CategoryId id, CancellationToken cancellationToken = default)
+    {
+        return Recipes
+            .AsNoTracking()
+            .AnyAsync(r => r.Categories.Any(c => c.CategoryId == id), cancellationToken);
+    }
+
+    public async Task CreateAsync(Category category, CancellationToken cancellationToken = default)
+    {
+        await Categories.AddAsync(category, cancellationToken);
+    }
+
+    public Task UpdateAsync(Category category, CancellationToken cancellationToken = default)
+    {
+        Categories.Update(category);
+        return Task.CompletedTask;
+    }
+
+    public async Task DeleteAsync(CategoryId id, CancellationToken cancellationToken = default)
+    {
+        var category = await Categories.FindAsync([id], cancellationToken);
+        if (category is not null)
+            Categories.Remove(category);
     }
 }

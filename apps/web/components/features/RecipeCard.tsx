@@ -1,4 +1,6 @@
+import Image from "next/image";
 import type { RecipeShortDto } from "@/lib/schemas/recipe";
+import type { Category } from "@/lib/schemas/category";
 import { ClockIcon, FlameIcon } from "@/components/icons";
 import { RecipePhoto } from "@/components/photo";
 import { Tag } from "@/components/ui/Tag";
@@ -14,18 +16,26 @@ const DIFFICULTY_LABELS: Record<string, string> = {
 
 interface RecipeCardProps {
   recipe: RecipeShortDto;
+  categories?: Category[];
   onClick?: () => void;
 }
 
-export function RecipeCard({ recipe, onClick }: RecipeCardProps) {
+export function RecipeCard({ recipe, categories = [], onClick }: RecipeCardProps) {
+  const recipeCats = recipe.categoryIds
+    .slice(0, 3)
+    .map((id) => categories.find((c) => c.id === id))
+    .filter((c): c is Category => c !== undefined);
+
   return (
     <div className="card recipe-card card-link" onClick={onClick}>
-      <div className="photo">
+      <div className="photo" style={{ position: "relative" }}>
         {recipe.photoId != null ? (
-          <img
+          <Image
             src={getRecipeThumbnailUrl(recipe.photoId)}
             alt={recipe.title}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            fill
+            unoptimized
+            style={{ objectFit: "cover" }}
           />
         ) : (
           <RecipePhoto seed={recipe.id} title={recipe.title} />
@@ -34,7 +44,7 @@ export function RecipeCard({ recipe, onClick }: RecipeCardProps) {
       <div className="body">
         <h3>{recipe.title}</h3>
         <div className="tags">
-          <Tag>{DIFFICULTY_LABELS[recipe.difficulty] ?? recipe.difficulty}</Tag>
+          {recipeCats.map((c) => <Tag key={c.id}>{c.name}</Tag>)}
         </div>
         <div className="meta">
           <span>

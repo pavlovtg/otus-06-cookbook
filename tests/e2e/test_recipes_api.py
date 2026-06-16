@@ -12,6 +12,7 @@ VALID_RECIPE = {
     "servings": 6,
     "instructions": "1. Сварить бульон. 2. Добавить овощи.",
     "ingredients": [],
+    "categoryIds": [],
 }
 
 VALID_INGREDIENT = {

@@ -2,7 +2,8 @@ FROM node:lts-alpine AS deps
 WORKDIR /app
 RUN corepack enable pnpm
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm-web,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 FROM node:lts-alpine AS builder
 WORKDIR /app
@@ -10,7 +11,8 @@ ENV CI=true
 RUN corepack enable pnpm
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN pnpm build
+RUN --mount=type=cache,id=nextjs-web,target=/app/.next/cache \
+    pnpm build
 
 FROM node:lts-alpine AS runner
 WORKDIR /app

@@ -4,6 +4,76 @@ namespace Recipes.Adapters.Postgresql;
 
 internal static class SeedData
 {
+    public static readonly Category[] Categories =
+    [
+        // MealRole
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000001")), "Первое блюдо", "Супы, борщи, похлёбки и другие жидкие блюда.", CategoryType.MealRole),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000002")), "Второе блюдо", "Основные горячие блюда к обеду или ужину.", CategoryType.MealRole),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000003")), "Закуска", "Холодные и горячие закуски для начала трапезы.", CategoryType.MealRole),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000004")), "Салат", "Свежие, тёплые и заправленные салаты.", CategoryType.MealRole),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000005")), "Десерт", "Сладкие блюда, выпечка и кондитерские изделия.", CategoryType.MealRole),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000006")), "Гарнир", "Крупы, овощи и другие дополнения к основному блюду.", CategoryType.MealRole),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000007")), "Напиток", "Горячие и холодные напитки, смузи, коктейли.", CategoryType.MealRole),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000008")), "Соус", "Соусы, маринады и заправки.", CategoryType.MealRole),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000009")), "Выпечка", "Хлеб, булочки, пироги и другая выпечка.", CategoryType.MealRole),
+
+        // CookingMethod
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000010")), "Варка", "Приготовление в кипящей воде или бульоне.", CategoryType.CookingMethod),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000011")), "Жарка", "Приготовление на сковороде с маслом.", CategoryType.CookingMethod),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000012")), "Запекание", "Приготовление в духовке при высокой температуре.", CategoryType.CookingMethod),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000013")), "Тушение", "Медленное приготовление в небольшом количестве жидкости.", CategoryType.CookingMethod),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000014")), "Гриль", "Приготовление на открытом огне или гриле.", CategoryType.CookingMethod),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000015")), "Варка на пару", "Приготовление паром без контакта с водой.", CategoryType.CookingMethod),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000016")), "Без термообработки", "Сырые блюда, маринование, засолка.", CategoryType.CookingMethod),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000017")), "Фритюр", "Жарка в большом количестве масла.", CategoryType.CookingMethod),
+
+        // MainIngredient
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000018")), "Мясо", "Блюда на основе говядины, свинины, баранины.", CategoryType.MainIngredient),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000019")), "Птица", "Блюда из курицы, индейки, утки.", CategoryType.MainIngredient),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000020")), "Рыба", "Блюда из рыбы и морепродуктов.", CategoryType.MainIngredient),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000021")), "Овощи", "Блюда на основе свежих и приготовленных овощей.", CategoryType.MainIngredient),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000022")), "Крупы и злаки", "Блюда из риса, гречки, овсянки и других круп.", CategoryType.MainIngredient),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000023")), "Бобовые", "Блюда из фасоли, чечевицы, нута.", CategoryType.MainIngredient),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000024")), "Яйца", "Блюда на основе яиц.", CategoryType.MainIngredient),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000025")), "Молочные продукты", "Блюда из молока, творога, сыра.", CategoryType.MainIngredient),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000026")), "Тесто и мука", "Блюда на основе теста: паста, пельмени, блины.", CategoryType.MainIngredient),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000027")), "Грибы", "Блюда с грибами в качестве основного ингредиента.", CategoryType.MainIngredient),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000028")), "Фрукты и ягоды", "Блюда и десерты на основе фруктов и ягод.", CategoryType.MainIngredient),
+
+        // Cuisine
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000029")), "Русская кухня", "Традиционные блюда русской кулинарии.", CategoryType.Cuisine),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000030")), "Итальянская кухня", "Паста, пицца, ризотто и другие итальянские блюда.", CategoryType.Cuisine),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000031")), "Азиатская кухня", "Блюда Китая, Японии, Кореи, Таиланда.", CategoryType.Cuisine),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000032")), "Средиземноморская кухня", "Греческая, турецкая, испанская кухня.", CategoryType.Cuisine),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000033")), "Французская кухня", "Классические блюда французской гастрономии.", CategoryType.Cuisine),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000034")), "Мексиканская кухня", "Тако, буррито, гуакамоле и другие мексиканские блюда.", CategoryType.Cuisine),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000035")), "Кавказская кухня", "Блюда Грузии, Армении, Азербайджана.", CategoryType.Cuisine),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000036")), "Американская кухня", "Бургеры, барбекю и другие американские блюда.", CategoryType.Cuisine),
+
+        // MealTime
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000037")), "Завтрак", "Лёгкие и питательные блюда для начала дня.", CategoryType.MealTime),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000038")), "Обед", "Сытные блюда для дневного приёма пищи.", CategoryType.MealTime),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000039")), "Ужин", "Блюда для вечернего приёма пищи.", CategoryType.MealTime),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000040")), "Перекус", "Лёгкие блюда между основными приёмами пищи.", CategoryType.MealTime),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000041")), "Праздничный стол", "Блюда для торжественных мероприятий.", CategoryType.MealTime),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000042")), "Пикник", "Блюда для еды на природе.", CategoryType.MealTime),
+
+        // Dietary
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000043")), "Вегетарианское", "Блюда без мяса и рыбы.", CategoryType.Dietary),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000044")), "Веганское", "Блюда без продуктов животного происхождения.", CategoryType.Dietary),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000045")), "Безглютеновое", "Блюда без глютена для людей с непереносимостью.", CategoryType.Dietary),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000046")), "Низкокалорийное", "Блюда с пониженной калорийностью.", CategoryType.Dietary),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000047")), "Высокобелковое", "Блюда с высоким содержанием белка.", CategoryType.Dietary),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000048")), "Детское питание", "Блюда, подходящие для детей.", CategoryType.Dietary),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000049")), "Постное", "Блюда для поста без мяса, молока и яиц.", CategoryType.Dietary),
+
+        // ServingForm
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000050")), "Порционное", "Блюда, подаваемые в индивидуальных порциях.", CategoryType.ServingForm),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000051")), "На компанию", "Блюда для совместного употребления.", CategoryType.ServingForm),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000052")), "Фуршет", "Блюда для фуршетного стола.", CategoryType.ServingForm),
+        Category.Create(CategoryId.From(new Guid("33333333-0000-0000-0000-000000000053")), "Заготовка", "Консервация, варенье, соленья на зиму.", CategoryType.ServingForm),
+    ];
+
     public static readonly Ingredient[] Ingredients =
     [
         // Vegetables
@@ -152,6 +222,105 @@ internal static class SeedData
         Ingredient.Create(IngredientId.From(new Guid("22222222-0000-0000-0000-000000000105")), "Горчица", "г", 20f, IngredientCategory.SaucesAndPastes, isSystem: true),
         Ingredient.Create(IngredientId.From(new Guid("22222222-0000-0000-0000-000000000106")), "Уксус яблочный", "мл", 30f, IngredientCategory.SaucesAndPastes, isSystem: true),
         Ingredient.Create(IngredientId.From(new Guid("22222222-0000-0000-0000-000000000107")), "Вустерский соус", "мл", 15f, IngredientCategory.SaucesAndPastes, isSystem: true),
+    ];
+
+    private static RecipeId RId(int n) =>
+        RecipeId.From(new Guid($"11111111-0000-0000-0000-{n:D12}"));
+
+    private static CategoryId CatId(int n) =>
+        CategoryId.From(new Guid($"33333333-0000-0000-0000-{n:D12}"));
+
+    // RecipeId → { CategoryId → CategoryType }
+    // Идемпотентно: назначаем категории существующим рецептам
+    public static readonly (RecipeId RecipeId, IReadOnlyDictionary<CategoryId, CategoryType> CategoryTypes)[] RecipeCategorySeeds =
+    [
+        // Борщ: Первое блюдо (MealRole), Варка (CookingMethod), Мясо (MainIngredient), Русская кухня (Cuisine)
+        (RId(1), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(1)]  = CategoryType.MealRole,
+            [CatId(10)] = CategoryType.CookingMethod,
+            [CatId(18)] = CategoryType.MainIngredient,
+            [CatId(29)] = CategoryType.Cuisine,
+        }),
+
+        // Оливье: Салат (MealRole), Без термообработки (CookingMethod), Русская кухня (Cuisine)
+        (RId(2), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(4)]  = CategoryType.MealRole,
+            [CatId(16)] = CategoryType.CookingMethod,
+            [CatId(29)] = CategoryType.Cuisine,
+        }),
+
+        // Пельмени: Второе блюдо (MealRole), Варка (CookingMethod), Тесто и мука (MainIngredient), Русская кухня (Cuisine)
+        (RId(3), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(2)]  = CategoryType.MealRole,
+            [CatId(10)] = CategoryType.CookingMethod,
+            [CatId(26)] = CategoryType.MainIngredient,
+            [CatId(29)] = CategoryType.Cuisine,
+        }),
+
+        // Блины: Выпечка (MealRole), Жарка (CookingMethod), Тесто и мука (MainIngredient), Русская кухня (Cuisine)
+        (RId(4), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(9)]  = CategoryType.MealRole,
+            [CatId(11)] = CategoryType.CookingMethod,
+            [CatId(26)] = CategoryType.MainIngredient,
+            [CatId(29)] = CategoryType.Cuisine,
+        }),
+
+        // Котлеты по-киевски: Второе блюдо (MealRole), Фритюр (CookingMethod), Птица (MainIngredient), Русская кухня (Cuisine)
+        (RId(5), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(2)]  = CategoryType.MealRole,
+            [CatId(17)] = CategoryType.CookingMethod,
+            [CatId(19)] = CategoryType.MainIngredient,
+            [CatId(29)] = CategoryType.Cuisine,
+        }),
+
+        // Солянка: Первое блюдо (MealRole), Варка (CookingMethod), Мясо (MainIngredient), Русская кухня (Cuisine)
+        (RId(6), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(1)]  = CategoryType.MealRole,
+            [CatId(10)] = CategoryType.CookingMethod,
+            [CatId(18)] = CategoryType.MainIngredient,
+            [CatId(29)] = CategoryType.Cuisine,
+        }),
+
+        // Шашлык: Второе блюдо (MealRole), Гриль (CookingMethod), Мясо (MainIngredient), Кавказская кухня (Cuisine)
+        (RId(7), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(2)]  = CategoryType.MealRole,
+            [CatId(14)] = CategoryType.CookingMethod,
+            [CatId(18)] = CategoryType.MainIngredient,
+            [CatId(35)] = CategoryType.Cuisine,
+        }),
+
+        // Окрошка: Первое блюдо (MealRole), Без термообработки (CookingMethod), Русская кухня (Cuisine)
+        (RId(8), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(1)]  = CategoryType.MealRole,
+            [CatId(16)] = CategoryType.CookingMethod,
+            [CatId(29)] = CategoryType.Cuisine,
+        }),
+
+        // Плов: Второе блюдо (MealRole), Тушение (CookingMethod), Мясо (MainIngredient), Азиатская кухня (Cuisine)
+        (RId(9), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(2)]  = CategoryType.MealRole,
+            [CatId(13)] = CategoryType.CookingMethod,
+            [CatId(18)] = CategoryType.MainIngredient,
+            [CatId(31)] = CategoryType.Cuisine,
+        }),
+
+        // Медовик: Десерт (MealRole), Запекание (CookingMethod), Тесто и мука (MainIngredient), Русская кухня (Cuisine)
+        (RId(10), new Dictionary<CategoryId, CategoryType>
+        {
+            [CatId(5)]  = CategoryType.MealRole,
+            [CatId(12)] = CategoryType.CookingMethod,
+            [CatId(26)] = CategoryType.MainIngredient,
+            [CatId(29)] = CategoryType.Cuisine,
+        }),
     ];
 
     public static readonly (RecipeId RecipeId, RecipePhotoId PhotoId)[] RecipePhotoSeeds =

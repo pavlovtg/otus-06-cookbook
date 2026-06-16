@@ -1,35 +1,18 @@
 using System.Net;
 using System.Net.Http.Json;
-using DotNet.Testcontainers.Builders;
 using Recipes.Adapters.Web.Dto;
-using Testcontainers.PostgreSql;
 using Xunit;
 
 namespace Recipes.Tests.Microservice;
 
-public sealed class RecipePhotoTests : IAsyncLifetime
+[Collection("RecipeMicroservice")]
+public sealed class RecipePhotoTests(RecipeMicroserviceFixture fixture) : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
-        .WithImage("postgres:16-alpine")
-        .WithOutputConsumer(Consume.DoNotConsumeStdoutAndStderr())
-        .Build();
+    private readonly HttpClient _client = fixture.Client;
 
-    private RecipeMicroserviceHost? _host;
-    private HttpClient? _client;
+    public Task InitializeAsync() => fixture.TruncateAsync();
 
-    public async Task InitializeAsync()
-    {
-        await _postgres.StartAsync();
-        _host = new RecipeMicroserviceHost(_postgres.GetConnectionString()).EnsureServer();
-        _client = _host.CreateClient();
-    }
-
-    public async Task DisposeAsync()
-    {
-        if (_host is not null)
-            await _host.DisposeAsync();
-        await _postgres.DisposeAsync();
-    }
+    public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
     public async Task UploadPhoto_Returns200_AndRecipeHasPhotoId()
@@ -40,7 +23,7 @@ public sealed class RecipePhotoTests : IAsyncLifetime
         var response = await UploadPhotoAsync(recipe.Id);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var updated = await _client!.GetFromJsonAsync<RecipeDto>($"/api/v1/recipes/{recipe.Id}");
+        var updated = await _client.GetFromJsonAsync<RecipeDto>($"/api/v1/recipes/{recipe.Id}");
         Assert.NotNull(updated);
         Assert.NotNull(updated.PhotoId);
     }
@@ -51,10 +34,10 @@ public sealed class RecipePhotoTests : IAsyncLifetime
         var recipe = await CreateTestRecipeAsync();
         await UploadPhotoAsync(recipe.Id);
 
-        var updated = await _client!.GetFromJsonAsync<RecipeDto>($"/api/v1/recipes/{recipe.Id}");
+        var updated = await _client.GetFromJsonAsync<RecipeDto>($"/api/v1/recipes/{recipe.Id}");
         Assert.NotNull(updated?.PhotoId);
 
-        var photoResponse = await _client!.GetAsync($"/api/v1/photos/{updated.PhotoId}");
+        var photoResponse = await _client.GetAsync($"/api/v1/photos/{updated.PhotoId}");
         Assert.Equal(HttpStatusCode.OK, photoResponse.StatusCode);
         Assert.Equal("image/jpeg", photoResponse.Content.Headers.ContentType?.MediaType);
     }
@@ -65,10 +48,10 @@ public sealed class RecipePhotoTests : IAsyncLifetime
         var recipe = await CreateTestRecipeAsync();
         await UploadPhotoAsync(recipe.Id);
 
-        var updated = await _client!.GetFromJsonAsync<RecipeDto>($"/api/v1/recipes/{recipe.Id}");
+        var updated = await _client.GetFromJsonAsync<RecipeDto>($"/api/v1/recipes/{recipe.Id}");
         Assert.NotNull(updated?.PhotoId);
 
-        var thumbResponse = await _client!.GetAsync($"/api/v1/photos/{updated.PhotoId}/thumbnail");
+        var thumbResponse = await _client.GetAsync($"/api/v1/photos/{updated.PhotoId}/thumbnail");
         Assert.Equal(HttpStatusCode.OK, thumbResponse.StatusCode);
     }
 
@@ -78,10 +61,10 @@ public sealed class RecipePhotoTests : IAsyncLifetime
         var recipe = await CreateTestRecipeAsync();
         await UploadPhotoAsync(recipe.Id);
 
-        var deleteResponse = await _client!.DeleteAsync($"/api/v1/recipes/{recipe.Id}/photo");
+        var deleteResponse = await _client.DeleteAsync($"/api/v1/recipes/{recipe.Id}/photo");
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
 
-        var updated = await _client!.GetFromJsonAsync<RecipeDto>($"/api/v1/recipes/{recipe.Id}");
+        var updated = await _client.GetFromJsonAsync<RecipeDto>($"/api/v1/recipes/{recipe.Id}");
         Assert.NotNull(updated);
         Assert.Null(updated.PhotoId);
     }
@@ -96,14 +79,14 @@ public sealed class RecipePhotoTests : IAsyncLifetime
         fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/gif");
         content.Add(fileContent, "file", "test.gif");
 
-        var response = await _client!.PostAsync($"/api/v1/recipes/{recipe.Id}/photo", content);
+        var response = await _client.PostAsync($"/api/v1/recipes/{recipe.Id}/photo", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
     public async Task GetPhoto_Returns400_WhenPhotoNotFound()
     {
-        var response = await _client!.GetAsync($"/api/v1/photos/{Guid.NewGuid()}");
+        var response = await _client.GetAsync($"/api/v1/photos/{Guid.NewGuid()}");
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
@@ -116,10 +99,11 @@ public sealed class RecipePhotoTests : IAsyncLifetime
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
-            Ingredients: []
+            Ingredients: [],
+            CategoryIds: []
         );
 
-        var response = await _client!.PostAsJsonAsync("/api/v1/recipes", request);
+        var response = await _client.PostAsJsonAsync("/api/v1/recipes", request);
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<RecipeDto>())!;
     }
@@ -164,6 +148,6 @@ public sealed class RecipePhotoTests : IAsyncLifetime
         fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
         content.Add(fileContent, "file", "test.jpg");
 
-        return await _client!.PostAsync($"/api/v1/recipes/{recipeId}/photo", content);
+        return await _client.PostAsync($"/api/v1/recipes/{recipeId}/photo", content);
     }
 }

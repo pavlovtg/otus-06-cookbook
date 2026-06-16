@@ -164,4 +164,88 @@ public sealed class CookbookSeederTests : IAsyncLifetime
         Assert.NotNull(borscht);
         Assert.Equal(expectedCount, borscht.Ingredients.Count);
     }
+
+    // ── RecipeCategories seed ─────────────────────────────────────────────────
+
+    [Fact]
+    public async Task SeedAsync_EmptyDb_InsertsRecipeCategories()
+    {
+        await using var seedCtx = _factory.Create();
+        await CookbookSeeder.SeedAsync(seedCtx);
+
+        var borschtId = RecipeId.From(new Guid("11111111-0000-0000-0000-000000000001"));
+
+        await using var readCtx = _factory.Create();
+        var borscht = await readCtx.Recipes
+            .Include(r => r.Categories)
+            .FirstOrDefaultAsync(r => r.Id == borschtId);
+
+        Assert.NotNull(borscht);
+        Assert.NotEmpty(borscht.Categories);
+    }
+
+    [Fact]
+    public async Task SeedAsync_EmptyDb_BorschtHasExpectedCategoryCount()
+    {
+        await using var seedCtx = _factory.Create();
+        await CookbookSeeder.SeedAsync(seedCtx);
+
+        var borschtId = RecipeId.From(new Guid("11111111-0000-0000-0000-000000000001"));
+        var expectedCount = SeedData.RecipeCategorySeeds
+            .First(s => s.RecipeId == borschtId)
+            .CategoryTypes.Count;
+
+        await using var readCtx = _factory.Create();
+        var borscht = await readCtx.Recipes
+            .Include(r => r.Categories)
+            .FirstOrDefaultAsync(r => r.Id == borschtId);
+
+        Assert.NotNull(borscht);
+        Assert.Equal(expectedCount, borscht.Categories.Count);
+    }
+
+    [Fact]
+    public async Task SeedAsync_CalledTwice_DoesNotDuplicateCategories()
+    {
+        await using (var ctx1 = _factory.Create())
+            await CookbookSeeder.SeedAsync(ctx1);
+
+        await using (var ctx2 = _factory.Create())
+            await CookbookSeeder.SeedAsync(ctx2);
+
+        var borschtId = RecipeId.From(new Guid("11111111-0000-0000-0000-000000000001"));
+        var expectedCount = SeedData.RecipeCategorySeeds
+            .First(s => s.RecipeId == borschtId)
+            .CategoryTypes.Count;
+
+        await using var readCtx = _factory.Create();
+        var borscht = await readCtx.Recipes
+            .Include(r => r.Categories)
+            .FirstOrDefaultAsync(r => r.Id == borschtId);
+
+        Assert.NotNull(borscht);
+        Assert.Equal(expectedCount, borscht.Categories.Count);
+    }
+
+    [Fact]
+    public async Task SeedAsync_RecipeCategories_AllSeedRecipesHaveCategories()
+    {
+        await using var seedCtx = _factory.Create();
+        await CookbookSeeder.SeedAsync(seedCtx);
+
+        await using var readCtx = _factory.Create();
+
+        foreach (var (recipeId, categoryTypes) in SeedData.RecipeCategorySeeds)
+        {
+            var recipe = await readCtx.Recipes
+                .Include(r => r.Categories)
+                .FirstOrDefaultAsync(r => r.Id == recipeId);
+
+            Assert.NotNull(recipe);
+            Assert.Equal(categoryTypes.Count, recipe.Categories.Count);
+
+            foreach (var catId in categoryTypes.Keys)
+                Assert.Contains(recipe.Categories, c => c.CategoryId == catId);
+        }
+    }
 }

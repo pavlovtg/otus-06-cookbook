@@ -1,4 +1,5 @@
 using DotNet.Testcontainers.Builders;
+using Microsoft.EntityFrameworkCore;
 using Shared.Testing.Database;
 using Testcontainers.PostgreSql;
 using Xunit;
@@ -9,7 +10,7 @@ public sealed class RepositoryFactoryTests : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
         .WithImage("postgres:16-alpine")
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
+        .WithOutputConsumer(Consume.DoNotConsumeStdoutAndStderr())
         .Build();
 
     public Task InitializeAsync() => _postgres.StartAsync();
@@ -42,19 +43,31 @@ public sealed class RepositoryFactoryTests : IAsyncLifetime
         Assert.NotSame(ctx1, ctx2);
     }
 
-    // ── MigrateAsync ─────────────────────────────────────────────────────────
+    // ── EnsureCreated / Write-Read ────────────────────────────────────────────
 
     [Fact]
-    public async Task MigrateAsync_EnsureCreated_TableExists()
+    public async Task EnsureCreated_WriteInOneContext_ReadInAnother_DataIsPersisted()
     {
         await using var factory = CreateFactory();
 
-        // EnsureCreatedAsync вместо MigrateAsync — TestDbContext не имеет миграций
-        await using var ctx = factory.Create();
-        await ctx.Database.EnsureCreatedAsync();
+        await using (var ctx = factory.Create())
+        {
+            await ctx.Database.EnsureCreatedAsync();
+        }
 
-        var canConnect = await ctx.Database.CanConnectAsync();
-        Assert.True(canConnect);
+        var entity = new TestEntity { Name = "Тест" };
+
+        await using (var writeCtx = factory.Create())
+        {
+            writeCtx.Entities.Add(entity);
+            await writeCtx.SaveChangesAsync();
+        }
+
+        await using var readCtx = factory.Create();
+        var result = await readCtx.Entities.FirstOrDefaultAsync(e => e.Id == entity.Id);
+
+        Assert.NotNull(result);
+        Assert.Equal("Тест", result.Name);
     }
 
     // ── DisposeAsync ─────────────────────────────────────────────────────────

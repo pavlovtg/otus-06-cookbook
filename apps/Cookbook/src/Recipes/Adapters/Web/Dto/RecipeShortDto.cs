@@ -6,4 +6,5 @@ internal sealed record RecipeShortDto(
     string Description,
     int CookingTime,
     string Difficulty,
-    Guid? PhotoId);
+    Guid? PhotoId,
+    IReadOnlyList<Guid> CategoryIds);

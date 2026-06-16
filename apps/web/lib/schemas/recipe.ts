@@ -35,6 +35,7 @@ export const RecipeShortDtoSchema = z.object({
   cookingTime: z.number().int().positive(),
   difficulty: DifficultySchema,
   photoId: z.string().uuid().nullable(),
+  categoryIds: z.array(z.string().uuid()),
 });
 
 export type RecipeShortDto = z.infer<typeof RecipeShortDtoSchema>;
@@ -49,6 +50,7 @@ export const RecipeDtoSchema = z.object({
   instructions: z.string(),
   ingredients: z.array(RecipeIngredientDtoSchema),
   photoId: z.string().uuid().nullable(),
+  categoryIds: z.array(z.string().uuid()),
 });
 
 export type RecipeDto = z.infer<typeof RecipeDtoSchema>;
@@ -63,6 +65,7 @@ export const RecipeRequestSchema = z.object({
   servings: z.number().int().positive(),
   instructions: z.string().min(1).max(10000),
   ingredients: z.array(RecipeIngredientRequestSchema),
+  categoryIds: z.array(z.string().uuid()),
 });
 
 export type RecipeRequest = z.infer<typeof RecipeRequestSchema>;

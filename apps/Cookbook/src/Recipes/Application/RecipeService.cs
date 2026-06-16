@@ -8,10 +8,12 @@ namespace Recipes.Application;
 internal sealed class RecipeService : IRecipeService
 {
     private readonly IRecipeRepository _repository;
+    private readonly ICategoryRepository _categoryRepository;
 
-    public RecipeService(IRecipeRepository repository)
+    public RecipeService(IRecipeRepository repository, ICategoryRepository categoryRepository)
     {
         _repository = repository;
+        _categoryRepository = categoryRepository;
     }
 
     public async IAsyncEnumerable<Recipe> GetRecipesAsync(
@@ -41,13 +43,17 @@ internal sealed class RecipeService : IRecipeService
         int servings,
         string instructions,
         IEnumerable<RecipeIngredientInput> ingredients,
+        IEnumerable<CategoryId> categoryIds,
         CancellationToken cancellationToken = default)
     {
         var recipeIngredients = ingredients
             .Select(i => RecipeIngredient.Create(i.IngredientId, i.Amount))
             .ToList();
 
-        var recipe = Recipe.Create(RecipeId.New(), title, description, cookingTime, difficulty, servings, instructions, recipeIngredients);
+        var categoryTypes = await BuildCategoryTypesAsync(categoryIds, cancellationToken);
+
+        var recipe = Recipe.Create(RecipeId.New(), title, description, cookingTime, difficulty, servings, instructions,
+            recipeIngredients, categoryTypes);
         await _repository.CreateAsync(recipe, cancellationToken);
         await _repository.CommitAsync(cancellationToken);
         return recipe;
@@ -62,6 +68,7 @@ internal sealed class RecipeService : IRecipeService
         int servings,
         string instructions,
         IEnumerable<RecipeIngredientInput> ingredients,
+        IEnumerable<CategoryId> categoryIds,
         CancellationToken cancellationToken = default)
     {
         var recipe = await _repository.GetByIdAsync(id, cancellationToken)
@@ -71,7 +78,10 @@ internal sealed class RecipeService : IRecipeService
             .Select(i => RecipeIngredient.Create(i.IngredientId, i.Amount))
             .ToList();
 
-        recipe.Update(title, description, cookingTime, difficulty, servings, instructions, recipeIngredients);
+        var categoryTypes = await BuildCategoryTypesAsync(categoryIds, cancellationToken);
+
+        recipe.Update(title, description, cookingTime, difficulty, servings, instructions,
+            recipeIngredients, categoryTypes);
         await _repository.UpdateAsync(recipe, cancellationToken);
         await _repository.CommitAsync(cancellationToken);
     }
@@ -83,5 +93,25 @@ internal sealed class RecipeService : IRecipeService
 
         await _repository.DeleteAsync(recipe.Id, cancellationToken);
         await _repository.CommitAsync(cancellationToken);
+    }
+
+    private async Task<IReadOnlyDictionary<CategoryId, CategoryType>> BuildCategoryTypesAsync(
+        IEnumerable<CategoryId> categoryIds,
+        CancellationToken cancellationToken)
+    {
+        var ids = categoryIds.ToList();
+        if (ids.Count == 0)
+            return new Dictionary<CategoryId, CategoryType>();
+
+        var categories = await _categoryRepository.GetByIdsAsync(ids, cancellationToken);
+
+        if (categories.Count != ids.Count)
+        {
+            var foundIds = categories.Select(c => c.Id).ToHashSet();
+            var missingId = ids.First(id => !foundIds.Contains(id));
+            throw new CategoryNotFoundException(missingId);
+        }
+
+        return categories.ToDictionary(c => c.Id, c => c.Type);
     }
 }

@@ -306,6 +306,118 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/categories:
+    get:
+      summary: Получить список категорий
+      operationId: getCategories
+      tags:
+        - Categories
+      responses:
+        "200":
+          description: Список категорий
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryDto"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    post:
+      summary: Создать категорию
+      operationId: createCategory
+      tags:
+        - Categories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryRequest"
+      responses:
+        "201":
+          description: Категория создана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryDto"
+        "400":
+          description: Ошибка валидации или превышен лимит категорий
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/categories/{id}:
+    put:
+      summary: Обновить категорию
+      operationId: updateCategory
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryRequest"
+      responses:
+        "204":
+          description: Категория обновлена
+        "400":
+          description: Ошибка валидации или категория не найдена
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    delete:
+      summary: Удалить категорию
+      operationId: deleteCategory
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Категория удалена
+        "400":
+          description: Категория не найдена или используется в рецептах
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
   /api/v1/ingredients:
     get:
       summary: Получить список ингредиентов
@@ -504,6 +616,7 @@ components:
         - cookingTime
         - difficulty
         - photoId
+        - categoryIds
       properties:
         id:
           type: string
@@ -529,6 +642,13 @@ components:
           nullable: true
           description: Идентификатор фото рецепта (null если фото нет)
           example: null
+        categoryIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Идентификаторы категорий рецепта
+          example: ["33333333-0000-0000-0000-000000000001"]
     RecipeIngredientDto:
       type: object
       required:
@@ -581,6 +701,7 @@ components:
         - instructions
         - ingredients
         - photoId
+        - categoryIds
       properties:
         id:
           type: string
@@ -620,6 +741,13 @@ components:
           nullable: true
           description: Идентификатор фото рецепта (null если фото нет)
           example: null
+        categoryIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Идентификаторы категорий рецепта
+          example: ["33333333-0000-0000-0000-000000000001"]
     RecipeRequest:
       type: object
       required:
@@ -629,6 +757,7 @@ components:
         - servings
         - instructions
         - ingredients
+        - categoryIds
       properties:
         title:
           type: string
@@ -662,6 +791,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RecipeIngredientRequest"
+        categoryIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Идентификаторы категорий рецепта
+          example: ["33333333-0000-0000-0000-000000000001"]
     ProblemDetails:
       description: RFC 7807 Problem Details
       type: object
@@ -790,3 +926,52 @@ components:
           example: 100
         category:
           $ref: "#/components/schemas/IngredientCategory"
+    CategoryType:
+      type: string
+      enum:
+        - meal_role
+        - cooking_method
+        - main_ingredient
+        - cuisine
+        - meal_time
+        - dietary
+        - serving_form
+      example: meal_role
+    CategoryDto:
+      type: object
+      required:
+        - id
+        - name
+        - type
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 33333333-0000-0000-0000-000000000001
+        name:
+          type: string
+          example: Завтрак
+        description:
+          type: string
+          nullable: true
+          example: Блюда для утреннего приёма пищи
+        type:
+          $ref: "#/components/schemas/CategoryType"
+    CategoryRequest:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: Завтрак
+        description:
+          type: string
+          maxLength: 2000
+          nullable: true
+          example: Блюда для утреннего приёма пищи
+        type:
+          $ref: "#/components/schemas/CategoryType"

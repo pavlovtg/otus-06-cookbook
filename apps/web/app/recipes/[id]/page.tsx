@@ -1,8 +1,10 @@
 export const dynamic = "force-dynamic";
 
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getRecipe } from "@/lib/bff/recipes";
+import { getCategories } from "@/lib/bff/categories";
 import { RecipePhoto } from "@/components/photo";
 import { Tag } from "@/components/ui/Tag";
 import { ArrowLeftIcon, ClockIcon, FlameIcon } from "@/components/icons";
@@ -26,11 +28,16 @@ export default async function RecipeDetailPage({ params }: Props) {
   const { id } = await params;
 
   let recipe;
+  let allCategories;
   try {
-    recipe = await getRecipe(id);
+    [recipe, allCategories] = await Promise.all([getRecipe(id), getCategories()]);
   } catch {
     notFound();
   }
+
+  const recipeCats = recipe.categoryIds
+    .map((cid) => allCategories.find((c) => c.id === cid))
+    .filter((c): c is NonNullable<typeof c> => c !== undefined);
 
   return (
     <>
@@ -54,9 +61,7 @@ export default async function RecipeDetailPage({ params }: Props) {
 
       <div className="detail-toolbar">
         <div className="detail-tags">
-          <Tag>{DIFFICULTY_LABELS[recipe.difficulty] ?? recipe.difficulty}</Tag>
-          <Tag>{recipe.servings} порц.</Tag>
-          <Tag>{recipe.cookingTime} мин</Tag>
+          {recipeCats.map((c) => <Tag key={c.id}>{c.name}</Tag>)}
         </div>
         <div className="detail-actions">
           <Link
@@ -72,12 +77,14 @@ export default async function RecipeDetailPage({ params }: Props) {
       <div className="detail-grid">
         {/* Left column */}
         <div className="gallery">
-          <div className="main-photo">
+          <div className="main-photo" style={{ position: "relative" }}>
             {recipe.photoId != null ? (
-              <img
+              <Image
                 src={getRecipePhotoUrl(recipe.photoId)}
                 alt={recipe.title}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                fill
+                unoptimized
+                style={{ objectFit: "cover" }}
               />
             ) : (
               <RecipePhoto seed={recipe.id} title={recipe.title} />

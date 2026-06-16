@@ -17,6 +17,9 @@ internal sealed class Recipe
     private List<RecipeIngredient> _ingredients = [];
     public IReadOnlyList<RecipeIngredient> Ingredients => _ingredients.AsReadOnly();
 
+    private List<RecipeCategory> _categories = [];
+    public IReadOnlyList<RecipeCategory> Categories => _categories.AsReadOnly();
+
     private Recipe() { }
 
     public static Recipe Create(
@@ -27,7 +30,8 @@ internal sealed class Recipe
         Difficulty difficulty,
         int servings,
         string instructions,
-        IEnumerable<RecipeIngredient>? ingredients = null)
+        IEnumerable<RecipeIngredient>? ingredients = null,
+        IReadOnlyDictionary<CategoryId, CategoryType>? categoryTypes = null)
     {
         ValidateTitle(title);
         ValidateDescription(description);
@@ -37,6 +41,10 @@ internal sealed class Recipe
 
         var ingredientList = ingredients?.ToList() ?? [];
         ValidateIngredientsCount(ingredientList.Count);
+
+        var categories = categoryTypes is not null
+            ? BuildCategories(id, categoryTypes)
+            : [];
 
         return new Recipe
         {
@@ -48,6 +56,7 @@ internal sealed class Recipe
             Servings = servings,
             Instructions = instructions,
             _ingredients = ingredientList,
+            _categories = categories,
         };
     }
 
@@ -58,7 +67,8 @@ internal sealed class Recipe
         Difficulty difficulty,
         int servings,
         string instructions,
-        IEnumerable<RecipeIngredient>? ingredients = null)
+        IEnumerable<RecipeIngredient>? ingredients = null,
+        IReadOnlyDictionary<CategoryId, CategoryType>? categoryTypes = null)
     {
         ValidateTitle(title);
         ValidateDescription(description);
@@ -69,6 +79,10 @@ internal sealed class Recipe
         var ingredientList = ingredients?.ToList() ?? [];
         ValidateIngredientsCount(ingredientList.Count);
 
+        var categories = categoryTypes is not null
+            ? BuildCategories(Id, categoryTypes)
+            : [];
+
         Title = title;
         Description = description ?? string.Empty;
         CookingTime = cookingTime;
@@ -78,6 +92,9 @@ internal sealed class Recipe
 
         _ingredients.Clear();
         _ingredients.AddRange(ingredientList);
+
+        _categories.Clear();
+        _categories.AddRange(categories);
     }
 
     public void SetPhoto(RecipePhotoId photoId)
@@ -88,6 +105,24 @@ internal sealed class Recipe
     public void ClearPhoto()
     {
         PhotoId = null;
+    }
+
+    private static List<RecipeCategory> BuildCategories(
+        RecipeId recipeId,
+        IReadOnlyDictionary<CategoryId, CategoryType> categoryTypes)
+    {
+        var seenTypes = new HashSet<CategoryType>();
+        var result = new List<RecipeCategory>(categoryTypes.Count);
+
+        foreach (var (categoryId, type) in categoryTypes)
+        {
+            if (!seenTypes.Add(type))
+                throw new RecipeDuplicateCategoryTypeException(type);
+
+            result.Add(RecipeCategory.Create(recipeId, categoryId));
+        }
+
+        return result;
     }
 
     private static void ValidateTitle(string title)

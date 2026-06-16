@@ -23,6 +23,35 @@ namespace Recipes.Adapters.Postgresql.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Recipes.Domain.Category", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("categories", "cookbook");
+                });
+
             modelBuilder.Entity("Recipes.Domain.Ingredient", b =>
                 {
                     b.Property<Guid>("Id")
@@ -107,6 +136,21 @@ namespace Recipes.Adapters.Postgresql.Migrations
                     b.ToTable("recipes", "cookbook");
                 });
 
+            modelBuilder.Entity("Recipes.Domain.RecipeCategory", b =>
+                {
+                    b.Property<Guid>("RecipeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recipe_id");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("category_id");
+
+                    b.HasKey("RecipeId", "CategoryId");
+
+                    b.ToTable("recipe_categories", "cookbook");
+                });
+
             modelBuilder.Entity("Recipes.Domain.RecipeIngredient", b =>
                 {
                     b.Property<Guid>("RecipeId")
@@ -152,6 +196,15 @@ namespace Recipes.Adapters.Postgresql.Migrations
                     b.ToTable("recipe_photos", "cookbook");
                 });
 
+            modelBuilder.Entity("Recipes.Domain.RecipeCategory", b =>
+                {
+                    b.HasOne("Recipes.Domain.Recipe", null)
+                        .WithMany("Categories")
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Recipes.Domain.RecipeIngredient", b =>
                 {
                     b.HasOne("Recipes.Domain.Recipe", null)
@@ -172,6 +225,8 @@ namespace Recipes.Adapters.Postgresql.Migrations
 
             modelBuilder.Entity("Recipes.Domain.Recipe", b =>
                 {
+                    b.Navigation("Categories");
+
                     b.Navigation("Ingredients");
                 });
 #pragma warning restore 612, 618

@@ -16,6 +16,7 @@ const validDto = {
   instructions: "1. Сварить бульон.",
   ingredients: [],
   photoId: null,
+  categoryIds: [],
 };
 
 const validRequest = {
@@ -26,6 +27,7 @@ const validRequest = {
   servings: 6,
   instructions: "1. Сварить бульон.",
   ingredients: [],
+  categoryIds: [],
 };
 
 const validShortDto = {
@@ -35,6 +37,7 @@ const validShortDto = {
   cookingTime: 120,
   difficulty: "everyday",
   photoId: null,
+  categoryIds: [],
 };
 
 describe("RecipeDtoSchema", () => {
