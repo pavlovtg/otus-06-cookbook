@@ -2,21 +2,13 @@
 
 ## Текущая задача
 
-Исправление падающих UI-тестов в `tests/ui/test_recipes.py`.
+Исправление ошибки nginx `host not found in upstream "api-gateway"` при `docker compose up --build`.
 
 ## Что сделано
 
-### Тест 1: `test_recipe_detail_back_button_returns_to_list`
+### Fix: nginx lazy DNS resolution
 
-- Причина: `backHref = "/?page=1"` при клике с первой страницы, тест ожидал `/`
-- Фикс: assertion изменён на regex `^base_url(/\?page=\d+|/?)$` — принимает и `/` и `/?page=N`
-
-### Тесты 2/3: `test_create_recipe_with_categories_shows_tags_in_card`, `test_recipe_without_categories_card_shows_no_tags`
-
-- Причина: рецепты сортируются по `Title ASC`, страница = 18 карточек. Названия "Тест категорий 8.1" и "Тест без категорий 8.3 карточка" начинаются на "Т" → попадают на страницу 3–4. Тест возвращался на страницу 1 и не находил карточку.
-- Фикс: добавлена функция `_navigate_to_recipe_card(page, base_url, recipe_id)`, которая перебирает страницы пагинации (до 10) пока не найдёт карточку с нужным ID. Оба теста используют её вместо `page.goto(base_url)`.
-
-## Ключевые решения
-
-- Тесты исправлены без изменения приложения
-- `_navigate_to_recipe_card` — устойчивый паттерн для тестов с пагинацией: не зависит от количества рецептов в БД
+- Причина: nginx резолвит upstream-хосты статически при старте, до того как Docker DNS регистрирует контейнеры.
+- Фикс в `infrastructure/docker-compose/reverse-proxy/nginx.conf.template`:
+  - Добавлен `resolver 127.0.0.11 valid=10s ipv6=off;` (Docker встроенный DNS).
+  - Все `proxy_pass ${VAR}` заменены на `set $var ${VAR}; proxy_pass $var;` — nginx резолвит DNS лениво, при каждом запросе.
