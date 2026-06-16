@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Recipes.Adapters.Web.Dto;
 using Recipes.Application;
@@ -74,6 +75,7 @@ internal sealed class RecipesController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> CreateRecipe([FromBody] RecipeRequest request, CancellationToken cancellationToken)
     {
@@ -109,6 +111,7 @@ internal sealed class RecipesController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateRecipe(Guid id, [FromBody] RecipeRequest request, CancellationToken cancellationToken)
     {
@@ -144,6 +147,7 @@ internal sealed class RecipesController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteRecipe(Guid id, CancellationToken cancellationToken)
     {
@@ -158,6 +162,7 @@ internal sealed class RecipesController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpPost("{id:guid}/photo")]
     public async Task<IActionResult> UploadPhoto(Guid id, IFormFile file, CancellationToken cancellationToken)
     {
@@ -176,6 +181,7 @@ internal sealed class RecipesController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpDelete("{id:guid}/photo")]
     public async Task<IActionResult> DeletePhoto(Guid id, CancellationToken cancellationToken)
     {

@@ -6,7 +6,7 @@ using Recipes.Domain;
 
 namespace Recipes.Adapters.Postgresql;
 
-internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredientRepository, IRecipePhotoRepository, ICategoryRepository
+internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredientRepository, IRecipePhotoRepository, ICategoryRepository, IUserRepository
 {
     public const string DefaultSchema = "cookbook";
 
@@ -14,6 +14,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
     public DbSet<RecipePhoto> RecipePhotos => Set<RecipePhoto>();
     public DbSet<Category> Categories => Set<Category>();
+    public DbSet<User> Users => Set<User>();
 
     public RecipeRepository(DbContextOptions<RecipeRepository> options) : base(options) { }
 
@@ -26,6 +27,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         modelBuilder.ApplyConfiguration(new RecipeCategoryConfiguration());
         modelBuilder.ApplyConfiguration(new RecipePhotoConfiguration());
         modelBuilder.ApplyConfiguration(new CategoryConfiguration());
+        modelBuilder.ApplyConfiguration(new UserConfiguration());
     }
 
     public async Task<PagedResult<Recipe>> GetRecipesPagedAsync(
@@ -284,5 +286,19 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         var category = await Categories.FindAsync([id], cancellationToken);
         if (category is not null)
             Categories.Remove(category);
+    }
+
+    // ── IUserRepository ──────────────────────────────────────────────────────
+
+    public async Task<User?> GetUserByEmailAsync(string email, CancellationToken cancellationToken = default)
+    {
+        return await Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+    }
+
+    async Task IUserRepository.CreateAsync(User user, CancellationToken cancellationToken)
+    {
+        await Users.AddAsync(user, cancellationToken);
     }
 }

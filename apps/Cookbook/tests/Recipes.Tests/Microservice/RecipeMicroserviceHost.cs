@@ -49,6 +49,16 @@ internal sealed class RecipeMicroserviceHost : WebApplicationFactory<Program>
                     }
                 };
                 AddConfigurationToBuilder(x, suppressLogging);
+                var jwtConfig = new
+                {
+                    JWT = new
+                    {
+                        Secret = "test-jwt-secret-key-at-least-32-characters-long",
+                        Issuer = "cookbook",
+                        Audience = "cookbook",
+                    }
+                };
+                AddConfigurationToBuilder(x, jwtConfig);
             });
 
         return base.CreateHost(builder);

@@ -10,8 +10,13 @@ namespace Recipes.Tests.Microservice;
 public sealed class GetRecipesTests(RecipeMicroserviceFixture fixture) : IAsyncLifetime
 {
     private readonly HttpClient _client = fixture.Client;
+    private System.Net.Http.Headers.AuthenticationHeaderValue _authHeader = null!;
 
-    public Task InitializeAsync() => fixture.TruncateAsync();
+    public async Task InitializeAsync()
+    {
+        await fixture.TruncateAsync();
+        _authHeader = await fixture.GetAuthHeaderAsync();
+    }
 
     public Task DisposeAsync() => Task.CompletedTask;
 
@@ -36,8 +41,10 @@ public sealed class GetRecipesTests(RecipeMicroserviceFixture fixture) : IAsyncL
             Ingredients: [],
             CategoryIds: []
         );
-        var createResponse = await _client.PostAsJsonAsync("/api/v1/recipes", createRequest);
-        createResponse.EnsureSuccessStatusCode();
+        using var createMsg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/recipes");
+        createMsg.Headers.Authorization = _authHeader;
+        createMsg.Content = JsonContent.Create(createRequest);
+        (await _client.SendAsync(createMsg)).EnsureSuccessStatusCode();
 
         var response = await _client.GetAsync("/api/v1/recipes");
 
@@ -66,7 +73,10 @@ public sealed class GetRecipesTests(RecipeMicroserviceFixture fixture) : IAsyncL
                 Ingredients: [],
                 CategoryIds: []
             );
-            (await _client.PostAsJsonAsync("/api/v1/recipes", req)).EnsureSuccessStatusCode();
+            using var msg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/recipes");
+            msg.Headers.Authorization = _authHeader;
+            msg.Content = JsonContent.Create(req);
+            (await _client.SendAsync(msg)).EnsureSuccessStatusCode();
         }
 
         var response = await _client.GetAsync("/api/v1/recipes?page=1&pageSize=2");
@@ -242,7 +252,10 @@ public sealed class GetRecipesTests(RecipeMicroserviceFixture fixture) : IAsyncL
             Instructions: "Шаг 1.",
             Ingredients: [],
             CategoryIds: []);
-        (await _client.PostAsJsonAsync("/api/v1/recipes", req)).EnsureSuccessStatusCode();
+        using var msg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/recipes");
+        msg.Headers.Authorization = _authHeader;
+        msg.Content = JsonContent.Create(req);
+        (await _client.SendAsync(msg)).EnsureSuccessStatusCode();
     }
 
     private async Task<Guid> CreateIngredientAsync(string title)
@@ -272,6 +285,9 @@ public sealed class GetRecipesTests(RecipeMicroserviceFixture fixture) : IAsyncL
             Instructions: "Шаг 1.",
             Ingredients: ingredients,
             CategoryIds: []);
-        (await _client.PostAsJsonAsync("/api/v1/recipes", req)).EnsureSuccessStatusCode();
+        using var msg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/recipes");
+        msg.Headers.Authorization = _authHeader;
+        msg.Content = JsonContent.Create(req);
+        (await _client.SendAsync(msg)).EnsureSuccessStatusCode();
     }
 }
