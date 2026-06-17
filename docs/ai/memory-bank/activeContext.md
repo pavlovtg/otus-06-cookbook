@@ -6,7 +6,7 @@
 
 ## Последнее завершённое
 
-Change `recipe-author` (секции 5, 6, 7.4) — Frontend BFF/Zod-схемы, UI и E2E тесты видимости рецептов.
+Change `recipe-author` заархивирован → `openspec/changes/archive/2026-06-17-recipe-author/`. Delta specs синхронизированы в основные спеки: добавлены `recipe-author-display`, `recipe-visibility`; обновлены `recipe-create`, `recipe-detail`, `recipe-edit`, `recipe-list`.
 
 ## Ключевые решения
 
