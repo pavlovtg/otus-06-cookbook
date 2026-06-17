@@ -189,6 +189,7 @@ internal sealed class RecipeService : IRecipeService
         var deleted = await _repository.DeleteRatingAsync(userId, recipeId, cancellationToken);
         if (!deleted)
             throw new RatingNotFoundException();
+        await _repository.CommitAsync(cancellationToken);
         var avg = await _repository.GetAverageRatingAsync(recipeId, cancellationToken);
         var recipe = await _repository.GetByIdAsync(recipeId, cancellationToken)
             ?? throw new RecipeNotFoundException(recipeId);

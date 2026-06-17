@@ -161,9 +161,9 @@ def test_delete_ingredient_with_confirmation(page: Page, base_url: str) -> None:
     confirm_modal.locator("button", has_text="Удалить").click()
 
     expect(page.locator(".modal-backdrop.is-open")).not_to_be_visible()
-    page.wait_for_load_state("networkidle")
-    titles = page.locator(".ingredient-item .ingredient-title").all_inner_texts()
-    assert title not in titles
+    # Полагаемся на auto-retrying assertion, чтобы переждать router.refresh()
+    # и не словить "Execution context was destroyed" из-за навигации.
+    expect(page.locator(".ingredient-item", has_text=title)).to_have_count(0)
 
 
 def test_delete_ingredient_cancel(page: Page, base_url: str) -> None:

@@ -13,7 +13,12 @@ afterEach(() => {
 
 describe("setRating", () => {
   it("отправляет PUT на /api/cookbook/v1/recipes/:id/rating", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce(new Response(null, { status: 200 }));
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ averageRating: 4.0, myRating: 4 }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
 
     await setRating(RECIPE_ID, 4);
 
@@ -24,7 +29,12 @@ describe("setRating", () => {
   });
 
   it("передаёт value в теле запроса", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce(new Response(null, { status: 200 }));
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ averageRating: 3.0, myRating: 3 }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
 
     await setRating(RECIPE_ID, 3);
 
