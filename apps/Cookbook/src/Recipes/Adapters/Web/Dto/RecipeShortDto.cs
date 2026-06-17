@@ -9,4 +9,5 @@ internal sealed record RecipeShortDto(
     Guid? PhotoId,
     IReadOnlyList<Guid> CategoryIds,
     bool IsPublic,
-    string? AuthorName);
+    string? AuthorName,
+    Guid? AuthorId);

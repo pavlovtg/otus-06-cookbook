@@ -73,7 +73,9 @@ export default async function RecipeDetailPage({ params, searchParams }: Props) 
   }
 
   const session = await getSession();
-  const isAuthenticated = !!session.user;
+  const isOwner = !!session.user && recipe.authorId === session.user.id;
+  const isAdmin = session.user?.role === "admin";
+  const canEdit = isOwner || isAdmin;
 
   const recipeCats = recipe.categoryIds
     .map((cid) => allCategories.find((c) => c.id === cid))
@@ -119,7 +121,7 @@ export default async function RecipeDetailPage({ params, searchParams }: Props) 
         <div className="detail-tags">
           {recipeCats.map((c) => <Tag key={c.id}>{c.name}</Tag>)}
         </div>
-        {isAuthenticated && (
+        {canEdit && (
           <div className="detail-actions">
             <Link
               href={`/recipes/${recipe.id}/edit`}
@@ -149,7 +151,7 @@ export default async function RecipeDetailPage({ params, searchParams }: Props) 
             )}
           </div>
 
-          {isAuthenticated && (
+          {canEdit && (
             <RecipePhotoActions recipeId={recipe.id} photoId={recipe.photoId} />
           )}
 

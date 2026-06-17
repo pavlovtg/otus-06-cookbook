@@ -253,7 +253,8 @@ internal sealed class RecipesController : ControllerBase
         item.Recipe.PhotoId?.Value,
         item.Recipe.Categories.Select(c => c.CategoryId.Value).ToList(),
         item.Recipe.IsPublic,
-        item.AuthorName);
+        item.AuthorName,
+        item.Recipe.AuthorId?.Value);
 
     private static RecipeDto ToDto(RecipeWithIngredientDetails details) => new(
         details.Recipe.Id.Value,
@@ -269,7 +270,8 @@ internal sealed class RecipesController : ControllerBase
         details.Recipe.PhotoId?.Value,
         details.Recipe.Categories.Select(c => c.CategoryId.Value).ToList(),
         details.Recipe.IsPublic,
-        details.AuthorName);
+        details.AuthorName,
+        details.Recipe.AuthorId?.Value);
 
     private ProblemDetails ProblemDetailsFor(RecipeDomainException ex) =>
         ProblemDetailsFor(ex.GetType().Name);

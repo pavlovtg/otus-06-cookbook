@@ -12,4 +12,5 @@ internal sealed record RecipeDto(
     Guid? PhotoId,
     IReadOnlyList<Guid> CategoryIds,
     bool IsPublic,
-    string? AuthorName);
+    string? AuthorName,
+    Guid? AuthorId);

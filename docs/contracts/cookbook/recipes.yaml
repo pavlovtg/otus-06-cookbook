@@ -838,6 +838,12 @@ components:
           nullable: true
           description: Отображаемое имя автора рецепта
           example: Ренат Агзамов
+        authorId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Идентификатор автора рецепта
+          example: null
     RecipeIngredientDto:
       type: object
       required:
@@ -947,6 +953,12 @@ components:
           nullable: true
           description: Отображаемое имя автора рецепта
           example: Ренат Агзамов
+        authorId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Идентификатор автора рецепта
+          example: null
     RecipeRequest:
       type: object
       required:

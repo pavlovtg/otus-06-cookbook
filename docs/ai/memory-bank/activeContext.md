@@ -6,10 +6,12 @@
 
 ## Последнее завершённое
 
-Исправлены упавшие e2e-тесты (11 падений):
+Скрыты кнопки редактирования рецепта для не-авторов и не-админов:
 
-1. `tests/e2e/test_recipes_api.py` — добавлен `"isPublic": True` в `VALID_RECIPE` (рецепты создавались приватными, GET без токена → 403).
-2. `apps/Cookbook/.../RecipeRepository.cs` — фильтр видимости исправлен: `UserId?` разбит на два случая (`HasValue` / else), чтобы EF Core параметризовал `UserId` (не nullable) через value converter корректно. `EF.Property<Guid?>` вызывал `InvalidCastException` т.к. возвращал тип свойства `UserId?`, а не `Guid?`.
+1. Backend: добавлено поле `AuthorId: Guid?` в `RecipeDto` и `RecipeShortDto`; маппер в `RecipesController` заполняет его из `recipe.AuthorId?.Value`.
+2. Контракт: `docs/contracts/cookbook/recipes.yaml` — добавлено поле `authorId` (uuid, nullable) в схемы `RecipeDto` и `RecipeShortDto`.
+3. Frontend Zod-схема: `authorId: z.string().uuid().nullable().optional()` добавлен в `RecipeDtoSchema` и `RecipeShortDtoSchema`.
+4. Frontend страница `recipes/[id]/page.tsx`: `isAuthenticated` заменён на `canEdit = isOwner || isAdmin`, где `isOwner = recipe.authorId === session.user.id`, `isAdmin = session.user?.role === "admin"`. Кнопки «Редактировать», «Удалить» и `RecipePhotoActions` показываются только при `canEdit`.
 
 ## Ключевые решения
 
