@@ -11,4 +11,6 @@ internal sealed record RecipeShortDto(
     bool IsPublic,
     string? AuthorName,
     Guid? AuthorId,
-    bool? IsFavorite);
+    bool? IsFavorite,
+    float? AverageRating,
+    int? MyRating);

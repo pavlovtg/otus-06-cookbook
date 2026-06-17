@@ -50,6 +50,7 @@ internal sealed class RecipesController : ControllerBase
         var sortOrder = sort switch
         {
             "title_desc" => RecipeSortOrder.TitleDesc,
+            "rating_desc" => RecipeSortOrder.RatingDesc,
             _ => RecipeSortOrder.TitleAsc,
         };
 
@@ -286,6 +287,44 @@ internal sealed class RecipesController : ControllerBase
     private static IEnumerable<CategoryId> MapCategoryIds(IReadOnlyList<Guid> ids)
         => ids.Select(CategoryId.From);
 
+    [Authorize]
+    [HttpPut("{id:guid}/rating")]
+    public async Task<IActionResult> SetRating(Guid id, [FromBody] RatingRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var currentUser = _authService.GetCurrentUser(User);
+            if (currentUser is null)
+                return Unauthorized(UnauthorizedProblemDetails());
+
+            var summary = await _recipeService.SetRatingAsync(UserId.From(currentUser.Id), RecipeId.From(id), request.Value, cancellationToken);
+            return Ok(new RatingSummaryDto(summary.AverageRating, summary.MyRating));
+        }
+        catch (RecipeDomainException ex)
+        {
+            return BadRequest(ProblemDetailsFor(ex));
+        }
+    }
+
+    [Authorize]
+    [HttpDelete("{id:guid}/rating")]
+    public async Task<IActionResult> DeleteRating(Guid id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var currentUser = _authService.GetCurrentUser(User);
+            if (currentUser is null)
+                return Unauthorized(UnauthorizedProblemDetails());
+
+            await _recipeService.DeleteRatingAsync(UserId.From(currentUser.Id), RecipeId.From(id), cancellationToken);
+            return NoContent();
+        }
+        catch (RecipeDomainException ex)
+        {
+            return BadRequest(ProblemDetailsFor(ex));
+        }
+    }
+
     private static RecipeShortDto ToShortDto(RecipeShortWithAuthor item) => new(
         item.Recipe.Id.Value,
         item.Recipe.Title,
@@ -297,7 +336,9 @@ internal sealed class RecipesController : ControllerBase
         item.Recipe.IsPublic,
         item.AuthorName,
         item.Recipe.AuthorId?.Value,
-        item.IsFavorite);
+        item.IsFavorite,
+        item.AverageRating,
+        item.MyRating);
 
     private static RecipeDto ToDto(RecipeWithIngredientDetails details) => new(
         details.Recipe.Id.Value,
@@ -314,7 +355,9 @@ internal sealed class RecipesController : ControllerBase
         details.Recipe.Categories.Select(c => c.CategoryId.Value).ToList(),
         details.Recipe.IsPublic,
         details.AuthorName,
-        details.Recipe.AuthorId?.Value);
+        details.Recipe.AuthorId?.Value,
+        details.Recipe.AverageRating,
+        details.MyRating);
 
     private ProblemDetails ProblemDetailsFor(RecipeDomainException ex) =>
         ProblemDetailsFor(ex.GetType().Name);

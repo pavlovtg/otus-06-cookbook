@@ -1,11 +1,12 @@
 import Image from "next/image";
 import type { RecipeShortDto } from "@/lib/schemas/recipe";
 import type { Category } from "@/lib/schemas/category";
-import { ClockIcon, FlameIcon, UserIcon, LockIcon } from "@/components/icons";
+import { ClockIcon, FlameIcon, UserIcon, LockIcon, StarIcon } from "@/components/icons";
 import { RecipePhoto } from "@/components/photo";
 import { Tag } from "@/components/ui/Tag";
 import { getRecipeThumbnailUrl } from "@/lib/bff/photos";
 import { FavoriteButton } from "@/components/features/FavoriteButton";
+import { StarsRating } from "@/components/StarsRating";
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   easy: "Просто",
@@ -74,6 +75,17 @@ export function RecipeCard({ recipe, categories = [], showFavorite = false, onCl
           <span className="author-inline">
             <UserIcon size={12} />
             <span>{recipe.authorName ?? "—"}</span>
+          </span>
+          <span className="rating-inline">
+            {recipe.averageRating != null ? (
+              <>
+                <StarIcon size={12} />
+                <span>{recipe.averageRating.toFixed(1)}</span>
+              </>
+            ) : null}
+            {recipe.myRating != null ? (
+              <span className="my-rating-badge">Моя: {recipe.myRating}★</span>
+            ) : null}
           </span>
         </div>
       </div>

@@ -99,6 +99,10 @@ namespace Recipes.Adapters.Postgresql.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("author_id");
 
+                    b.Property<float?>("AverageRating")
+                        .HasColumnType("real")
+                        .HasColumnName("average_rating");
+
                     b.Property<int>("CookingTime")
                         .HasColumnType("integer")
                         .HasColumnName("cooking_time");
@@ -206,6 +210,27 @@ namespace Recipes.Adapters.Postgresql.Migrations
                     b.ToTable("recipe_photos", "cookbook");
                 });
 
+            modelBuilder.Entity("Recipes.Domain.RecipeRating", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<Guid>("RecipeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recipe_id");
+
+                    b.Property<int>("Value")
+                        .HasColumnType("integer")
+                        .HasColumnName("value");
+
+                    b.HasKey("UserId", "RecipeId");
+
+                    b.HasIndex("RecipeId");
+
+                    b.ToTable("recipe_ratings", "cookbook");
+                });
+
             modelBuilder.Entity("Recipes.Domain.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -288,6 +313,21 @@ namespace Recipes.Adapters.Postgresql.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Recipes.Domain.RecipeRating", b =>
+                {
+                    b.HasOne("Recipes.Domain.Recipe", null)
+                        .WithMany("Ratings")
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Recipes.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Recipes.Domain.UserFavorite", b =>
                 {
                     b.HasOne("Recipes.Domain.Recipe", null)
@@ -308,6 +348,8 @@ namespace Recipes.Adapters.Postgresql.Migrations
                     b.Navigation("Categories");
 
                     b.Navigation("Ingredients");
+
+                    b.Navigation("Ratings");
                 });
 #pragma warning restore 612, 618
         }

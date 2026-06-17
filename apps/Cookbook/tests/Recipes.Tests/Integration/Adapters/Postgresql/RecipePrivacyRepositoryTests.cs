@@ -50,7 +50,7 @@ public sealed class RecipePrivacyRepositoryTests(RecipeIntegrationFixture fixtur
         await using var readCtx = _factory.Create();
         var result = await readCtx.GetRecipesPagedAsync(1, 100, currentUserId: null);
 
-        Assert.All(result.Items, r => Assert.True(r.IsPublic));
+        Assert.All(result.Items, r => Assert.True(r.Recipe.IsPublic));
         Assert.Equal(1, result.Total);
     }
 
@@ -83,7 +83,7 @@ public sealed class RecipePrivacyRepositoryTests(RecipeIntegrationFixture fixtur
         await using var readCtx = _factory.Create();
         var result = await readCtx.GetRecipesPagedAsync(1, 100, currentUserId: OtherId);
 
-        Assert.All(result.Items, r => Assert.True(r.IsPublic));
+        Assert.All(result.Items, r => Assert.True(r.Recipe.IsPublic));
         Assert.Equal(1, result.Total);
     }
 }

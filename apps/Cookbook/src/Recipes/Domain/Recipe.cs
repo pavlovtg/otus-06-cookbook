@@ -16,6 +16,11 @@ internal sealed class Recipe
 
     public RecipePhotoId? PhotoId { get; private set; }
 
+    public float? AverageRating { get; private set; }
+
+    private List<RecipeRating> _ratings = [];
+    public IReadOnlyList<RecipeRating> Ratings => _ratings.AsReadOnly();
+
     private List<RecipeIngredient> _ingredients = [];
     public IReadOnlyList<RecipeIngredient> Ingredients => _ingredients.AsReadOnly();
 
@@ -103,6 +108,11 @@ internal sealed class Recipe
 
         _categories.Clear();
         _categories.AddRange(categories);
+    }
+
+    public void SetAverageRating(float? value)
+    {
+        AverageRating = value;
     }
 
     public void SetPhoto(RecipePhotoId photoId)

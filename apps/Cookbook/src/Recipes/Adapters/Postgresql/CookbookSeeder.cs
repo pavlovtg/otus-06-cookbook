@@ -17,6 +17,7 @@ internal static class CookbookSeeder
         await SeedRecipeCategoriesAsync(db, cancellationToken);
         await SeedPhotosAsync(db, photosPath, cancellationToken);
         await SeedUserFavoritesAsync(db, cancellationToken);
+        await SeedRatingsAsync(db, cancellationToken);
     }
 
     private static async Task SeedUsersAsync(RecipeRepository db, IPasswordHasher passwordHasher, CancellationToken cancellationToken)
@@ -322,6 +323,49 @@ internal static class CookbookSeeder
                 var exists = await db.UserFavorites.FindAsync([userId, recipeId], cancellationToken);
                 if (exists is null)
                     await db.UserFavorites.AddAsync(UserFavorite.Create(userId, recipeId), cancellationToken);
+            }
+
+            await db.SaveChangesAsync(cancellationToken);
+            await tx.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await tx.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
+
+    private static async Task SeedRatingsAsync(RecipeRepository db, CancellationToken cancellationToken)
+    {
+        if (SeedData.RecipeRatingSeeds.Length == 0)
+            return;
+
+        await using var tx = await db.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            // 7.1: upsert оценок
+            foreach (var (userId, recipeId, value) in SeedData.RecipeRatingSeeds)
+            {
+                var existing = await db.RecipeRatings
+                    .FirstOrDefaultAsync(r => r.UserId == userId && r.RecipeId == recipeId, cancellationToken);
+                if (existing is null)
+                    await db.RecipeRatings.AddAsync(RecipeRating.Create(userId, recipeId, value), cancellationToken);
+                else if (existing.Value != value)
+                    existing.UpdateValue(value);
+            }
+
+            await db.SaveChangesAsync(cancellationToken);
+
+            // 7.2: пересчёт average_rating для каждого затронутого рецепта
+            var recipeIds = SeedData.RecipeRatingSeeds.Select(s => s.RecipeId).Distinct();
+            foreach (var recipeId in recipeIds)
+            {
+                var recipe = await db.Recipes.FindAsync([recipeId], cancellationToken);
+                if (recipe is null)
+                    continue;
+
+                var avg = await db.GetAverageRatingAsync(recipeId, cancellationToken);
+                recipe.SetAverageRating(avg);
             }
 
             await db.SaveChangesAsync(cancellationToken);

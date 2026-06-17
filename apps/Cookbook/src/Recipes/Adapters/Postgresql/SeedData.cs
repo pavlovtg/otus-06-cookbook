@@ -227,6 +227,9 @@ internal static class SeedData
     private static RecipeId RId(int n) =>
         RecipeId.From(new Guid($"11111111-0000-0000-0000-{n:D12}"));
 
+    private static UserId UId(int n) =>
+        UserId.From(new Guid($"00000000-0000-0000-0000-{n:D12}"));
+
     private static CategoryId CatId(int n) =>
         CategoryId.From(new Guid($"33333333-0000-0000-0000-{n:D12}"));
 
@@ -1351,6 +1354,50 @@ internal static class SeedData
                 RecipeIngredient.Create(IngId(46), 250),
                 RecipeIngredient.Create(IngId(35), 50),
             ]),
+    ];
+
+    // (UserId, RecipeId, Value)
+    // Оценки от демо-пользователей для демо-рецептов
+    public static readonly (UserId UserId, RecipeId RecipeId, int Value)[] RecipeRatingSeeds =
+    [
+        // user@cookbook.local (UId(1))
+        (UId(1), RId(1),  5),  // Борщ
+        (UId(1), RId(2),  4),  // Оливье
+        (UId(1), RId(3),  5),  // Пельмени
+        (UId(1), RId(4),  4),  // Блины
+        (UId(1), RId(7),  5),  // Шашлык
+        (UId(1), RId(9),  5),  // Плов
+        (UId(1), RId(10), 4),  // Медовик
+        (UId(1), RId(20), 5),  // Паста Карбонара
+        (UId(1), RId(26), 4),  // Сырники
+        (UId(1), RId(32), 5),  // Бефстроганов
+
+        // admin@cookbook.local (UId(2))
+        (UId(2), RId(1),  4),  // Борщ
+        (UId(2), RId(5),  5),  // Котлеты по-киевски
+        (UId(2), RId(9),  4),  // Плов
+        (UId(2), RId(16), 5),  // Запечённый лосось
+        (UId(2), RId(19), 5),  // Пицца Маргарита
+        (UId(2), RId(43), 5),  // Стейк из говядины
+        (UId(2), RId(54), 4),  // Тирамису
+        (UId(2), RId(60), 5),  // Торт Наполеон
+
+        // renat@cookbook.local (UId(3))
+        (UId(3), RId(10), 5),  // Медовик
+        (UId(3), RId(24), 5),  // Творожная запеканка
+        (UId(3), RId(35), 4),  // Пирог с яблоками
+        (UId(3), RId(44), 5),  // Морковный торт
+        (UId(3), RId(54), 5),  // Тирамису
+        (UId(3), RId(60), 5),  // Торт Наполеон
+
+        // ivlev@cookbook.local (UId(4))
+        (UId(4), RId(1),  5),  // Борщ
+        (UId(4), RId(7),  5),  // Шашлык
+        (UId(4), RId(9),  5),  // Плов
+        (UId(4), RId(20), 4),  // Паста Карбонара
+        (UId(4), RId(32), 5),  // Бефстроганов
+        (UId(4), RId(43), 5),  // Стейк из говядины
+        (UId(4), RId(51), 4),  // Паэлья с морепродуктами
     ];
 
     // UserId → RecipeId

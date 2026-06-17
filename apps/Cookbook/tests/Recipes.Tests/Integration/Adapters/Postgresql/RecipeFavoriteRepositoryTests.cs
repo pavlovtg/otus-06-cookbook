@@ -190,7 +190,7 @@ public sealed class RecipeFavoriteRepositoryTests(RecipeIntegrationFixture fixtu
             favorites: true);
 
         Assert.Single(result.Items);
-        Assert.Equal(favoriteRecipe.Id, result.Items[0].Id);
+        Assert.Equal(favoriteRecipe.Id, result.Items[0].Recipe.Id);
     }
 
     // ── Каскадное удаление ────────────────────────────────────────────────────
