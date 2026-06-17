@@ -55,5 +55,5 @@
 
 ## 9. E2E тесты
 
-- [ ] 9.1 E2E API-тест: добавить/удалить избранное, получить список с `favorites=true` (`tests/e2e/test_favorites_api.py`)
-- [ ] 9.2 UI E2E-тест: переключение режима «Избранное», иконка на карточке (`tests/ui/test_favorites.py`)
+- [x] 9.1 E2E API-тест: добавить/удалить избранное, получить список с `favorites=true` (`tests/e2e/test_favorites_api.py`)
+- [x] 9.2 UI E2E-тест: переключение режима «Избранное», иконка на карточке (`tests/ui/test_favorites.py`)

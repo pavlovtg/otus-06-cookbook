@@ -2,7 +2,7 @@
 
 ## Текущая задача
 
-Coverage fix: functions threshold ≥ 80%.
+`user-favorites` секция 9: E2E тесты (9.1 + 9.2) — выполнено.
 
 ## Последнее завершённое
 
