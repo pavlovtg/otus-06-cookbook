@@ -2,7 +2,7 @@
 
 ## Текущая задача
 
-Багфикс UI-тестов: `SEED_PASSWORD` в `tests/ui/conftest.py` и `tests/ui/test_auth.py` исправлен с `"Password1!"` на `"1234567890"` (соответствует `CookbookSeeder.cs`).
+Создан change `recipe-rating` в OpenSpec. Все артефакты готовы к реализации (`/opsx:apply`).
 
 ## Последнее завершённое
 
