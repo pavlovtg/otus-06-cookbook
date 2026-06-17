@@ -7,22 +7,23 @@ export interface SessionData {
   token?: string;
 }
 
-const secret = process.env["Session__Secret"];
-if (!secret) {
-  throw new Error("Session__Secret environment variable is not set");
+export function getSessionOptions(): SessionOptions {
+  const secret = process.env["Session__Secret"];
+  if (!secret) {
+    throw new Error("Session__Secret environment variable is not set");
+  }
+  return {
+    password: secret,
+    cookieName: "cookbook_session",
+    cookieOptions: {
+      secure: process.env["NODE_ENV"] === "production",
+      httpOnly: true,
+      sameSite: "lax",
+    },
+  };
 }
-
-export const sessionOptions: SessionOptions = {
-  password: secret,
-  cookieName: "cookbook_session",
-  cookieOptions: {
-    secure: process.env["NODE_ENV"] === "production",
-    httpOnly: true,
-    sameSite: "lax",
-  },
-};
 
 export async function getSession(): Promise<IronSession<SessionData>> {
   const cookieStore = await cookies();
-  return getIronSession<SessionData>(cookieStore, sessionOptions);
+  return getIronSession<SessionData>(cookieStore, getSessionOptions());
 }

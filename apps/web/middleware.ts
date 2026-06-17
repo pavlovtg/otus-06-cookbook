@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getIronSession } from "iron-session";
-import { sessionOptions, type SessionData } from "@/lib/session";
+import { getSessionOptions, type SessionData } from "@/lib/session";
 
 const PROTECTED_PATHS = [/^\/recipes\/new$/, /^\/recipes\/[^/]+\/edit$/];
 
@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   }
 
   const response = NextResponse.next();
-  const session = await getIronSession<SessionData>(request, response, sessionOptions);
+  const session = await getIronSession<SessionData>(request, response, getSessionOptions());
 
   if (!session.user) {
     const loginUrl = new URL("/login", request.url);
