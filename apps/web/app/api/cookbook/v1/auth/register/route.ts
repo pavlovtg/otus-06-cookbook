@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/session";
+import { getIronSession } from "iron-session";
+import { getSessionOptions, type SessionData } from "@/lib/session";
 import { AuthResponseSchema, RegisterRequestSchema } from "@/lib/schemas/auth";
 
 const GATEWAY_URL = process.env["GATEWAY_URL"] ?? "http://api-gateway";
@@ -32,10 +33,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const data: unknown = await upstream.json();
   const authResponse = AuthResponseSchema.parse(data);
 
-  const session = await getSession();
+  const response = NextResponse.json(authResponse);
+  const session = await getIronSession<SessionData>(request, response, getSessionOptions());
   session.user = authResponse.user;
   session.token = authResponse.token;
   await session.save();
 
-  return NextResponse.json(authResponse);
+  return response;
 }
