@@ -48,21 +48,21 @@
 
 ## 7. Seed Data
 
-- [ ] 7.1 Добавить в `CookbookSeeder.cs` вставку оценок для демо-рецептов (идемпотентно через upsert)
-- [ ] 7.2 После вставки оценок пересчитать и сохранить `average_rating` для каждого рецепта
+- [x] 7.1 Добавить в `CookbookSeeder.cs` вставку оценок для демо-рецептов (идемпотентно через upsert)
+- [x] 7.2 После вставки оценок пересчитать и сохранить `average_rating` для каждого рецепта
 
 ## 8. Backend Tests
 
-- [ ] 8.1 Unit: `RecipeRating.Create` — валидные значения (1, 3, 5) создаются без исключений
-- [ ] 8.2 Unit: `RecipeRating.Create` — значения 0 и 6 бросают `RatingValueOutOfRangeException`
-- [ ] 8.3 Unit: `Recipe.SetAverageRating` обновляет поле `AverageRating`
-- [ ] 8.4 Microservice: `PUT /api/v1/recipes/{id}/rating` авторизованный → 200 с корректными `averageRating` и `myRating`
-- [ ] 8.5 Microservice: `PUT /api/v1/recipes/{id}/rating` повторная оценка заменяет предыдущую → 200
-- [ ] 8.6 Microservice: `PUT /api/v1/recipes/{id}/rating` неавторизованный → 401
-- [ ] 8.7 Microservice: `PUT /api/v1/recipes/{id}/rating` значение 0 или 6 → 400
-- [ ] 8.8 Microservice: `DELETE /api/v1/recipes/{id}/rating` существующая оценка → 204
-- [ ] 8.9 Microservice: `DELETE /api/v1/recipes/{id}/rating` оценки нет → 400
-- [ ] 8.10 Microservice: `GET /api/v1/recipes?sort=rating_desc` — рецепты отсортированы по убыванию `averageRating`
+- [x] 8.1 Unit: `RecipeRating.Create` — валидные значения (1, 3, 5) создаются без исключений
+- [x] 8.2 Unit: `RecipeRating.Create` — значения 0 и 6 бросают `RatingValueOutOfRangeException`
+- [x] 8.3 Unit: `Recipe.SetAverageRating` обновляет поле `AverageRating`
+- [x] 8.4 Microservice: `PUT /api/v1/recipes/{id}/rating` авторизованный → 200 с корректными `averageRating` и `myRating`
+- [x] 8.5 Microservice: `PUT /api/v1/recipes/{id}/rating` повторная оценка заменяет предыдущую → 200
+- [x] 8.6 Microservice: `PUT /api/v1/recipes/{id}/rating` неавторизованный → 401
+- [x] 8.7 Microservice: `PUT /api/v1/recipes/{id}/rating` значение 0 или 6 → 400
+- [x] 8.8 Microservice: `DELETE /api/v1/recipes/{id}/rating` существующая оценка → 204
+- [x] 8.9 Microservice: `DELETE /api/v1/recipes/{id}/rating` оценки нет → 400
+- [x] 8.10 Microservice: `GET /api/v1/recipes?sort=rating_desc` — рецепты отсортированы по убыванию `averageRating`
 
 ## 9. Frontend BFF
 
