@@ -11,6 +11,8 @@ internal sealed class Recipe
     public Difficulty Difficulty { get; private set; }
     public int Servings { get; private set; }
     public string Instructions { get; private set; } = string.Empty;
+    public bool IsPublic { get; private set; } = true;
+    public UserId? AuthorId { get; private set; }
 
     public RecipePhotoId? PhotoId { get; private set; }
 
@@ -31,7 +33,9 @@ internal sealed class Recipe
         int servings,
         string instructions,
         IEnumerable<RecipeIngredient>? ingredients = null,
-        IReadOnlyDictionary<CategoryId, CategoryType>? categoryTypes = null)
+        IReadOnlyDictionary<CategoryId, CategoryType>? categoryTypes = null,
+        bool isPublic = true,
+        UserId? authorId = null)
     {
         ValidateTitle(title);
         ValidateDescription(description);
@@ -55,6 +59,8 @@ internal sealed class Recipe
             Difficulty = difficulty,
             Servings = servings,
             Instructions = instructions,
+            IsPublic = isPublic,
+            AuthorId = authorId,
             _ingredients = ingredientList,
             _categories = categories,
         };
@@ -67,6 +73,7 @@ internal sealed class Recipe
         Difficulty difficulty,
         int servings,
         string instructions,
+        bool isPublic,
         IEnumerable<RecipeIngredient>? ingredients = null,
         IReadOnlyDictionary<CategoryId, CategoryType>? categoryTypes = null)
     {
@@ -89,6 +96,7 @@ internal sealed class Recipe
         Difficulty = difficulty;
         Servings = servings;
         Instructions = instructions;
+        IsPublic = isPublic;
 
         _ingredients.Clear();
         _ingredients.AddRange(ingredientList);

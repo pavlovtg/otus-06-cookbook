@@ -1352,4 +1352,23 @@ internal static class SeedData
                 RecipeIngredient.Create(IngId(35), 50),
             ]),
     ];
+
+    // UserId → RecipeId
+    // ivlev@cookbook.local (00000000-...0004): 5 рецептов
+    // renat@cookbook.local (00000000-...0003): 4 рецепта
+    public static readonly (UserId UserId, RecipeId RecipeId)[] UserFavoriteSeeds =
+    [
+        // Константин Ивлев (ivlev@cookbook.local)
+        (UserId.From(new Guid("00000000-0000-0000-0000-000000000004")), RId(1)),  // Борщ
+        (UserId.From(new Guid("00000000-0000-0000-0000-000000000004")), RId(7)),  // Шашлык
+        (UserId.From(new Guid("00000000-0000-0000-0000-000000000004")), RId(9)),  // Плов
+        (UserId.From(new Guid("00000000-0000-0000-0000-000000000004")), RId(20)), // Паста Карбонара
+        (UserId.From(new Guid("00000000-0000-0000-0000-000000000004")), RId(32)), // Бефстроганов
+
+        // Ренат Агзамов (renat@cookbook.local)
+        (UserId.From(new Guid("00000000-0000-0000-0000-000000000003")), RId(10)), // Медовик
+        (UserId.From(new Guid("00000000-0000-0000-0000-000000000003")), RId(24)), // Творожная запеканка
+        (UserId.From(new Guid("00000000-0000-0000-0000-000000000003")), RId(35)), // Пирог с яблоками
+        (UserId.From(new Guid("00000000-0000-0000-0000-000000000003")), RId(60)), // Торт Наполеон
+    ];
 }

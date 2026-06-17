@@ -1,19 +1,57 @@
 using Microsoft.EntityFrameworkCore;
 using Recipes.Application;
+using Recipes.Application.Ports;
 using Recipes.Domain;
 
 namespace Recipes.Adapters.Postgresql;
 
 internal static class CookbookSeeder
 {
-    public static async Task SeedAsync(RecipeRepository db, string? photosPath = null, CancellationToken cancellationToken = default)
+    public static async Task SeedAsync(RecipeRepository db, IPasswordHasher passwordHasher, string? photosPath = null, CancellationToken cancellationToken = default)
     {
+        await SeedUsersAsync(db, passwordHasher, cancellationToken);
         await SeedCategoriesAsync(db, cancellationToken);
         await SeedIngredientsAsync(db, cancellationToken);
         await SeedRecipesAsync(db, cancellationToken);
         await SeedRecipeIngredientsAsync(db, cancellationToken);
         await SeedRecipeCategoriesAsync(db, cancellationToken);
         await SeedPhotosAsync(db, photosPath, cancellationToken);
+        await SeedUserFavoritesAsync(db, cancellationToken);
+    }
+
+    private static async Task SeedUsersAsync(RecipeRepository db, IPasswordHasher passwordHasher, CancellationToken cancellationToken)
+    {
+        await using var tx = await db.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            var seedUsers = new[]
+            {
+                (Id: new Guid("00000000-0000-0000-0000-000000000001"), Email: "user@cookbook.local", DisplayName: "User", Role: UserRole.User),
+                (Id: new Guid("00000000-0000-0000-0000-000000000002"), Email: "admin@cookbook.local", DisplayName: "Admin", Role: UserRole.Admin),
+                (Id: new Guid("00000000-0000-0000-0000-000000000003"), Email: "renat@cookbook.local", DisplayName: "Ренат Агзамов", Role: UserRole.User),
+                (Id: new Guid("00000000-0000-0000-0000-000000000004"), Email: "ivlev@cookbook.local", DisplayName: "Константин Ивлев", Role: UserRole.Admin),
+            };
+
+            foreach (var (id, email, displayName, role) in seedUsers)
+            {
+                var userId = UserId.From(id);
+                var exists = await db.Users.FindAsync([userId], cancellationToken);
+                if (exists is null)
+                {
+                    var passwordHash = passwordHasher.Hash("1234567890");
+                    var user = User.Create(userId, email, displayName, passwordHash, role);
+                    await db.Users.AddAsync(user, cancellationToken);
+                }
+            }
+
+            await db.SaveChangesAsync(cancellationToken);
+            await tx.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await tx.RollbackAsync(cancellationToken);
+            throw;
+        }
     }
 
     private static async Task SeedCategoriesAsync(RecipeRepository db, CancellationToken cancellationToken)
@@ -91,7 +129,8 @@ internal static class CookbookSeeder
                         recipe.CookingTime,
                         recipe.Difficulty,
                         recipe.Servings,
-                        recipe.Instructions);
+                        recipe.Instructions,
+                        isPublic: true);
             }
 
             await db.SaveChangesAsync(cancellationToken);
@@ -123,6 +162,7 @@ internal static class CookbookSeeder
                         exists.Difficulty,
                         exists.Servings,
                         exists.Instructions,
+                        isPublic: exists.IsPublic,
                         recipe.Ingredients);
             }
 
@@ -166,6 +206,7 @@ internal static class CookbookSeeder
                     recipe.Difficulty,
                     recipe.Servings,
                     recipe.Instructions,
+                    isPublic: recipe.IsPublic,
                     recipe.Ingredients,
                     categoryTypes);
             }
@@ -266,5 +307,30 @@ internal static class CookbookSeeder
                 return file;
         }
         return null;
+    }
+
+    private static async Task SeedUserFavoritesAsync(RecipeRepository db, CancellationToken cancellationToken)
+    {
+        if (SeedData.UserFavoriteSeeds.Length == 0)
+            return;
+
+        await using var tx = await db.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            foreach (var (userId, recipeId) in SeedData.UserFavoriteSeeds)
+            {
+                var exists = await db.UserFavorites.FindAsync([userId, recipeId], cancellationToken);
+                if (exists is null)
+                    await db.UserFavorites.AddAsync(UserFavorite.Create(userId, recipeId), cancellationToken);
+            }
+
+            await db.SaveChangesAsync(cancellationToken);
+            await tx.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await tx.RollbackAsync(cancellationToken);
+            throw;
+        }
     }
 }

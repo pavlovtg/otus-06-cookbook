@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Recipes.Adapters.Web.Dto;
 using Xunit;
@@ -9,8 +10,13 @@ namespace Recipes.Tests.Microservice;
 public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsyncLifetime
 {
     private readonly HttpClient _client = fixture.Client;
+    private AuthenticationHeaderValue _authHeader = null!;
 
-    public Task InitializeAsync() => fixture.TruncateAsync();
+    public async Task InitializeAsync()
+    {
+        await fixture.TruncateAsync();
+        _authHeader = await fixture.GetAuthHeaderAsync();
+    }
 
     public Task DisposeAsync() => Task.CompletedTask;
 
@@ -24,11 +30,12 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1. Приготовить.",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: []
         );
 
-        var response = await _client.PostAsJsonAsync("/api/v1/recipes", request);
+        var response = await PostAuthAsync("/api/v1/recipes", request);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
@@ -42,6 +49,26 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
     }
 
     [Fact]
+    public async Task CreateRecipe_Returns401_WhenNotAuthorized()
+    {
+        var request = new RecipeRequest(
+            Title: "Рецепт",
+            Description: "Описание",
+            CookingTime: 30,
+            Difficulty: "easy",
+            Servings: 2,
+            Instructions: "Инструкции",
+            IsPublic: true,
+            Ingredients: [],
+            CategoryIds: []
+        );
+
+        var response = await _client.PostAsJsonAsync("/api/v1/recipes", request);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task CreateRecipe_Returns400_WhenTitleEmpty()
     {
         var request = new RecipeRequest(
@@ -51,11 +78,12 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Инструкции",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: []
         );
 
-        var response = await _client.PostAsJsonAsync("/api/v1/recipes", request);
+        var response = await PostAuthAsync("/api/v1/recipes", request);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -95,11 +123,12 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "festive",
             Servings: 4,
             Instructions: "Новые инструкции",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: []
         );
 
-        var response = await _client.PutAsJsonAsync($"/api/v1/recipes/{created.Id}", updateRequest);
+        var response = await PutAuthAsync($"/api/v1/recipes/{created.Id}", updateRequest);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
@@ -108,6 +137,28 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
         Assert.NotNull(updated);
         Assert.Equal("Обновлённый рецепт", updated.Title);
         Assert.Equal(60, updated.CookingTime);
+    }
+
+    [Fact]
+    public async Task UpdateRecipe_Returns401_WhenNotAuthorized()
+    {
+        var created = await CreateTestRecipeAsync();
+
+        var updateRequest = new RecipeRequest(
+            Title: "Обновлённый рецепт",
+            Description: "Описание",
+            CookingTime: 30,
+            Difficulty: "easy",
+            Servings: 2,
+            Instructions: "Инструкции",
+            IsPublic: true,
+            Ingredients: [],
+            CategoryIds: []
+        );
+
+        var response = await _client.PutAsJsonAsync($"/api/v1/recipes/{created.Id}", updateRequest);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
@@ -122,11 +173,12 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Инструкции",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: []
         );
 
-        var response = await _client.PutAsJsonAsync($"/api/v1/recipes/{created.Id}", updateRequest);
+        var response = await PutAuthAsync($"/api/v1/recipes/{created.Id}", updateRequest);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -136,7 +188,7 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
     {
         var created = await CreateTestRecipeAsync();
 
-        var response = await _client.DeleteAsync($"/api/v1/recipes/{created.Id}");
+        var response = await DeleteAuthAsync($"/api/v1/recipes/{created.Id}");
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
@@ -145,14 +197,24 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
     }
 
     [Fact]
+    public async Task DeleteRecipe_Returns401_WhenNotAuthorized()
+    {
+        var created = await CreateTestRecipeAsync();
+
+        var response = await _client.DeleteAsync($"/api/v1/recipes/{created.Id}");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task DeleteRecipe_Returns400_WhenNotFound()
     {
-        var response = await _client.DeleteAsync($"/api/v1/recipes/{Guid.NewGuid()}");
+        var response = await DeleteAuthAsync($"/api/v1/recipes/{Guid.NewGuid()}");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    // ── Ingredients (8.6) ────────────────────────────────────────────────────
+    // ── Ingredients ──────────────────────────────────────────────────────────
 
     [Fact]
     public async Task CreateRecipe_WithIngredients_GetById_ReturnsIngredients()
@@ -166,11 +228,12 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [new RecipeIngredientRequest(ingredient.Id, 150m)],
             CategoryIds: []
         );
 
-        var createResponse = await _client.PostAsJsonAsync("/api/v1/recipes", request);
+        var createResponse = await PostAuthAsync("/api/v1/recipes", request);
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
 
         var created = await createResponse.Content.ReadFromJsonAsync<RecipeDto>();
@@ -186,8 +249,6 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
         Assert.Equal(150m, dto.Ingredients[0].Amount);
     }
 
-    // ── Update ingredients (8.7) ─────────────────────────────────────────────
-
     [Fact]
     public async Task UpdateRecipe_WithNewIngredients_ReplacesIngredients()
     {
@@ -201,11 +262,12 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [new RecipeIngredientRequest(ingredient1.Id, 100m)],
             CategoryIds: []
         );
 
-        var createResponse = await _client.PostAsJsonAsync("/api/v1/recipes", createRequest);
+        var createResponse = await PostAuthAsync("/api/v1/recipes", createRequest);
         var created = await createResponse.Content.ReadFromJsonAsync<RecipeDto>();
         Assert.NotNull(created);
 
@@ -216,6 +278,7 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [
                 new RecipeIngredientRequest(ingredient1.Id, 200m),
                 new RecipeIngredientRequest(ingredient2.Id, 3m),
@@ -223,7 +286,7 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             CategoryIds: []
         );
 
-        var updateResponse = await _client.PutAsJsonAsync($"/api/v1/recipes/{created.Id}", updateRequest);
+        var updateResponse = await PutAuthAsync($"/api/v1/recipes/{created.Id}", updateRequest);
         Assert.Equal(HttpStatusCode.NoContent, updateResponse.StatusCode);
 
         var getResponse = await _client.GetAsync($"/api/v1/recipes/{created.Id}");
@@ -244,11 +307,12 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [new RecipeIngredientRequest(ingredient.Id, 100m)],
             CategoryIds: []
         );
 
-        var createResponse = await _client.PostAsJsonAsync("/api/v1/recipes", createRequest);
+        var createResponse = await PostAuthAsync("/api/v1/recipes", createRequest);
         var created = await createResponse.Content.ReadFromJsonAsync<RecipeDto>();
         Assert.NotNull(created);
 
@@ -259,16 +323,48 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: []
         );
 
-        await _client.PutAsJsonAsync($"/api/v1/recipes/{created.Id}", updateRequest);
+        await PutAuthAsync($"/api/v1/recipes/{created.Id}", updateRequest);
 
         var getResponse = await _client.GetAsync($"/api/v1/recipes/{created.Id}");
         var updated = await getResponse.Content.ReadFromJsonAsync<RecipeDto>();
         Assert.NotNull(updated);
         Assert.Empty(updated.Ingredients);
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private async Task<HttpResponseMessage> PostAuthAsync<T>(string url, T body)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Post, url)
+        {
+            Content = JsonContent.Create(body),
+            Headers = { Authorization = _authHeader },
+        };
+        return await _client.SendAsync(req);
+    }
+
+    private async Task<HttpResponseMessage> PutAuthAsync<T>(string url, T body)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Put, url)
+        {
+            Content = JsonContent.Create(body),
+            Headers = { Authorization = _authHeader },
+        };
+        return await _client.SendAsync(req);
+    }
+
+    private async Task<HttpResponseMessage> DeleteAuthAsync(string url)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Delete, url)
+        {
+            Headers = { Authorization = _authHeader },
+        };
+        return await _client.SendAsync(req);
     }
 
     private async Task<RecipeDto> CreateTestRecipeAsync()
@@ -280,11 +376,12 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "everyday",
             Servings: 3,
             Instructions: "Шаг 1. Тест.",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: []
         );
 
-        var response = await _client.PostAsJsonAsync("/api/v1/recipes", request);
+        var response = await PostAuthAsync("/api/v1/recipes", request);
         response.EnsureSuccessStatusCode();
 
         return (await response.Content.ReadFromJsonAsync<RecipeDto>())!;

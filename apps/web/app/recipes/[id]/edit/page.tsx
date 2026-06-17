@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
-import { getRecipe } from "@/lib/bff/recipes";
+import { getRecipe } from "@/lib/bff/recipes.server";
 import { EditRecipeForm } from "./EditRecipeForm";
 
 interface Props {

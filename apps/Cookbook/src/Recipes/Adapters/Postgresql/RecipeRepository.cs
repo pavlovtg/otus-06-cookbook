@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Recipes.Adapters.Postgresql.Configurations;
 using Recipes.Application;
 using Recipes.Application.Ports;
@@ -6,7 +7,7 @@ using Recipes.Domain;
 
 namespace Recipes.Adapters.Postgresql;
 
-internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredientRepository, IRecipePhotoRepository, ICategoryRepository
+internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredientRepository, IRecipePhotoRepository, ICategoryRepository, IUserRepository
 {
     public const string DefaultSchema = "cookbook";
 
@@ -14,8 +15,16 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
     public DbSet<Ingredient> Ingredients => Set<Ingredient>();
     public DbSet<RecipePhoto> RecipePhotos => Set<RecipePhoto>();
     public DbSet<Category> Categories => Set<Category>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<UserFavorite> UserFavorites => Set<UserFavorite>();
 
     public RecipeRepository(DbContextOptions<RecipeRepository> options) : base(options) { }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.ConfigureWarnings(w =>
+            w.Ignore(RelationalEventId.MultipleCollectionIncludeWarning));
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -26,6 +35,8 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         modelBuilder.ApplyConfiguration(new RecipeCategoryConfiguration());
         modelBuilder.ApplyConfiguration(new RecipePhotoConfiguration());
         modelBuilder.ApplyConfiguration(new CategoryConfiguration());
+        modelBuilder.ApplyConfiguration(new UserConfiguration());
+        modelBuilder.ApplyConfiguration(new UserFavoriteConfiguration());
     }
 
     public async Task<PagedResult<Recipe>> GetRecipesPagedAsync(
@@ -33,11 +44,31 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         int pageSize,
         string? q = null,
         RecipeSortOrder sort = RecipeSortOrder.TitleAsc,
+        UserId? currentUserId = null,
+        bool? favorites = null,
         CancellationToken cancellationToken = default)
     {
         var query = Recipes
             .Include(r => r.Categories)
             .AsNoTracking();
+
+        // Скрываем приватные рецепты чужих авторов
+        if (currentUserId.HasValue)
+        {
+            var uid = currentUserId.Value;
+            query = query.Where(r => r.IsPublic || r.AuthorId == uid);
+        }
+        else
+        {
+            query = query.Where(r => r.IsPublic);
+        }
+
+        // Фильтрация по избранному
+        if (favorites == true && currentUserId.HasValue)
+        {
+            var uid = currentUserId.Value;
+            query = query.Where(r => UserFavorites.Any(uf => uf.UserId == uid && uf.RecipeId == r.Id));
+        }
 
         if (!string.IsNullOrWhiteSpace(q))
         {
@@ -100,7 +131,17 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
                 : new RecipeIngredientDetail(ri.IngredientId, string.Empty, ri.Amount, string.Empty))
             .ToList();
 
-        return new RecipeWithIngredientDetails(recipe, details);
+        string? authorName = null;
+        if (recipe.AuthorId is not null)
+        {
+            authorName = await Users
+                .AsNoTracking()
+                .Where(u => u.Id == recipe.AuthorId)
+                .Select(u => u.DisplayName)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        return new RecipeWithIngredientDetails(recipe, details, authorName);
     }
 
     public async Task CreateAsync(Recipe recipe, CancellationToken cancellationToken = default)
@@ -284,5 +325,64 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         var category = await Categories.FindAsync([id], cancellationToken);
         if (category is not null)
             Categories.Remove(category);
+    }
+
+    // ── IUserRepository ──────────────────────────────────────────────────────
+
+    public async Task<User?> GetUserByEmailAsync(string email, CancellationToken cancellationToken = default)
+    {
+        return await Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+    }
+
+    public async Task<IReadOnlyDictionary<UserId, string>> GetDisplayNamesByIdsAsync(
+        IEnumerable<UserId> ids,
+        CancellationToken cancellationToken = default)
+    {
+        var idList = ids.ToList();
+        var result = await Users
+            .AsNoTracking()
+            .Where(u => idList.Contains(u.Id))
+            .Select(u => new { u.Id, u.DisplayName })
+            .ToListAsync(cancellationToken);
+
+        return result.ToDictionary(u => u.Id, u => u.DisplayName);
+    }
+
+    async Task IUserRepository.CreateAsync(User user, CancellationToken cancellationToken)
+    {
+        await Users.AddAsync(user, cancellationToken);
+    }
+
+    // ── IRecipeRepository: favorites ─────────────────────────────────────────
+
+    public async Task AddFavoriteAsync(UserId userId, RecipeId recipeId, CancellationToken cancellationToken = default)
+    {
+        var exists = await UserFavorites
+            .AnyAsync(uf => uf.UserId == userId && uf.RecipeId == recipeId, cancellationToken);
+
+        if (!exists)
+            await UserFavorites.AddAsync(UserFavorite.Create(userId, recipeId), cancellationToken);
+    }
+
+    public async Task RemoveFavoriteAsync(UserId userId, RecipeId recipeId, CancellationToken cancellationToken = default)
+    {
+        var favorite = await UserFavorites
+            .FirstOrDefaultAsync(uf => uf.UserId == userId && uf.RecipeId == recipeId, cancellationToken);
+
+        if (favorite is not null)
+            UserFavorites.Remove(favorite);
+    }
+
+    public async Task<IReadOnlySet<RecipeId>> GetFavoriteIdsAsync(UserId userId, CancellationToken cancellationToken = default)
+    {
+        var ids = await UserFavorites
+            .AsNoTracking()
+            .Where(uf => uf.UserId == userId)
+            .Select(uf => uf.RecipeId)
+            .ToListAsync(cancellationToken);
+
+        return ids.ToHashSet();
     }
 }

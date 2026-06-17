@@ -1,5 +1,8 @@
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using DotNet.Testcontainers.Builders;
 using Npgsql;
+using Recipes.Adapters.Web.Dto;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -66,5 +69,19 @@ public sealed class RecipeMicroserviceFixture : IAsyncLifetime
         await using var truncateCmd = conn.CreateCommand();
         truncateCmd.CommandText = $"TRUNCATE TABLE {string.Join(", ", tables)} RESTART IDENTITY CASCADE";
         await truncateCmd.ExecuteNonQueryAsync();
+    }
+
+    /// <summary>
+    /// Регистрирует тестового пользователя и возвращает Bearer-заголовок авторизации.
+    /// </summary>
+    public async Task<AuthenticationHeaderValue> GetAuthHeaderAsync(string role = "user")
+    {
+        var email = $"test-{role}-{Guid.NewGuid():N}@test.local";
+        var request = new RegisterRequest(email, $"Test {role}", "Password1!");
+        var response = await Client.PostAsJsonAsync("/api/v1/auth/register", request);
+        response.EnsureSuccessStatusCode();
+
+        var auth = await response.Content.ReadFromJsonAsync<AuthResponse>();
+        return new AuthenticationHeaderValue("Bearer", auth!.Token);
     }
 }

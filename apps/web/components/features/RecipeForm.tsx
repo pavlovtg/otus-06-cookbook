@@ -48,6 +48,7 @@ export function RecipeForm({
     instructions: initialValues?.instructions ?? "",
     ingredients: initialValues?.ingredients ?? [],
     categoryIds: initialValues?.categoryIds ?? [],
+    isPublic: initialValues?.isPublic ?? true,
   });
 
   useEffect(() => {
@@ -297,6 +298,18 @@ export function RecipeForm({
             );
           })}
         </div>
+      </div>
+
+      <div className="field">
+        <label className="checkbox">
+          <input
+            type="checkbox"
+            name="is_public"
+            checked={form.isPublic}
+            onChange={(e) => set("isPublic", e.target.checked)}
+          />
+          Публичный (виден всем)
+        </label>
       </div>
 
       <div className="form-actions">

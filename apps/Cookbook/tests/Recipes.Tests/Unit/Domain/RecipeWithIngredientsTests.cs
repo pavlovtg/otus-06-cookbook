@@ -84,7 +84,7 @@ public class RecipeWithIngredientsTests
             new[] { MakeIngredient() });
 
         var newIngredients = new[] { MakeIngredient(), MakeIngredient(), MakeIngredient() };
-        recipe.Update(ValidTitle, ValidDescription, ValidCookingTime, ValidDifficulty, ValidServings, ValidInstructions, newIngredients);
+        recipe.Update(ValidTitle, ValidDescription, ValidCookingTime, ValidDifficulty, ValidServings, ValidInstructions, isPublic: true, newIngredients);
 
         Assert.Equal(3, recipe.Ingredients.Count);
     }
@@ -97,7 +97,7 @@ public class RecipeWithIngredientsTests
             ValidCookingTime, ValidDifficulty, ValidServings, ValidInstructions,
             new[] { MakeIngredient() });
 
-        recipe.Update(ValidTitle, ValidDescription, ValidCookingTime, ValidDifficulty, ValidServings, ValidInstructions, []);
+        recipe.Update(ValidTitle, ValidDescription, ValidCookingTime, ValidDifficulty, ValidServings, ValidInstructions, isPublic: true, []);
 
         Assert.Empty(recipe.Ingredients);
     }
@@ -114,6 +114,6 @@ public class RecipeWithIngredientsTests
             .ToList();
 
         Assert.Throws<RecipeIngredientsTooManyException>(() =>
-            recipe.Update(ValidTitle, ValidDescription, ValidCookingTime, ValidDifficulty, ValidServings, ValidInstructions, tooMany));
+            recipe.Update(ValidTitle, ValidDescription, ValidCookingTime, ValidDifficulty, ValidServings, ValidInstructions, isPublic: true, tooMany));
     }
 }

@@ -1,10 +1,11 @@
 import Image from "next/image";
 import type { RecipeShortDto } from "@/lib/schemas/recipe";
 import type { Category } from "@/lib/schemas/category";
-import { ClockIcon, FlameIcon } from "@/components/icons";
+import { ClockIcon, FlameIcon, UserIcon, LockIcon } from "@/components/icons";
 import { RecipePhoto } from "@/components/photo";
 import { Tag } from "@/components/ui/Tag";
 import { getRecipeThumbnailUrl } from "@/lib/bff/photos";
+import { FavoriteButton } from "@/components/features/FavoriteButton";
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   easy: "Просто",
@@ -17,10 +18,11 @@ const DIFFICULTY_LABELS: Record<string, string> = {
 interface RecipeCardProps {
   recipe: RecipeShortDto;
   categories?: Category[];
+  showFavorite?: boolean;
   onClick?: () => void;
 }
 
-export function RecipeCard({ recipe, categories = [], onClick }: RecipeCardProps) {
+export function RecipeCard({ recipe, categories = [], showFavorite = false, onClick }: RecipeCardProps) {
   const recipeCats = recipe.categoryIds
     .slice(0, 3)
     .map((id) => categories.find((c) => c.id === id))
@@ -40,6 +42,17 @@ export function RecipeCard({ recipe, categories = [], onClick }: RecipeCardProps
         ) : (
           <RecipePhoto seed={recipe.id} title={recipe.title} />
         )}
+        {!recipe.isPublic && (
+          <div className="photo-private" title="Приватный рецепт">
+            <LockIcon size={16} className="tag-private" />
+          </div>
+        )}
+        {showFavorite && (
+          <FavoriteButton
+            recipeId={recipe.id}
+            isFavorite={recipe.isFavorite ?? false}
+          />
+        )}
       </div>
       <div className="body">
         <h3>{recipe.title}</h3>
@@ -57,6 +70,12 @@ export function RecipeCard({ recipe, categories = [], onClick }: RecipeCardProps
         <p className="t-small" style={{ margin: 0, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
           {recipe.description}
         </p>
+        <div className="footer">
+          <span className="author-inline">
+            <UserIcon size={12} />
+            <span>{recipe.authorName ?? "—"}</span>
+          </span>
+        </div>
       </div>
     </div>
   );

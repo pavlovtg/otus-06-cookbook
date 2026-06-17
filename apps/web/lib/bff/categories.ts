@@ -5,13 +5,10 @@ import {
   type CategoryRequest,
 } from "@/lib/schemas/category";
 
-const GATEWAY_URL = process.env["GATEWAY_URL"] ?? "http://api-gateway";
-const SERVER_BASE = `${GATEWAY_URL}/api/cookbook/v1/categories`;
 const CLIENT_BASE = `/api/cookbook/v1/categories`;
 
 export async function getCategories(): Promise<Category[]> {
-  const base = typeof window === "undefined" ? SERVER_BASE : CLIENT_BASE;
-  const response = await fetch(base, { cache: "no-store" });
+  const response = await fetch(CLIENT_BASE, { cache: "no-store" });
 
   if (!response.ok) {
     throw new Error(`Failed to fetch categories: ${response.status}`);

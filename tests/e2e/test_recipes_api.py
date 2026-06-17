@@ -13,6 +13,7 @@ VALID_RECIPE = {
     "instructions": "1. Сварить бульон. 2. Добавить овощи.",
     "ingredients": [],
     "categoryIds": [],
+    "isPublic": True,
 }
 
 VALID_INGREDIENT = {
@@ -57,10 +58,11 @@ def test_recipes_list_items_have_required_fields(base_url: str) -> None:
         assert "difficulty" in recipe
 
 
-def test_recipes_list_page2_returns_different_items(base_url: str) -> None:
+def test_recipes_list_page2_returns_different_items(base_url: str, auth_token: str) -> None:
+    headers = {"Authorization": f"Bearer {auth_token}"}
     # Создаём два рецепта, чтобы гарантировать наличие хотя бы 2 записей
-    r1 = httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": "Пагинация рецепт 1"})
-    r2 = httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": "Пагинация рецепт 2"})
+    r1 = httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": "Пагинация рецепт 1"}, headers=headers)
+    r2 = httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": "Пагинация рецепт 2"}, headers=headers)
     assert r1.status_code == 201
     assert r2.status_code == 201
 
@@ -82,8 +84,12 @@ def test_recipes_list_page2_returns_different_items(base_url: str) -> None:
     assert data1["items"][0]["id"] != data2["items"][0]["id"]
 
 
-def test_create_recipe_returns_201(base_url: str) -> None:
-    response = httpx.post(f"{base_url}{BASE}", json=VALID_RECIPE)
+def test_create_recipe_returns_201(base_url: str, auth_token: str) -> None:
+    response = httpx.post(
+        f"{base_url}{BASE}",
+        json=VALID_RECIPE,
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
 
     assert response.status_code == 201
     data = response.json()
@@ -94,15 +100,23 @@ def test_create_recipe_returns_201(base_url: str) -> None:
     assert "id" in data
 
 
-def test_create_recipe_returns_400_on_empty_title(base_url: str) -> None:
+def test_create_recipe_returns_400_on_empty_title(base_url: str, auth_token: str) -> None:
     payload = {**VALID_RECIPE, "title": ""}
-    response = httpx.post(f"{base_url}{BASE}", json=payload)
+    response = httpx.post(
+        f"{base_url}{BASE}",
+        json=payload,
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
 
     assert response.status_code == 400
 
 
-def test_get_recipe_by_id_returns_200(base_url: str) -> None:
-    create_resp = httpx.post(f"{base_url}{BASE}", json=VALID_RECIPE)
+def test_get_recipe_by_id_returns_200(base_url: str, auth_token: str) -> None:
+    create_resp = httpx.post(
+        f"{base_url}{BASE}",
+        json=VALID_RECIPE,
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
     recipe_id = create_resp.json()["id"]
 
     response = httpx.get(f"{base_url}{BASE}/{recipe_id}")
@@ -119,12 +133,13 @@ def test_get_recipe_by_unknown_id_returns_400(base_url: str) -> None:
     assert response.status_code == 400
 
 
-def test_update_recipe_returns_204(base_url: str) -> None:
-    create_resp = httpx.post(f"{base_url}{BASE}", json=VALID_RECIPE)
+def test_update_recipe_returns_204(base_url: str, auth_token: str) -> None:
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    create_resp = httpx.post(f"{base_url}{BASE}", json=VALID_RECIPE, headers=headers)
     recipe_id = create_resp.json()["id"]
 
     updated = {**VALID_RECIPE, "title": "Обновлённый борщ", "cookingTime": 90}
-    response = httpx.put(f"{base_url}{BASE}/{recipe_id}", json=updated)
+    response = httpx.put(f"{base_url}{BASE}/{recipe_id}", json=updated, headers=headers)
 
     assert response.status_code == 204
 
@@ -134,17 +149,21 @@ def test_update_recipe_returns_204(base_url: str) -> None:
     assert data["cookingTime"] == 90
 
 
-def test_delete_recipe_returns_204(base_url: str) -> None:
-    create_resp = httpx.post(f"{base_url}{BASE}", json=VALID_RECIPE)
+def test_delete_recipe_returns_204(base_url: str, auth_token: str) -> None:
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    create_resp = httpx.post(f"{base_url}{BASE}", json=VALID_RECIPE, headers=headers)
     recipe_id = create_resp.json()["id"]
 
-    response = httpx.delete(f"{base_url}{BASE}/{recipe_id}")
+    response = httpx.delete(f"{base_url}{BASE}/{recipe_id}", headers=headers)
 
     assert response.status_code == 204
 
 
-def test_delete_unknown_recipe_returns_400(base_url: str) -> None:
-    response = httpx.delete(f"{base_url}{BASE}/{uuid.uuid4()}")
+def test_delete_unknown_recipe_returns_400(base_url: str, auth_token: str) -> None:
+    response = httpx.delete(
+        f"{base_url}{BASE}/{uuid.uuid4()}",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
 
     assert response.status_code == 400
 
@@ -160,14 +179,18 @@ def _create_ingredient(base_url: str) -> dict:
     return response.json()
 
 
-def test_create_recipe_with_ingredients_returns_ingredients_in_get(base_url: str) -> None:
+def test_create_recipe_with_ingredients_returns_ingredients_in_get(base_url: str, auth_token: str) -> None:
     ingredient = _create_ingredient(base_url)
 
     recipe_payload = {
         **VALID_RECIPE,
         "ingredients": [{"ingredientId": ingredient["id"], "amount": 150.0}],
     }
-    create_resp = httpx.post(f"{base_url}{BASE}", json=recipe_payload)
+    create_resp = httpx.post(
+        f"{base_url}{BASE}",
+        json=recipe_payload,
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
     assert create_resp.status_code == 201
     recipe_id = create_resp.json()["id"]
 
@@ -181,19 +204,20 @@ def test_create_recipe_with_ingredients_returns_ingredients_in_get(base_url: str
     assert data["ingredients"][0]["amount"] == 150.0
 
 
-def test_update_recipe_removes_ingredient(base_url: str) -> None:
+def test_update_recipe_removes_ingredient(base_url: str, auth_token: str) -> None:
+    headers = {"Authorization": f"Bearer {auth_token}"}
     ingredient = _create_ingredient(base_url)
 
     recipe_payload = {
         **VALID_RECIPE,
         "ingredients": [{"ingredientId": ingredient["id"], "amount": 100.0}],
     }
-    create_resp = httpx.post(f"{base_url}{BASE}", json=recipe_payload)
+    create_resp = httpx.post(f"{base_url}{BASE}", json=recipe_payload, headers=headers)
     assert create_resp.status_code == 201
     recipe_id = create_resp.json()["id"]
 
     update_payload = {**VALID_RECIPE, "ingredients": []}
-    update_resp = httpx.put(f"{base_url}{BASE}/{recipe_id}", json=update_payload)
+    update_resp = httpx.put(f"{base_url}{BASE}/{recipe_id}", json=update_payload, headers=headers)
     assert update_resp.status_code == 204
 
     get_resp = httpx.get(f"{base_url}{BASE}/{recipe_id}")
@@ -238,19 +262,24 @@ MINIMAL_JPEG = bytes([
 ])
 
 
-def _create_recipe(base_url: str) -> dict:
-    response = httpx.post(f"{base_url}{BASE}", json=VALID_RECIPE)
+def _create_recipe(base_url: str, auth_token: str) -> dict:
+    response = httpx.post(
+        f"{base_url}{BASE}",
+        json=VALID_RECIPE,
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
     assert response.status_code == 201
     return response.json()
 
 
-def test_upload_photo_returns_photo_id(base_url: str) -> None:
-    recipe = _create_recipe(base_url)
+def test_upload_photo_returns_photo_id(base_url: str, auth_token: str) -> None:
+    recipe = _create_recipe(base_url, auth_token)
     recipe_id = recipe["id"]
 
     response = httpx.post(
         f"{base_url}{BASE}/{recipe_id}/photo",
         files={"file": ("photo.jpg", MINIMAL_JPEG, "image/jpeg")},
+        headers={"Authorization": f"Bearer {auth_token}"},
     )
 
     assert response.status_code == 200
@@ -259,13 +288,14 @@ def test_upload_photo_returns_photo_id(base_url: str) -> None:
     assert data["photoId"] is not None
 
 
-def test_upload_photo_recipe_has_photo_id(base_url: str) -> None:
-    recipe = _create_recipe(base_url)
+def test_upload_photo_recipe_has_photo_id(base_url: str, auth_token: str) -> None:
+    recipe = _create_recipe(base_url, auth_token)
     recipe_id = recipe["id"]
 
     httpx.post(
         f"{base_url}{BASE}/{recipe_id}/photo",
         files={"file": ("photo.jpg", MINIMAL_JPEG, "image/jpeg")},
+        headers={"Authorization": f"Bearer {auth_token}"},
     )
 
     get_resp = httpx.get(f"{base_url}{BASE}/{recipe_id}")
@@ -274,13 +304,14 @@ def test_upload_photo_recipe_has_photo_id(base_url: str) -> None:
     assert data["photoId"] is not None
 
 
-def test_get_photo_returns_image(base_url: str) -> None:
-    recipe = _create_recipe(base_url)
+def test_get_photo_returns_image(base_url: str, auth_token: str) -> None:
+    recipe = _create_recipe(base_url, auth_token)
     recipe_id = recipe["id"]
 
     upload_resp = httpx.post(
         f"{base_url}{BASE}/{recipe_id}/photo",
         files={"file": ("photo.jpg", MINIMAL_JPEG, "image/jpeg")},
+        headers={"Authorization": f"Bearer {auth_token}"},
     )
     photo_id = upload_resp.json()["photoId"]
 
@@ -289,16 +320,18 @@ def test_get_photo_returns_image(base_url: str) -> None:
     assert photo_resp.headers["content-type"].startswith("image/")
 
 
-def test_delete_photo_sets_photo_id_null(base_url: str) -> None:
-    recipe = _create_recipe(base_url)
+def test_delete_photo_sets_photo_id_null(base_url: str, auth_token: str) -> None:
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    recipe = _create_recipe(base_url, auth_token)
     recipe_id = recipe["id"]
 
     httpx.post(
         f"{base_url}{BASE}/{recipe_id}/photo",
         files={"file": ("photo.jpg", MINIMAL_JPEG, "image/jpeg")},
+        headers=headers,
     )
 
-    delete_resp = httpx.delete(f"{base_url}{BASE}/{recipe_id}/photo")
+    delete_resp = httpx.delete(f"{base_url}{BASE}/{recipe_id}/photo", headers=headers)
     assert delete_resp.status_code == 204
 
     get_resp = httpx.get(f"{base_url}{BASE}/{recipe_id}")
@@ -306,13 +339,14 @@ def test_delete_photo_sets_photo_id_null(base_url: str) -> None:
     assert data["photoId"] is None
 
 
-def test_upload_invalid_format_returns_400(base_url: str) -> None:
-    recipe = _create_recipe(base_url)
+def test_upload_invalid_format_returns_400(base_url: str, auth_token: str) -> None:
+    recipe = _create_recipe(base_url, auth_token)
     recipe_id = recipe["id"]
 
     response = httpx.post(
         f"{base_url}{BASE}/{recipe_id}/photo",
         files={"file": ("doc.pdf", b"%PDF-1.4 fake", "application/pdf")},
+        headers={"Authorization": f"Bearer {auth_token}"},
     )
 
     assert response.status_code == 400
@@ -320,9 +354,13 @@ def test_upload_invalid_format_returns_400(base_url: str) -> None:
 
 # ── Search & Sort ─────────────────────────────────────────────────────────────
 
-def test_search_by_single_word(base_url: str) -> None:
+def test_search_by_single_word(base_url: str, auth_token: str) -> None:
     unique = uuid.uuid4().hex[:8]
-    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"Рецепт {unique}"})
+    httpx.post(
+        f"{base_url}{BASE}",
+        json={**VALID_RECIPE, "title": f"Рецепт {unique}"},
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
 
     resp = httpx.get(f"{base_url}{BASE}", params={"q": unique, "pageSize": 1000})
 
@@ -332,10 +370,14 @@ def test_search_by_single_word(base_url: str) -> None:
     assert any(unique in t for t in ids_found)
 
 
-def test_search_by_multiple_words(base_url: str) -> None:
+def test_search_by_multiple_words(base_url: str, auth_token: str) -> None:
     word1 = uuid.uuid4().hex[:8]
     word2 = uuid.uuid4().hex[:8]
-    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{word1} {word2} суп"})
+    httpx.post(
+        f"{base_url}{BASE}",
+        json={**VALID_RECIPE, "title": f"{word1} {word2} суп"},
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
 
     resp = httpx.get(f"{base_url}{BASE}", params={"q": f"{word1} {word2}", "pageSize": 1000})
 
@@ -356,10 +398,11 @@ def test_search_empty_result(base_url: str) -> None:
     assert data["items"] == []
 
 
-def test_sort_title_asc(base_url: str) -> None:
+def test_sort_title_asc(base_url: str, auth_token: str) -> None:
     prefix = uuid.uuid4().hex[:8]
-    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{prefix} Б"})
-    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{prefix} А"})
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{prefix} Б"}, headers=headers)
+    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{prefix} А"}, headers=headers)
 
     resp = httpx.get(f"{base_url}{BASE}", params={"q": prefix, "sort": "title_asc", "pageSize": 1000})
 
@@ -368,10 +411,11 @@ def test_sort_title_asc(base_url: str) -> None:
     assert titles == sorted(titles)
 
 
-def test_sort_title_desc(base_url: str) -> None:
+def test_sort_title_desc(base_url: str, auth_token: str) -> None:
     prefix = uuid.uuid4().hex[:8]
-    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{prefix} А"})
-    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{prefix} Б"})
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{prefix} А"}, headers=headers)
+    httpx.post(f"{base_url}{BASE}", json={**VALID_RECIPE, "title": f"{prefix} Б"}, headers=headers)
 
     resp = httpx.get(f"{base_url}{BASE}", params={"q": prefix, "sort": "title_desc", "pageSize": 1000})
 
@@ -380,8 +424,9 @@ def test_sort_title_desc(base_url: str) -> None:
     assert titles == sorted(titles, reverse=True)
 
 
-def test_search_by_two_ingredients_returns_only_recipe_with_both(base_url: str) -> None:
+def test_search_by_two_ingredients_returns_only_recipe_with_both(base_url: str, auth_token: str) -> None:
     """Рецепт с двумя ингредиентами находится только при поиске по обоим."""
+    headers = {"Authorization": f"Bearer {auth_token}"}
     ing1_title = "Морковь_" + uuid.uuid4().hex[:6]
     ing2_title = "Картофель_" + uuid.uuid4().hex[:6]
 
@@ -404,19 +449,19 @@ def test_search_by_two_ingredients_returns_only_recipe_with_both(base_url: str) 
             {"ingredientId": ing1_id, "amount": 100.0},
             {"ingredientId": ing2_id, "amount": 150.0},
         ],
-    })
+    }, headers=headers)
     # Рецепт только с первым ингредиентом
     r_only1 = httpx.post(f"{base_url}{BASE}", json={
         **VALID_RECIPE,
         "title": f"Салат {ing1_title}",
         "ingredients": [{"ingredientId": ing1_id, "amount": 100.0}],
-    })
+    }, headers=headers)
     # Рецепт только со вторым ингредиентом
     r_only2 = httpx.post(f"{base_url}{BASE}", json={
         **VALID_RECIPE,
         "title": f"Пюре {ing2_title}",
         "ingredients": [{"ingredientId": ing2_id, "amount": 200.0}],
-    })
+    }, headers=headers)
     assert r_both.status_code == 201
     assert r_only1.status_code == 201
     assert r_only2.status_code == 201

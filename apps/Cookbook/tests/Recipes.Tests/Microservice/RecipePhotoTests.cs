@@ -9,8 +9,13 @@ namespace Recipes.Tests.Microservice;
 public sealed class RecipePhotoTests(RecipeMicroserviceFixture fixture) : IAsyncLifetime
 {
     private readonly HttpClient _client = fixture.Client;
+    private System.Net.Http.Headers.AuthenticationHeaderValue _authHeader = null!;
 
-    public Task InitializeAsync() => fixture.TruncateAsync();
+    public async Task InitializeAsync()
+    {
+        await fixture.TruncateAsync();
+        _authHeader = await fixture.GetAuthHeaderAsync();
+    }
 
     public Task DisposeAsync() => Task.CompletedTask;
 
@@ -61,7 +66,9 @@ public sealed class RecipePhotoTests(RecipeMicroserviceFixture fixture) : IAsync
         var recipe = await CreateTestRecipeAsync();
         await UploadPhotoAsync(recipe.Id);
 
-        var deleteResponse = await _client.DeleteAsync($"/api/v1/recipes/{recipe.Id}/photo");
+        using var deleteMsg = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/recipes/{recipe.Id}/photo");
+        deleteMsg.Headers.Authorization = _authHeader;
+        var deleteResponse = await _client.SendAsync(deleteMsg);
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
 
         var updated = await _client.GetFromJsonAsync<RecipeDto>($"/api/v1/recipes/{recipe.Id}");
@@ -79,7 +86,10 @@ public sealed class RecipePhotoTests(RecipeMicroserviceFixture fixture) : IAsync
         fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/gif");
         content.Add(fileContent, "file", "test.gif");
 
-        var response = await _client.PostAsync($"/api/v1/recipes/{recipe.Id}/photo", content);
+        using var msg = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/recipes/{recipe.Id}/photo");
+        msg.Headers.Authorization = _authHeader;
+        msg.Content = content;
+        var response = await _client.SendAsync(msg);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
@@ -99,11 +109,15 @@ public sealed class RecipePhotoTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: []
         );
 
-        var response = await _client.PostAsJsonAsync("/api/v1/recipes", request);
+        using var msg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/recipes");
+        msg.Headers.Authorization = _authHeader;
+        msg.Content = JsonContent.Create(request);
+        var response = await _client.SendAsync(msg);
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<RecipeDto>())!;
     }
@@ -148,6 +162,9 @@ public sealed class RecipePhotoTests(RecipeMicroserviceFixture fixture) : IAsync
         fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
         content.Add(fileContent, "file", "test.jpg");
 
-        return await _client.PostAsync($"/api/v1/recipes/{recipeId}/photo", content);
+        using var msg = new HttpRequestMessage(HttpMethod.Post, $"/api/v1/recipes/{recipeId}/photo");
+        msg.Headers.Authorization = _authHeader;
+        msg.Content = content;
+        return await _client.SendAsync(msg);
     }
 }

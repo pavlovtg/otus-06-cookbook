@@ -14,6 +14,8 @@ describe("RecipeCard", () => {
       difficulty: "everyday" as const,
       photoId: null,
       categoryIds: [],
+      isPublic: true,
+      authorName: null,
     };
 
     render(<RecipeCard recipe={recipe} />);
@@ -33,6 +35,8 @@ describe("RecipeCard", () => {
       difficulty: "everyday" as const,
       photoId: PHOTO_ID,
       categoryIds: [],
+      isPublic: true,
+      authorName: null,
     };
 
     render(<RecipeCard recipe={recipe} />);
@@ -56,6 +60,8 @@ describe("RecipeCard", () => {
       difficulty: "everyday" as const,
       photoId: null,
       categoryIds: [],
+      isPublic: true,
+      authorName: null,
     };
 
     const { container } = render(<RecipeCard recipe={recipe} />);

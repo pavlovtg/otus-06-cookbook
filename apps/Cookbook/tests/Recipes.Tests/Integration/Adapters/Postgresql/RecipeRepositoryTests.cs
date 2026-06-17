@@ -145,7 +145,7 @@ public sealed class RecipeRepositoryTests(RecipeIntegrationFixture fixture) : IA
         {
             var loaded = await updateCtx.GetByIdAsync(recipe.Id);
             Assert.NotNull(loaded);
-            loaded.Update("Обновлённый заголовок", null, 60, Difficulty.Everyday, 4, "Шаг 1.");
+            loaded.Update("Обновлённый заголовок", null, 60, Difficulty.Everyday, 4, "Шаг 1.", isPublic: true);
             await updateCtx.UpdateAsync(loaded);
             await updateCtx.CommitAsync();
         }

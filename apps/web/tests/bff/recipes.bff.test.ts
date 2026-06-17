@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getRecipes } from "@/lib/bff/recipes";
+import { getRecipes } from "@/lib/bff/recipes.server";
 import { RecipePagedResultSchema } from "@/lib/schemas/recipe";
 
 const mockRecipeShort = {
@@ -10,6 +10,8 @@ const mockRecipeShort = {
   difficulty: "everyday",
   photoId: null,
   categoryIds: [],
+  isPublic: true,
+  authorName: "Анна Воронова",
 };
 
 const mockPagedResult = {

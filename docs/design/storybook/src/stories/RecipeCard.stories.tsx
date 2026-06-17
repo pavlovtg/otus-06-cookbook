@@ -42,10 +42,30 @@ export const WithoutPhoto: S = {
 };
 
 export const Private: S = {
+  name: 'Приватный рецепт',
   args: {
     recipe: recipes.find((x) => !x.is_public)!,
     author: getUser('u1'),
     rating: 5,
+  },
+};
+
+export const WithAuthor: S = {
+  name: 'С именем автора',
+  args: {
+    recipe: r,
+    author: getUser(r.author_id),
+    rating: avgRating(r.id),
+  },
+};
+
+export const PrivateWithAuthor: S = {
+  name: 'Приватный с автором',
+  args: {
+    recipe: recipes.find((x) => !x.is_public)!,
+    author: getUser('u1'),
+    rating: 5,
+    showFavorite: false,
   },
 };
 
@@ -71,6 +91,38 @@ export const WithoutTags: S = {
   },
 };
 
+export const FavoriteActive: S = {
+  name: 'Избранное: активно (isFavorite=true)',
+  args: {
+    recipe: r,
+    author: getUser(r.author_id),
+    rating: avgRating(r.id),
+    favorite: true,
+    showFavorite: true,
+  },
+};
+
+export const FavoriteInactive: S = {
+  name: 'Избранное: неактивно (isFavorite=false)',
+  args: {
+    recipe: r,
+    author: getUser(r.author_id),
+    rating: avgRating(r.id),
+    favorite: false,
+    showFavorite: true,
+  },
+};
+
+export const FavoriteHidden: S = {
+  name: 'Избранное: скрыто (гость)',
+  args: {
+    recipe: r,
+    author: getUser(r.author_id),
+    rating: avgRating(r.id),
+    showFavorite: false,
+  },
+};
+
 export const Playground: S = {
   render: () => {
     const [favs, setFavs] = React.useState(new Set(favorites.filter((f) => f.user_id === 'u1').map((f) => f.recipe_id)));
@@ -83,6 +135,7 @@ export const Playground: S = {
             author={getUser(rec.author_id)}
             rating={avgRating(rec.id)}
             favorite={favs.has(rec.id)}
+            showFavorite={true}
             onToggleFavorite={() =>
               setFavs((prev) => {
                 const n = new Set(prev);

@@ -95,6 +95,10 @@ namespace Recipes.Adapters.Postgresql.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Guid?>("AuthorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("author_id");
+
                     b.Property<int>("CookingTime")
                         .HasColumnType("integer")
                         .HasColumnName("cooking_time");
@@ -116,6 +120,12 @@ namespace Recipes.Adapters.Postgresql.Migrations
                         .HasMaxLength(10000)
                         .HasColumnType("character varying(10000)")
                         .HasColumnName("instructions");
+
+                    b.Property<bool>("IsPublic")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_public");
 
                     b.Property<Guid?>("PhotoId")
                         .HasColumnType("uuid")
@@ -196,6 +206,61 @@ namespace Recipes.Adapters.Postgresql.Migrations
                     b.ToTable("recipe_photos", "cookbook");
                 });
 
+            modelBuilder.Entity("Recipes.Domain.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("display_name");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("password_hash");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("role");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("users", "cookbook");
+                });
+
+            modelBuilder.Entity("Recipes.Domain.UserFavorite", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<Guid>("RecipeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recipe_id");
+
+                    b.HasKey("UserId", "RecipeId");
+
+                    b.HasIndex("RecipeId");
+
+                    b.ToTable("user_favorites", "cookbook");
+                });
+
             modelBuilder.Entity("Recipes.Domain.RecipeCategory", b =>
                 {
                     b.HasOne("Recipes.Domain.Recipe", null)
@@ -219,6 +284,21 @@ namespace Recipes.Adapters.Postgresql.Migrations
                     b.HasOne("Recipes.Domain.Recipe", null)
                         .WithMany()
                         .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Recipes.Domain.UserFavorite", b =>
+                {
+                    b.HasOne("Recipes.Domain.Recipe", null)
+                        .WithMany()
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Recipes.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

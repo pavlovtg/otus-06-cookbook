@@ -3,13 +3,17 @@ export const dynamic = "force-dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getRecipe } from "@/lib/bff/recipes";
-import { getCategories } from "@/lib/bff/categories";
+import { getRecipe } from "@/lib/bff/recipes.server";
+import { getCategories } from "@/lib/bff/categories.server";
+import { getSession } from "@/lib/session";
 import { RecipePhoto } from "@/components/photo";
 import { Tag } from "@/components/ui/Tag";
-import { ArrowLeftIcon, ClockIcon, FlameIcon } from "@/components/icons";
+import type { Category } from "@/lib/schemas/category";
+import type { RecipeDto } from "@/lib/schemas/recipe";
+import { ArrowLeftIcon, ClockIcon, FlameIcon, UserIcon, LockIcon } from "@/components/icons";
 import { DeleteRecipeButton } from "./DeleteRecipeButton";
 import { RecipePhotoActions } from "./RecipePhotoActions";
+import { FavoriteDetailButton } from "./FavoriteDetailButton";
 import { getRecipePhotoUrl } from "@/lib/bff/photos";
 import { IngredientsCard } from "@/components/features/IngredientsCard";
 
@@ -31,17 +35,52 @@ export default async function RecipeDetailPage({ params, searchParams }: Props) 
   const { page } = await searchParams;
   const backHref = page ? `/?page=${page}` : "/";
 
-  let recipe;
-  let allCategories;
+  let recipe: RecipeDto | undefined;
+  let allCategories: Category[] | undefined;
+  let accessDenied = false;
+
   try {
     [recipe, allCategories] = await Promise.all([getRecipe(id), getCategories()]);
-  } catch {
+  } catch (err: unknown) {
+    const status =
+      err instanceof Error && err.message.includes("403") ? 403 : null;
+    if (status === 403) {
+      accessDenied = true;
+    } else {
+      notFound();
+    }
+  }
+
+  if (accessDenied) {
+    return (
+      <>
+        <div className="detail-bar">
+          <Link href={backHref} className="btn btn-ghost btn-sm back-btn">
+            <ArrowLeftIcon size={14} /> Назад
+          </Link>
+          <span className="spacer" />
+        </div>
+        <div className="state">
+          <div className="state-eyebrow">Доступ запрещён</div>
+          <p className="t-display">Этот рецепт приватный</p>
+          <p className="t-small">У вас нет прав для просмотра этого рецепта.</p>
+        </div>
+      </>
+    );
+  }
+
+  if (!recipe || !allCategories) {
     notFound();
   }
 
+  const session = await getSession();
+  const isOwner = !!session.user && recipe.authorId === session.user.id;
+  const isAdmin = session.user?.role === "admin";
+  const canEdit = isOwner || isAdmin;
+
   const recipeCats = recipe.categoryIds
     .map((cid) => allCategories.find((c) => c.id === cid))
-    .filter((c): c is NonNullable<typeof c> => c !== undefined);
+    .filter((c): c is Category => c !== undefined);
 
   return (
     <>
@@ -60,6 +99,22 @@ export default async function RecipeDetailPage({ params, searchParams }: Props) 
             <FlameIcon size={13} />{" "}
             {DIFFICULTY_LABELS[recipe.difficulty] ?? recipe.difficulty}
           </span>
+          {recipe.authorName && (
+            <>
+              <span className="sep" />
+              <span>
+                <UserIcon size={13} /> {recipe.authorName}
+              </span>
+            </>
+          )}
+          {!recipe.isPublic && (
+            <>
+              <span className="sep" />
+              <span className="tag-private">
+                <LockIcon size={13} /> Приватный
+              </span>
+            </>
+          )}
         </div>
       </div>
 
@@ -68,13 +123,23 @@ export default async function RecipeDetailPage({ params, searchParams }: Props) 
           {recipeCats.map((c) => <Tag key={c.id}>{c.name}</Tag>)}
         </div>
         <div className="detail-actions">
-          <Link
-            href={`/recipes/${recipe.id}/edit`}
-            className="btn btn-ghost btn-sm"
-          >
-            Редактировать
-          </Link>
-          <DeleteRecipeButton id={recipe.id} />
+          {!!session.user && (
+            <FavoriteDetailButton
+              recipeId={recipe.id}
+              isFavorite={recipe.isFavorite ?? false}
+            />
+          )}
+          {canEdit && (
+            <>
+              <Link
+                href={`/recipes/${recipe.id}/edit`}
+                className="btn btn-ghost btn-sm"
+              >
+                Редактировать
+              </Link>
+              <DeleteRecipeButton id={recipe.id} />
+            </>
+          )}
         </div>
       </div>
 
@@ -95,7 +160,9 @@ export default async function RecipeDetailPage({ params, searchParams }: Props) 
             )}
           </div>
 
-          <RecipePhotoActions recipeId={recipe.id} photoId={recipe.photoId} />
+          {canEdit && (
+            <RecipePhotoActions recipeId={recipe.id} photoId={recipe.photoId} />
+          )}
 
           <p
             className="t-small"
