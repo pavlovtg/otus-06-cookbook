@@ -23,8 +23,7 @@ export default function LoginPage() {
     try {
       await login({ email, password });
       const from = searchParams.get("from") ?? "/";
-      router.push(from);
-      router.refresh();
+      window.location.href = from;
     } catch {
       setError("Неверный email или пароль");
     } finally {

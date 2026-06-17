@@ -2,13 +2,13 @@
 
 ## Текущая задача
 
-Исправление падающих e2e-тестов после добавления авторизации в recipes-сервис.
+Исправление падающих UI-тестов после добавления авторизации в recipes-сервис.
 
 ## Что сделано
 
-- `tests/e2e/conftest.py` — добавлена session-фикстура `auth_token` (регистрация + логин)
-- `tests/e2e/test_recipes_api.py` — все мутирующие запросы (POST/PUT/DELETE рецептов, фото) получают `Authorization: Bearer {token}`; `_create_recipe` принимает `auth_token`
-- `tests/e2e/test_auth_api.py` — `test_login_logout_protected_endpoint_returns_401` помечен `@pytest.mark.skip` (token blacklist не реализован)
+- `apps/web/app/login/page.tsx` — заменён `router.push + router.refresh` на `window.location.href` (hard navigation) для корректного обновления серверного layout после логина
+- `tests/ui/conftest.py` — добавлены фикстуры `auth_token` (session, JWT через API) и `logged_in_page` (function, логин через UI)
+- `tests/ui/test_recipes.py` — все тесты, требующие авторизации, переведены на `logged_in_page`; `_api_create_ingredient` и `_api_create_recipe_with_ingredient` принимают `auth_token`; `test_ingredients_scale_plus_button` принимает `auth_token`
 
 ## Ключевые решения
 
@@ -17,3 +17,4 @@
 - JWT выпускается и валидируется recipes-сервисом
 - S2S не нужен (один доменный сервис в MVP)
 - Token blacklist — не реализован, тест скипнут
+- Hard navigation после логина нужна, т.к. Next.js layout — серверный компонент и не перерендеривается при soft navigation
