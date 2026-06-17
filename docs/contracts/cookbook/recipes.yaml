@@ -40,9 +40,9 @@ paths:
           required: false
           schema:
             type: string
-            enum: [title_asc, title_desc]
+            enum: [title_asc, title_desc, rating_desc]
             default: title_asc
-          description: Порядок сортировки по названию
+          description: Порядок сортировки (title_asc — по названию А→Я, title_desc — по названию Я→А, rating_desc — по убыванию средней оценки)
         - name: favorites
           in: query
           required: false
@@ -84,6 +84,87 @@ paths:
                 $ref: "#/components/schemas/RecipeDto"
         "400":
           description: Ошибка валидации
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Не авторизован
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/recipes/{id}/rating:
+    put:
+      summary: Выставить оценку рецепту
+      operationId: setRecipeRating
+      tags:
+        - Recipes
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RatingRequest"
+      responses:
+        "200":
+          description: Оценка выставлена, возвращает обновлённый рейтинг
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RatingSummaryDto"
+        "400":
+          description: Некорректный идентификатор, рецепт не найден или значение оценки вне диапазона 1–5
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Не авторизован
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    delete:
+      summary: Удалить оценку рецепта
+      operationId: deleteRecipeRating
+      tags:
+        - Recipes
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Оценка удалена
+        "400":
+          description: Некорректный идентификатор, рецепт не найден или оценка не существует
           content:
             application/problem+json:
               schema:
@@ -926,6 +1007,19 @@ components:
           nullable: true
           description: Добавлен ли рецепт в избранное текущим пользователем (null если пользователь не авторизован)
           example: true
+        averageRating:
+          type: number
+          format: float
+          nullable: true
+          description: Средняя оценка рецепта (null если оценок нет)
+          example: 4.2
+        myRating:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 5
+          description: Оценка текущего пользователя (null если не авторизован или не оценивал)
+          example: 4
     RecipeIngredientDto:
       type: object
       required:
@@ -1041,6 +1135,19 @@ components:
           nullable: true
           description: Идентификатор автора рецепта
           example: null
+        averageRating:
+          type: number
+          format: float
+          nullable: true
+          description: Средняя оценка рецепта (null если оценок нет)
+          example: 4.2
+        myRating:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 5
+          description: Оценка текущего пользователя (null если не авторизован или не оценивал)
+          example: 4
     RecipeRequest:
       type: object
       required:
@@ -1096,6 +1203,33 @@ components:
             format: uuid
           description: Идентификаторы категорий рецепта
           example: ["33333333-0000-0000-0000-000000000001"]
+    RatingRequest:
+      type: object
+      required:
+        - value
+      properties:
+        value:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: Оценка рецепта (от 1 до 5)
+          example: 4
+    RatingSummaryDto:
+      type: object
+      properties:
+        averageRating:
+          type: number
+          format: float
+          nullable: true
+          description: Средняя оценка рецепта (null если оценок нет)
+          example: 4.2
+        myRating:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 5
+          description: Оценка текущего пользователя
+          example: 4
     ProblemDetails:
       description: RFC 7807 Problem Details
       type: object

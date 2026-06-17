@@ -42,9 +42,9 @@
 
 ## 6. OpenAPI Contract
 
-- [ ] 6.1 Добавить в `docs/contracts/cookbook/recipes.yaml` операции `PUT /recipes/{id}/rating` и `DELETE /recipes/{id}/rating`
-- [ ] 6.2 Добавить поля `averageRating` и `myRating` в схемы `RecipeShortDto` и `RecipeDto`
-- [ ] 6.3 Добавить значение `rating_desc` в enum параметра `sort`
+- [x] 6.1 Добавить в `docs/contracts/cookbook/recipes.yaml` операции `PUT /recipes/{id}/rating` и `DELETE /recipes/{id}/rating`
+- [x] 6.2 Добавить поля `averageRating` и `myRating` в схемы `RecipeShortDto` и `RecipeDto`
+- [x] 6.3 Добавить значение `rating_desc` в enum параметра `sort`
 
 ## 7. Seed Data
 
