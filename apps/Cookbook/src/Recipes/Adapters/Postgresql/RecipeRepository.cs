@@ -50,8 +50,15 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
             .AsNoTracking();
 
         // Скрываем приватные рецепты чужих авторов
-        var currentUserGuid = currentUserId.HasValue ? (Guid?)currentUserId.Value.Value : null;
-        query = query.Where(r => r.IsPublic || EF.Property<Guid?>(r, "AuthorId") == currentUserGuid);
+        if (currentUserId.HasValue)
+        {
+            var uid = currentUserId.Value;
+            query = query.Where(r => r.IsPublic || r.AuthorId == uid);
+        }
+        else
+        {
+            query = query.Where(r => r.IsPublic);
+        }
 
         if (!string.IsNullOrWhiteSpace(q))
         {

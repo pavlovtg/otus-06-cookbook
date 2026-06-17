@@ -8,7 +8,7 @@
 
 Исправлены упавшие e2e-тесты (11 падений):
 1. `tests/e2e/test_recipes_api.py` — добавлен `"isPublic": True` в `VALID_RECIPE` (рецепты создавались приватными, GET без токена → 403).
-2. `apps/Cookbook/.../RecipeRepository.cs` — фильтр видимости `r.AuthorId == currentUserId` заменён на `EF.Property<Guid?>(r, "AuthorId") == currentUserGuid` (EF Core не транслировал сравнение `UserId?` через value converter в SQL).
+2. `apps/Cookbook/.../RecipeRepository.cs` — фильтр видимости исправлен: `UserId?` разбит на два случая (`HasValue` / else), чтобы EF Core параметризовал `UserId` (не nullable) через value converter корректно. `EF.Property<Guid?>` вызывал `InvalidCastException` т.к. возвращал тип свойства `UserId?`, а не `Guid?`.
 
 ## Ключевые решения
 
