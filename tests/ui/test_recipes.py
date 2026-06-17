@@ -585,6 +585,7 @@ def _api_create_recipe_with_ingredient(base_url: str, title: str, ingredient_id:
             "instructions": "Шаг 1.",
             "ingredients": [{"ingredientId": ingredient_id, "amount": amount}],
             "categoryIds": [],
+            "isPublic": True,
         },
         headers={"Authorization": f"Bearer {auth_token}"},
     )

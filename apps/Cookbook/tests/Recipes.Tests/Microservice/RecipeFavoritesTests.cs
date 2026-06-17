@@ -173,22 +173,15 @@ public sealed class RecipeFavoritesTests(RecipeMicroserviceFixture fixture) : IA
     }
 
     [Fact]
-    public async Task GetRecipes_WithFavoritesTrue_Unauthorized_ReturnsAllPublic()
+    public async Task GetRecipes_WithFavoritesTrue_Unauthorized_Returns401()
     {
-        // Без авторизации favorites=true игнорируется (нет userId), возвращаются все публичные
+        // Без авторизации favorites=true требует аутентификации → 401
         await CreateRecipeAsync("Рецепт 1");
         await CreateRecipeAsync("Рецепт 2");
 
         var response = await _client.GetAsync("/api/v1/recipes?favorites=true");
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        var result = await response.Content.ReadFromJsonAsync<PagedResult<RecipeShortDto>>();
-        Assert.NotNull(result);
-        // Без userId фильтр не применяется — возвращаются все публичные рецепты
-        Assert.True(result.Total >= 2);
-        // isFavorite = null для неавторизованных
-        Assert.All(result.Items, r => Assert.Null(r.IsFavorite));
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
