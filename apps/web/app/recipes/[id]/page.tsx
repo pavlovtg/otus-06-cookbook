@@ -101,7 +101,9 @@ export default async function RecipeDetailPage({ params, searchParams }: Props) 
             )}
           </div>
 
-          <RecipePhotoActions recipeId={recipe.id} photoId={recipe.photoId} />
+          {isAuthenticated && (
+            <RecipePhotoActions recipeId={recipe.id} photoId={recipe.photoId} />
+          )}
 
           <p
             className="t-small"
