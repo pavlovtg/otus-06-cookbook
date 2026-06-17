@@ -106,7 +106,7 @@ public sealed class RecipeCategoryRepositoryTests : IAsyncLifetime
         {
             var loaded = await ctx.GetByIdAsync(recipeId);
             Assert.NotNull(loaded);
-            loaded.Update("Рецепт", "Описание", 30, Difficulty.Easy, 2, "Шаг 1.",
+            loaded.Update("Рецепт", "Описание", 30, Difficulty.Easy, 2, "Шаг 1.", isPublic: true,
                 categoryTypes: new Dictionary<CategoryId, CategoryType> { [cat2.Id] = CategoryType.Cuisine });
             await ctx.UpdateAsync(loaded);
             await ctx.CommitAsync();

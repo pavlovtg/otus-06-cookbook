@@ -90,7 +90,7 @@ public class RecipeCategoryTests
 
         Assert.Throws<RecipeDuplicateCategoryTypeException>(() =>
             recipe.Update(ValidTitle, ValidDescription, ValidCookingTime, ValidDifficulty, ValidServings, ValidInstructions,
-                categoryTypes: categoryTypes));
+                isPublic: true, categoryTypes: categoryTypes));
     }
 
     [Fact]
@@ -104,7 +104,7 @@ public class RecipeCategoryTests
 
         var id2 = CategoryId.New();
         recipe.Update(ValidTitle, ValidDescription, ValidCookingTime, ValidDifficulty, ValidServings, ValidInstructions,
-            categoryTypes: new Dictionary<CategoryId, CategoryType>
+            isPublic: true, categoryTypes: new Dictionary<CategoryId, CategoryType>
             {
                 [id2] = CategoryType.MealRole,
             });

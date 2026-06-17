@@ -14,11 +14,13 @@ internal sealed class RecipesController : ControllerBase
 {
     private readonly IRecipeService _recipeService;
     private readonly IRecipePhotoService _photoService;
+    private readonly IAuthService _authService;
 
-    public RecipesController(IRecipeService recipeService, IRecipePhotoService photoService)
+    public RecipesController(IRecipeService recipeService, IRecipePhotoService photoService, IAuthService authService)
     {
         _recipeService = recipeService;
         _photoService = photoService;
+        _authService = authService;
     }
 
     private const int DefaultPage = 1;
@@ -50,7 +52,10 @@ internal sealed class RecipesController : ControllerBase
             _ => RecipeSortOrder.TitleAsc,
         };
 
-        var result = await _recipeService.GetRecipesPagedAsync(page, pageSize, q, sortOrder, cancellationToken);
+        var currentUser = _authService.GetCurrentUser(User);
+        var currentUserId = currentUser is not null ? UserId.From(currentUser.Id) : (UserId?)null;
+
+        var result = await _recipeService.GetRecipesPagedAsync(page, pageSize, q, sortOrder, currentUserId, cancellationToken);
 
         var dto = new PagedResult<RecipeShortDto>(
             result.Items.Select(ToShortDto).ToList(),
@@ -66,8 +71,14 @@ internal sealed class RecipesController : ControllerBase
     {
         try
         {
-            var details = await _recipeService.GetByIdWithDetailsAsync(RecipeId.From(id), cancellationToken);
+            var currentUser = _authService.GetCurrentUser(User);
+            var currentUserId = currentUser is not null ? UserId.From(currentUser.Id) : (UserId?)null;
+            var details = await _recipeService.GetByIdWithDetailsAsync(RecipeId.From(id), currentUserId, cancellationToken);
             return Ok(ToDto(details));
+        }
+        catch (RecipeForbiddenException)
+        {
+            return StatusCode(403, ForbiddenProblemDetails());
         }
         catch (RecipeDomainException ex)
         {
@@ -86,6 +97,8 @@ internal sealed class RecipesController : ControllerBase
 
             var ingredientInputs = MapIngredientInputs(request.Ingredients);
             var categoryIds = MapCategoryIds(request.CategoryIds);
+            var currentUser = _authService.GetCurrentUser(User);
+            var authorId = currentUser is not null ? UserId.From(currentUser.Id) : (UserId?)null;
 
             var recipe = await _recipeService.CreateAsync(
                 request.Title,
@@ -94,12 +107,18 @@ internal sealed class RecipesController : ControllerBase
                 difficulty,
                 request.Servings,
                 request.Instructions,
+                request.IsPublic,
+                authorId,
                 ingredientInputs,
                 categoryIds,
                 cancellationToken);
 
-            var details = await _recipeService.GetByIdWithDetailsAsync(recipe.Id, cancellationToken);
+            var details = await _recipeService.GetByIdWithDetailsAsync(recipe.Id, authorId, cancellationToken);
             return CreatedAtAction(nameof(GetRecipe), new { id = recipe.Id.Value }, ToDto(details));
+        }
+        catch (RecipeUnauthorizedException)
+        {
+            return Unauthorized(UnauthorizedProblemDetails());
         }
         catch (CategoryDomainException ex)
         {
@@ -122,6 +141,9 @@ internal sealed class RecipesController : ControllerBase
 
             var ingredientInputs = MapIngredientInputs(request.Ingredients);
             var categoryIds = MapCategoryIds(request.CategoryIds);
+            var currentUser = _authService.GetCurrentUser(User);
+            var currentUserId = currentUser is not null ? UserId.From(currentUser.Id) : (UserId?)null;
+            var currentUserRole = ParseRole(currentUser?.Role);
 
             await _recipeService.UpdateAsync(
                 RecipeId.From(id),
@@ -131,11 +153,18 @@ internal sealed class RecipesController : ControllerBase
                 difficulty,
                 request.Servings,
                 request.Instructions,
+                request.IsPublic,
+                currentUserId,
+                currentUserRole,
                 ingredientInputs,
                 categoryIds,
                 cancellationToken);
 
             return NoContent();
+        }
+        catch (RecipeForbiddenException)
+        {
+            return StatusCode(403, ForbiddenProblemDetails());
         }
         catch (CategoryDomainException ex)
         {
@@ -153,8 +182,15 @@ internal sealed class RecipesController : ControllerBase
     {
         try
         {
-            await _recipeService.DeleteAsync(RecipeId.From(id), cancellationToken);
+            var currentUser = _authService.GetCurrentUser(User);
+            var currentUserId = currentUser is not null ? UserId.From(currentUser.Id) : (UserId?)null;
+            var currentUserRole = ParseRole(currentUser?.Role);
+            await _recipeService.DeleteAsync(RecipeId.From(id), currentUserId, currentUserRole, cancellationToken);
             return NoContent();
+        }
+        catch (RecipeForbiddenException)
+        {
+            return StatusCode(403, ForbiddenProblemDetails());
         }
         catch (RecipeDomainException ex)
         {
@@ -196,6 +232,11 @@ internal sealed class RecipesController : ControllerBase
         }
     }
 
+    private static UserRole? ParseRole(string? role) =>
+        role is not null && Enum.TryParse<UserRole>(role, ignoreCase: true, out var userRole)
+            ? userRole
+            : null;
+
     private static IEnumerable<RecipeIngredientInput> MapIngredientInputs(
         IReadOnlyList<RecipeIngredientRequest> items)
         => items.Select(i => new RecipeIngredientInput(IngredientId.From(i.IngredientId), i.Amount));
@@ -203,14 +244,16 @@ internal sealed class RecipesController : ControllerBase
     private static IEnumerable<CategoryId> MapCategoryIds(IReadOnlyList<Guid> ids)
         => ids.Select(CategoryId.From);
 
-    private static RecipeShortDto ToShortDto(Recipe recipe) => new(
-        recipe.Id.Value,
-        recipe.Title,
-        recipe.Description,
-        recipe.CookingTime,
-        recipe.Difficulty.ToString().ToLowerInvariant(),
-        recipe.PhotoId?.Value,
-        recipe.Categories.Select(c => c.CategoryId.Value).ToList());
+    private static RecipeShortDto ToShortDto(RecipeShortWithAuthor item) => new(
+        item.Recipe.Id.Value,
+        item.Recipe.Title,
+        item.Recipe.Description,
+        item.Recipe.CookingTime,
+        item.Recipe.Difficulty.ToString().ToLowerInvariant(),
+        item.Recipe.PhotoId?.Value,
+        item.Recipe.Categories.Select(c => c.CategoryId.Value).ToList(),
+        item.Recipe.IsPublic,
+        item.AuthorName);
 
     private static RecipeDto ToDto(RecipeWithIngredientDetails details) => new(
         details.Recipe.Id.Value,
@@ -224,7 +267,9 @@ internal sealed class RecipesController : ControllerBase
             .Select(i => new RecipeIngredientDto(i.IngredientId.Value, i.Title, i.Amount, i.Unit))
             .ToList(),
         details.Recipe.PhotoId?.Value,
-        details.Recipe.Categories.Select(c => c.CategoryId.Value).ToList());
+        details.Recipe.Categories.Select(c => c.CategoryId.Value).ToList(),
+        details.Recipe.IsPublic,
+        details.AuthorName);
 
     private ProblemDetails ProblemDetailsFor(RecipeDomainException ex) =>
         ProblemDetailsFor(ex.GetType().Name);
@@ -235,6 +280,24 @@ internal sealed class RecipesController : ControllerBase
         Status = 400,
         Title = "Validation Error",
         Detail = detail,
+        Instance = HttpContext.Request.Path,
+    };
+
+    private ProblemDetails ForbiddenProblemDetails() => new()
+    {
+        Type = "about:blank",
+        Status = 403,
+        Title = "Forbidden",
+        Detail = "You do not have permission to access this resource.",
+        Instance = HttpContext.Request.Path,
+    };
+
+    private ProblemDetails UnauthorizedProblemDetails() => new()
+    {
+        Type = "about:blank",
+        Status = 401,
+        Title = "Unauthorized",
+        Detail = "Authentication is required to perform this action.",
         Instance = HttpContext.Request.Path,
     };
 }

@@ -109,6 +109,7 @@ public sealed class RecipePhotoTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: []
         );

@@ -30,6 +30,7 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1. Приготовить.",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: []
         );
@@ -57,6 +58,7 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Инструкции",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: []
         );
@@ -76,6 +78,7 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Инструкции",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: []
         );
@@ -120,6 +123,7 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "festive",
             Servings: 4,
             Instructions: "Новые инструкции",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: []
         );
@@ -147,6 +151,7 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Инструкции",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: []
         );
@@ -168,6 +173,7 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Инструкции",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: []
         );
@@ -222,6 +228,7 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [new RecipeIngredientRequest(ingredient.Id, 150m)],
             CategoryIds: []
         );
@@ -255,6 +262,7 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [new RecipeIngredientRequest(ingredient1.Id, 100m)],
             CategoryIds: []
         );
@@ -270,6 +278,7 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [
                 new RecipeIngredientRequest(ingredient1.Id, 200m),
                 new RecipeIngredientRequest(ingredient2.Id, 3m),
@@ -298,6 +307,7 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [new RecipeIngredientRequest(ingredient.Id, 100m)],
             CategoryIds: []
         );
@@ -313,6 +323,7 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: []
         );
@@ -365,6 +376,7 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Difficulty: "everyday",
             Servings: 3,
             Instructions: "Шаг 1. Тест.",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: []
         );

@@ -131,7 +131,7 @@ public class RecipeTests
             RecipeId.New(), ValidTitle, ValidDescription,
             ValidCookingTime, ValidDifficulty, ValidServings, ValidInstructions);
 
-        recipe.Update("Новый борщ", "Новое описание", 60, Difficulty.Festive, 4, "Новые инструкции");
+        recipe.Update("Новый борщ", "Новое описание", 60, Difficulty.Festive, 4, "Новые инструкции", isPublic: true);
 
         Assert.Equal("Новый борщ", recipe.Title);
         Assert.Equal("Новое описание", recipe.Description);
@@ -149,7 +149,7 @@ public class RecipeTests
             ValidCookingTime, ValidDifficulty, ValidServings, ValidInstructions);
 
         Assert.Throws<RecipeTitleEmptyException>(() =>
-            recipe.Update("", ValidDescription, ValidCookingTime, ValidDifficulty, ValidServings, ValidInstructions));
+            recipe.Update("", ValidDescription, ValidCookingTime, ValidDifficulty, ValidServings, ValidInstructions, isPublic: true));
     }
 
     [Theory]

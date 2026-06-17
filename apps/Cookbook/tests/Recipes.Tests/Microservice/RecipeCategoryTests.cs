@@ -32,6 +32,7 @@ public sealed class RecipeCategoryTests(RecipeMicroserviceFixture fixture) : IAs
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: [category.Id]);
 
@@ -61,6 +62,7 @@ public sealed class RecipeCategoryTests(RecipeMicroserviceFixture fixture) : IAs
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: [cat1.Id]);
 
@@ -78,6 +80,7 @@ public sealed class RecipeCategoryTests(RecipeMicroserviceFixture fixture) : IAs
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: [cat2.Id]);
 
@@ -107,6 +110,7 @@ public sealed class RecipeCategoryTests(RecipeMicroserviceFixture fixture) : IAs
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: [category.Id]);
 
@@ -136,6 +140,7 @@ public sealed class RecipeCategoryTests(RecipeMicroserviceFixture fixture) : IAs
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: [Guid.NewGuid()]);
 
@@ -159,6 +164,7 @@ public sealed class RecipeCategoryTests(RecipeMicroserviceFixture fixture) : IAs
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: [category.Id]);
 

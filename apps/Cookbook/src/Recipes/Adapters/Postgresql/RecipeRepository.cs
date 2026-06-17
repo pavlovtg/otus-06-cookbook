@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Recipes.Adapters.Postgresql.Configurations;
 using Recipes.Application;
 using Recipes.Application.Ports;
@@ -18,6 +19,12 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
 
     public RecipeRepository(DbContextOptions<RecipeRepository> options) : base(options) { }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.ConfigureWarnings(w =>
+            w.Ignore(RelationalEventId.MultipleCollectionIncludeWarning));
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(DefaultSchema);
@@ -35,11 +42,15 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         int pageSize,
         string? q = null,
         RecipeSortOrder sort = RecipeSortOrder.TitleAsc,
+        UserId? currentUserId = null,
         CancellationToken cancellationToken = default)
     {
         var query = Recipes
             .Include(r => r.Categories)
             .AsNoTracking();
+
+        // Скрываем приватные рецепты чужих авторов
+        query = query.Where(r => r.IsPublic || r.AuthorId == currentUserId);
 
         if (!string.IsNullOrWhiteSpace(q))
         {
@@ -102,7 +113,17 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
                 : new RecipeIngredientDetail(ri.IngredientId, string.Empty, ri.Amount, string.Empty))
             .ToList();
 
-        return new RecipeWithIngredientDetails(recipe, details);
+        string? authorName = null;
+        if (recipe.AuthorId is not null)
+        {
+            authorName = await Users
+                .AsNoTracking()
+                .Where(u => u.Id == recipe.AuthorId)
+                .Select(u => u.DisplayName)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        return new RecipeWithIngredientDetails(recipe, details, authorName);
     }
 
     public async Task CreateAsync(Recipe recipe, CancellationToken cancellationToken = default)
@@ -295,6 +316,20 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         return await Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+    }
+
+    public async Task<IReadOnlyDictionary<UserId, string>> GetDisplayNamesByIdsAsync(
+        IEnumerable<UserId> ids,
+        CancellationToken cancellationToken = default)
+    {
+        var idList = ids.ToList();
+        var result = await Users
+            .AsNoTracking()
+            .Where(u => idList.Contains(u.Id))
+            .Select(u => new { u.Id, u.DisplayName })
+            .ToListAsync(cancellationToken);
+
+        return result.ToDictionary(u => u.Id, u => u.DisplayName);
     }
 
     async Task IUserRepository.CreateAsync(User user, CancellationToken cancellationToken)

@@ -242,6 +242,7 @@ public sealed class IngredientsCrudTests(RecipeMicroserviceFixture fixture) : IA
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [new RecipeIngredientRequest(ingredient.Id, 100m)],
             CategoryIds: []
         );
@@ -268,6 +269,7 @@ public sealed class IngredientsCrudTests(RecipeMicroserviceFixture fixture) : IA
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [new RecipeIngredientRequest(ingredient.Id, 100m)],
             CategoryIds: []
         );

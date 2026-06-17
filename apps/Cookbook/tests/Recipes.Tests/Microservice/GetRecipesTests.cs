@@ -38,6 +38,7 @@ public sealed class GetRecipesTests(RecipeMicroserviceFixture fixture) : IAsyncL
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: []
         );
@@ -70,6 +71,7 @@ public sealed class GetRecipesTests(RecipeMicroserviceFixture fixture) : IAsyncL
                 Difficulty: "easy",
                 Servings: 2,
                 Instructions: "Шаг 1.",
+            IsPublic: true,
                 Ingredients: [],
                 CategoryIds: []
             );
@@ -250,6 +252,7 @@ public sealed class GetRecipesTests(RecipeMicroserviceFixture fixture) : IAsyncL
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [],
             CategoryIds: []);
         using var msg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/recipes");
@@ -283,6 +286,7 @@ public sealed class GetRecipesTests(RecipeMicroserviceFixture fixture) : IAsyncL
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: ingredients,
             CategoryIds: []);
         using var msg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/recipes");

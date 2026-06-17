@@ -1,0 +1,5 @@
+using Recipes.Domain;
+
+namespace Recipes.Application;
+
+internal sealed record RecipeShortWithAuthor(Recipe Recipe, string? AuthorName);

@@ -131,7 +131,7 @@ public sealed class CookbookSeederTests : IAsyncLifetime
         {
             var recipe = await modifyCtx.Recipes.FindAsync([seedRecipe.Id]);
             Assert.NotNull(recipe);
-            recipe.Update("Изменённый заголовок", null, 10, Difficulty.Easy, 1, "Шаг 1.");
+            recipe.Update("Изменённый заголовок", null, 10, Difficulty.Easy, 1, "Шаг 1.", isPublic: true);
             await modifyCtx.SaveChangesAsync();
         }
 

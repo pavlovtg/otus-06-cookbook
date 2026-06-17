@@ -279,6 +279,12 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+        "403":
+          description: Рецепт приватный и принадлежит другому пользователю
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
         "500":
           description: Внутренняя ошибка сервера
           content:
@@ -790,6 +796,7 @@ components:
         - difficulty
         - photoId
         - categoryIds
+        - isPublic
       properties:
         id:
           type: string
@@ -822,6 +829,15 @@ components:
             format: uuid
           description: Идентификаторы категорий рецепта
           example: ["33333333-0000-0000-0000-000000000001"]
+        isPublic:
+          type: boolean
+          description: Публичный ли рецепт
+          example: true
+        authorName:
+          type: string
+          nullable: true
+          description: Отображаемое имя автора рецепта
+          example: Ренат Агзамов
     RecipeIngredientDto:
       type: object
       required:
@@ -875,6 +891,7 @@ components:
         - ingredients
         - photoId
         - categoryIds
+        - isPublic
       properties:
         id:
           type: string
@@ -921,6 +938,15 @@ components:
             format: uuid
           description: Идентификаторы категорий рецепта
           example: ["33333333-0000-0000-0000-000000000001"]
+        isPublic:
+          type: boolean
+          description: Публичный ли рецепт
+          example: true
+        authorName:
+          type: string
+          nullable: true
+          description: Отображаемое имя автора рецепта
+          example: Ренат Агзамов
     RecipeRequest:
       type: object
       required:
@@ -929,6 +955,7 @@ components:
         - difficulty
         - servings
         - instructions
+        - isPublic
         - ingredients
         - categoryIds
       properties:
@@ -964,6 +991,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RecipeIngredientRequest"
+        isPublic:
+          type: boolean
+          description: Публичный ли рецепт (true — виден всем, false — только автору)
+          example: true
         categoryIds:
           type: array
           items:
