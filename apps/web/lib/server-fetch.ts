@@ -1,6 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getIronSession } from "iron-session";
-import { getSessionOptions, type SessionData } from "@/lib/session";
+import { getSession, getSessionOptions, type SessionData } from "@/lib/session";
+
+/**
+ * Обёртка над fetch для Server Components.
+ * Автоматически добавляет Authorization из iron-session (cookie).
+ */
+export async function serverFetch(
+  url: string,
+  init: RequestInit = {},
+): Promise<Response> {
+  const headers = new Headers(init.headers as HeadersInit | undefined);
+  try {
+    const session = await getSession();
+    if (session.token) {
+      headers.set("Authorization", `Bearer ${session.token}`);
+    }
+  } catch {
+    // вне Server Component контекста — игнорируем
+  }
+  return fetch(url, { ...init, headers });
+}
 
 /**
  * Обёртка над fetch для серверных Route Handlers.

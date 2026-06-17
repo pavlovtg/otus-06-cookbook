@@ -88,6 +88,7 @@
 | AR-0060: Загрузка фото — серверная валидация и генерация thumbnail | Серверная валидация MIME (jpeg/png) и размера (≤ 10 МБ); thumbnail 400×300 через ImageSharp; оригинал и thumbnail в одной строке | [AR-0060](docs/architecture/rules/backend/AR-0060-recipe-photo-upload-validation-thumbnail.md) | backend |
 | AR-0061: Раздача фотографий рецептов через публичный endpoint | Фото раздаются через backend endpoint без JWT; `Cache-Control: public, max-age=86400`; shared volume запрещён | [AR-0061](docs/architecture/rules/rest-api/AR-0061-recipe-photo-serving.md) | rest-api |
 | AR-0062: Seed-фотографии загружаются через CookbookSeeder | Seed-фото из `apps/seed/photos/` загружаются в `recipe_photos` через `CookbookSeeder` в транзакции с рецептами; идемпотентно | [AR-0062](docs/architecture/rules/backend/AR-0062-recipe-photo-seeding.md) | backend |
+| AR-0063: BFF Server Components используют serverFetch | Серверные BFF-функции (`lib/bff/*.ts`) из Server Components используют `serverFetch` через динамический `await import` — автоматически добавляет `Authorization` из сессии; статический импорт и прямой `fetch` к `SERVER_BASE` запрещены | [AR-0063](docs/architecture/rules/frontend/AR-0063-server-fetch-in-bff.md) | frontend |
 
 ## Стандарты
 

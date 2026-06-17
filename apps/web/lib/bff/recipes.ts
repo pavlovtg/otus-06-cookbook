@@ -35,7 +35,8 @@ export async function getRecipes(
   if (q) params.set("q", q);
   if (sort) params.set("sort", sort);
   const url = `${SERVER_BASE}?${params.toString()}`;
-  const response = await fetch(url, { cache: "no-store" });
+  const { serverFetch } = await import("@/lib/server-fetch");
+  const response = await serverFetch(url, { cache: "no-store" });
 
   if (!response.ok) {
     throw new Error(`Failed to fetch recipes: ${response.status}`);
@@ -46,7 +47,8 @@ export async function getRecipes(
 }
 
 export async function getRecipe(id: string): Promise<RecipeDto> {
-  const response = await fetch(`${SERVER_BASE}/${id}`, { cache: "no-store" });
+  const { serverFetch } = await import("@/lib/server-fetch");
+  const response = await serverFetch(`${SERVER_BASE}/${id}`, { cache: "no-store" });
 
   if (!response.ok) {
     throw new Error(`Failed to fetch recipe ${id}: ${response.status}`);
