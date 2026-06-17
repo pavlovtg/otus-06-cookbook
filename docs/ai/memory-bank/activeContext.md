@@ -6,7 +6,9 @@
 
 ## Последнее завершённое
 
-Исправлены упавшие unit-тесты: в моках `recipe.bff.test.ts` и `photos.test.ts` добавлены поля `isPublic` и `authorName`, которые были добавлены в Zod-схемы в рамках `recipe-author`, но тесты не обновили. Все 306 тестов проходят.
+Исправлены упавшие e2e-тесты (11 падений):
+1. `tests/e2e/test_recipes_api.py` — добавлен `"isPublic": True` в `VALID_RECIPE` (рецепты создавались приватными, GET без токена → 403).
+2. `apps/Cookbook/.../RecipeRepository.cs` — фильтр видимости `r.AuthorId == currentUserId` заменён на `EF.Property<Guid?>(r, "AuthorId") == currentUserGuid` (EF Core не транслировал сравнение `UserId?` через value converter в SQL).
 
 ## Ключевые решения
 

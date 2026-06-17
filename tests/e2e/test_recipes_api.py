@@ -13,6 +13,7 @@ VALID_RECIPE = {
     "instructions": "1. Сварить бульон. 2. Добавить овощи.",
     "ingredients": [],
     "categoryIds": [],
+    "isPublic": True,
 }
 
 VALID_INGREDIENT = {
