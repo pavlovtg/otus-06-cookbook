@@ -7,7 +7,7 @@ export async function POST(): Promise<NextResponse> {
   const session = await getSession();
 
   if (session.token) {
-    await fetch(`${GATEWAY_URL}/api/v1/auth/logout`, {
+    await fetch(`${GATEWAY_URL}/api/cookbook/v1/auth/logout`, {
       method: "POST",
       headers: { Authorization: `Bearer ${session.token}` },
       cache: "no-store",

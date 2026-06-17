@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { getIronSession } from "iron-session";
 import { getSessionOptions, type SessionData } from "@/lib/session";
 import { AuthResponseSchema, LoginRequestSchema } from "@/lib/schemas/auth";
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const upstream = await fetch(`${GATEWAY_URL}/api/v1/auth/login`, {
+  const upstream = await fetch(`${GATEWAY_URL}/api/cookbook/v1/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(parsed.data),
@@ -33,11 +34,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const data: unknown = await upstream.json();
   const authResponse = AuthResponseSchema.parse(data);
 
-  const response = NextResponse.json(authResponse);
-  const session = await getIronSession<SessionData>(request, response, getSessionOptions());
+  const cookieStore = await cookies();
+  const session = await getIronSession<SessionData>(cookieStore, getSessionOptions());
   session.user = authResponse.user;
   session.token = authResponse.token;
   await session.save();
 
-  return response;
+  return NextResponse.json(authResponse);
 }
