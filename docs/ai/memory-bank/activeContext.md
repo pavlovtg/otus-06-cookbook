@@ -2,16 +2,19 @@
 
 ## Текущая задача
 
-Нет активных задач.
+Coverage fix: functions threshold ≥ 80%.
 
 ## Последнее завершённое
 
-Скрыты кнопки редактирования рецепта для не-авторов и не-админов:
+`user-favorites` секции 1–2:
 
-1. Backend: добавлено поле `AuthorId: Guid?` в `RecipeDto` и `RecipeShortDto`; маппер в `RecipesController` заполняет его из `recipe.AuthorId?.Value`.
-2. Контракт: `docs/contracts/cookbook/recipes.yaml` — добавлено поле `authorId` (uuid, nullable) в схемы `RecipeDto` и `RecipeShortDto`.
-3. Frontend Zod-схема: `authorId: z.string().uuid().nullable().optional()` добавлен в `RecipeDtoSchema` и `RecipeShortDtoSchema`.
-4. Frontend страница `recipes/[id]/page.tsx`: `isAuthenticated` заменён на `canEdit = isOwner || isAdmin`, где `isOwner = recipe.authorId === session.user.id`, `isAdmin = session.user?.role === "admin"`. Кнопки «Редактировать», «Удалить» и `RecipePhotoActions` показываются только при `canEdit`.
+1. Домен: `UserFavorite.cs` — сущность с `UserId` + `RecipeId`.
+2. EF конфигурация: `UserFavoriteConfiguration.cs` — PK `(user_id, recipe_id)`, FK CASCADE на `users` и `recipes`.
+3. Миграция: `20260617121414_AddUserFavorites` сгенерирована через `dotnet ef`.
+4. `IRecipeRepository`: добавлены `AddFavoriteAsync`, `RemoveFavoriteAsync`, `GetFavoriteIdsAsync`.
+5. `RecipeRepository`: реализованы через EF (`AnyAsync` + `AddAsync` / `FirstOrDefaultAsync` + `Remove` / `Where + ToListAsync`).
+6. `RecipeShortWithAuthor`: добавлено поле `bool? IsFavorite`.
+7. `RecipeService.GetRecipesPagedAsync`: загружает `favoriteIds` через `GetFavoriteIdsAsync` и заполняет `IsFavorite` (null для анонимов).
 
 ## Ключевые решения
 

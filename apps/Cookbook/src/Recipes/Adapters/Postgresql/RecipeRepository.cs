@@ -16,6 +16,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
     public DbSet<RecipePhoto> RecipePhotos => Set<RecipePhoto>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<UserFavorite> UserFavorites => Set<UserFavorite>();
 
     public RecipeRepository(DbContextOptions<RecipeRepository> options) : base(options) { }
 
@@ -35,6 +36,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         modelBuilder.ApplyConfiguration(new RecipePhotoConfiguration());
         modelBuilder.ApplyConfiguration(new CategoryConfiguration());
         modelBuilder.ApplyConfiguration(new UserConfiguration());
+        modelBuilder.ApplyConfiguration(new UserFavoriteConfiguration());
     }
 
     public async Task<PagedResult<Recipe>> GetRecipesPagedAsync(
@@ -43,6 +45,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         string? q = null,
         RecipeSortOrder sort = RecipeSortOrder.TitleAsc,
         UserId? currentUserId = null,
+        bool? favorites = null,
         CancellationToken cancellationToken = default)
     {
         var query = Recipes
@@ -58,6 +61,13 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         else
         {
             query = query.Where(r => r.IsPublic);
+        }
+
+        // Фильтрация по избранному
+        if (favorites == true && currentUserId.HasValue)
+        {
+            var uid = currentUserId.Value;
+            query = query.Where(r => UserFavorites.Any(uf => uf.UserId == uid && uf.RecipeId == r.Id));
         }
 
         if (!string.IsNullOrWhiteSpace(q))
@@ -343,5 +353,36 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
     async Task IUserRepository.CreateAsync(User user, CancellationToken cancellationToken)
     {
         await Users.AddAsync(user, cancellationToken);
+    }
+
+    // ── IRecipeRepository: favorites ─────────────────────────────────────────
+
+    public async Task AddFavoriteAsync(UserId userId, RecipeId recipeId, CancellationToken cancellationToken = default)
+    {
+        var exists = await UserFavorites
+            .AnyAsync(uf => uf.UserId == userId && uf.RecipeId == recipeId, cancellationToken);
+
+        if (!exists)
+            await UserFavorites.AddAsync(UserFavorite.Create(userId, recipeId), cancellationToken);
+    }
+
+    public async Task RemoveFavoriteAsync(UserId userId, RecipeId recipeId, CancellationToken cancellationToken = default)
+    {
+        var favorite = await UserFavorites
+            .FirstOrDefaultAsync(uf => uf.UserId == userId && uf.RecipeId == recipeId, cancellationToken);
+
+        if (favorite is not null)
+            UserFavorites.Remove(favorite);
+    }
+
+    public async Task<IReadOnlySet<RecipeId>> GetFavoriteIdsAsync(UserId userId, CancellationToken cancellationToken = default)
+    {
+        var ids = await UserFavorites
+            .AsNoTracking()
+            .Where(uf => uf.UserId == userId)
+            .Select(uf => uf.RecipeId)
+            .ToListAsync(cancellationToken);
+
+        return ids.ToHashSet();
     }
 }

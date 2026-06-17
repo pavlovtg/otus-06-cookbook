@@ -23,9 +23,10 @@ internal sealed class RecipeService : IRecipeService
         string? q = null,
         RecipeSortOrder sort = RecipeSortOrder.TitleAsc,
         UserId? currentUserId = null,
+        bool? favorites = null,
         CancellationToken cancellationToken = default)
     {
-        var result = await _repository.GetRecipesPagedAsync(page, pageSize, q, sort, currentUserId, cancellationToken);
+        var result = await _repository.GetRecipesPagedAsync(page, pageSize, q, sort, currentUserId, favorites, cancellationToken);
 
         var authorIds = result.Items
             .Where(r => r.AuthorId.HasValue)
@@ -37,17 +38,36 @@ internal sealed class RecipeService : IRecipeService
             ? await _userRepository.GetDisplayNamesByIdsAsync(authorIds, cancellationToken)
             : new Dictionary<UserId, string>();
 
+        IReadOnlySet<RecipeId> favoriteIds = currentUserId.HasValue
+            ? await _repository.GetFavoriteIdsAsync(currentUserId.Value, cancellationToken)
+            : new HashSet<RecipeId>();
+
         var items = result.Items
             .Select(r =>
             {
                 string? authorName = r.AuthorId.HasValue && authorNames.TryGetValue(r.AuthorId.Value, out var name)
                     ? name
                     : null;
-                return new RecipeShortWithAuthor(r, authorName);
+                bool? isFavorite = currentUserId.HasValue ? favoriteIds.Contains(r.Id) : null;
+                return new RecipeShortWithAuthor(r, authorName, isFavorite);
             })
             .ToList();
 
         return new PagedResult<RecipeShortWithAuthor>(items, result.Total, result.Page, result.PageSize);
+    }
+
+    public async Task AddFavoriteAsync(UserId userId, RecipeId recipeId, CancellationToken cancellationToken = default)
+    {
+        _ = await _repository.GetByIdAsync(recipeId, cancellationToken)
+            ?? throw new RecipeNotFoundException(recipeId);
+        await _repository.AddFavoriteAsync(userId, recipeId, cancellationToken);
+        await _repository.CommitAsync(cancellationToken);
+    }
+
+    public async Task RemoveFavoriteAsync(UserId userId, RecipeId recipeId, CancellationToken cancellationToken = default)
+    {
+        await _repository.RemoveFavoriteAsync(userId, recipeId, cancellationToken);
+        await _repository.CommitAsync(cancellationToken);
     }
 
     public async Task<Recipe> GetByIdAsync(RecipeId id, CancellationToken cancellationToken = default)

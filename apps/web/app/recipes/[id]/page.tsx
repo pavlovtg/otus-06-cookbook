@@ -13,6 +13,7 @@ import type { RecipeDto } from "@/lib/schemas/recipe";
 import { ArrowLeftIcon, ClockIcon, FlameIcon, UserIcon, LockIcon } from "@/components/icons";
 import { DeleteRecipeButton } from "./DeleteRecipeButton";
 import { RecipePhotoActions } from "./RecipePhotoActions";
+import { FavoriteDetailButton } from "./FavoriteDetailButton";
 import { getRecipePhotoUrl } from "@/lib/bff/photos";
 import { IngredientsCard } from "@/components/features/IngredientsCard";
 
@@ -121,17 +122,25 @@ export default async function RecipeDetailPage({ params, searchParams }: Props) 
         <div className="detail-tags">
           {recipeCats.map((c) => <Tag key={c.id}>{c.name}</Tag>)}
         </div>
-        {canEdit && (
-          <div className="detail-actions">
-            <Link
-              href={`/recipes/${recipe.id}/edit`}
-              className="btn btn-ghost btn-sm"
-            >
-              Редактировать
-            </Link>
-            <DeleteRecipeButton id={recipe.id} />
-          </div>
-        )}
+        <div className="detail-actions">
+          {!!session.user && (
+            <FavoriteDetailButton
+              recipeId={recipe.id}
+              isFavorite={recipe.isFavorite ?? false}
+            />
+          )}
+          {canEdit && (
+            <>
+              <Link
+                href={`/recipes/${recipe.id}/edit`}
+                className="btn btn-ghost btn-sm"
+              >
+                Редактировать
+              </Link>
+              <DeleteRecipeButton id={recipe.id} />
+            </>
+          )}
+        </div>
       </div>
 
       <div className="detail-grid">

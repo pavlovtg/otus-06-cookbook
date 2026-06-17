@@ -5,6 +5,7 @@ import { ClockIcon, FlameIcon, UserIcon, LockIcon } from "@/components/icons";
 import { RecipePhoto } from "@/components/photo";
 import { Tag } from "@/components/ui/Tag";
 import { getRecipeThumbnailUrl } from "@/lib/bff/photos";
+import { FavoriteButton } from "@/components/features/FavoriteButton";
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   easy: "Просто",
@@ -17,10 +18,11 @@ const DIFFICULTY_LABELS: Record<string, string> = {
 interface RecipeCardProps {
   recipe: RecipeShortDto;
   categories?: Category[];
+  showFavorite?: boolean;
   onClick?: () => void;
 }
 
-export function RecipeCard({ recipe, categories = [], onClick }: RecipeCardProps) {
+export function RecipeCard({ recipe, categories = [], showFavorite = false, onClick }: RecipeCardProps) {
   const recipeCats = recipe.categoryIds
     .slice(0, 3)
     .map((id) => categories.find((c) => c.id === id))
@@ -44,6 +46,12 @@ export function RecipeCard({ recipe, categories = [], onClick }: RecipeCardProps
           <div className="photo-private" title="Приватный рецепт">
             <LockIcon size={16} className="tag-private" />
           </div>
+        )}
+        {showFavorite && (
+          <FavoriteButton
+            recipeId={recipe.id}
+            isFavorite={recipe.isFavorite ?? false}
+          />
         )}
       </div>
       <div className="body">

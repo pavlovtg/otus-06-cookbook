@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   if (q) upstreamUrl.searchParams.set("q", q);
   if (sort) upstreamUrl.searchParams.set("sort", sort);
 
-  const res = await fetch(upstreamUrl.toString(), { cache: "no-store" });
+  const res = await proxyFetch(req, upstreamUrl.toString(), { cache: "no-store" });
   const data: unknown = await res.json();
   return NextResponse.json(data, { status: res.status });
 }

@@ -10,4 +10,5 @@ internal sealed record RecipeShortDto(
     IReadOnlyList<Guid> CategoryIds,
     bool IsPublic,
     string? AuthorName,
-    Guid? AuthorId);
+    Guid? AuthorId,
+    bool? IsFavorite);

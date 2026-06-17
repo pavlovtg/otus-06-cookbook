@@ -9,9 +9,9 @@ interface Params {
   params: Promise<{ id: string }>;
 }
 
-export async function GET(_req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, { params }: Params) {
   const { id } = await params;
-  const res = await fetch(upstream(id), { cache: "no-store" });
+  const res = await proxyFetch(req, upstream(id), { cache: "no-store" });
   const data: unknown = await res.json();
   return NextResponse.json(data, { status: res.status });
 }

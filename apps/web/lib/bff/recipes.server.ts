@@ -16,12 +16,14 @@ export async function getRecipes(
   pageSize = 18,
   q?: string,
   sort?: string,
+  favorites?: boolean,
 ): Promise<RecipePagedResult> {
   const params = new URLSearchParams();
   params.set("page", String(page));
   params.set("pageSize", String(pageSize));
   if (q) params.set("q", q);
   if (sort) params.set("sort", sort);
+  if (favorites) params.set("favorites", "true");
   const url = `${SERVER_BASE}?${params.toString()}`;
   const response = await serverFetch(url, { cache: "no-store" });
 

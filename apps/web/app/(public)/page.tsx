@@ -12,6 +12,7 @@ import { PaginationNav } from "@/components/ui/PaginationNav";
 import {
   RecipesSearchInput,
   RecipesSortAside,
+  RecipesModeAside,
 } from "@/components/features/RecipesSearch";
 import type { RecipeShortDto } from "@/lib/schemas/recipe";
 import type { Category } from "@/lib/schemas/category";
@@ -20,22 +21,33 @@ import type { Ingredient } from "@/lib/schemas/ingredient";
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; q?: string; sort?: string }>;
+  searchParams: Promise<{ page?: string; q?: string; sort?: string; mode?: string }>;
 }) {
   const params = await searchParams;
   const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
   const pageSize = 18;
   const q = params.q ?? "";
   const sort = params.sort ?? "";
+  const mode = params.mode ?? "";
+  const favoritesMode = mode === "favorites";
 
   let recipes: RecipeShortDto[] = [];
   let categories: Category[] = [];
   let ingredients: Ingredient[] = [];
   let total = 0;
 
+  const session = await getSession();
+  const isAuthenticated = !!session.user;
+
   try {
     const [pagedResult, cats] = await Promise.all([
-      getRecipes(page, pageSize, q || undefined, sort || undefined),
+      getRecipes(
+        page,
+        pageSize,
+        q || undefined,
+        sort || undefined,
+        favoritesMode && isAuthenticated ? true : undefined,
+      ),
       getCategories(),
     ]);
     recipes = pagedResult.items;
@@ -53,8 +65,6 @@ export default async function HomePage({
   }
 
   const totalPages = Math.ceil(total / pageSize);
-  const session = await getSession();
-  const isAuthenticated = !!session.user;
 
   return (
     <div className="layout-with-aside">
@@ -62,6 +72,11 @@ export default async function HomePage({
         <h1 className="aside-title">
           Готовим <span className="t-gradient">сегодня</span>
         </h1>
+        {isAuthenticated && (
+          <Suspense>
+            <RecipesModeAside initialMode={mode} />
+          </Suspense>
+        )}
         <Suspense>
           <RecipesSortAside initialSort={sort} initialQ={q} />
         </Suspense>
@@ -70,7 +85,9 @@ export default async function HomePage({
       <div>
         <div className="page-head">
           <div className="left">
-            <h1 className="t-heading">Рецепты</h1>
+            <h1 className="t-heading">
+              {favoritesMode && isAuthenticated ? "Избранное" : "Рецепты"}
+            </h1>
           </div>
           {isAuthenticated && (
             <Link href="/recipes/new" className="btn btn-primary">
@@ -91,18 +108,30 @@ export default async function HomePage({
 
         {recipes.length === 0 ? (
           <div className="state">
-            <div className="state-eyebrow">Пусто</div>
-            <p className="t-display">
-              {q ? "Ничего не нашли" : "Рецептов пока нет"}
-            </p>
-            {q ? (
-              <p className="t-small">Попробуйте другой запрос</p>
+            {favoritesMode && isAuthenticated ? (
+              <>
+                <div className="state-eyebrow">В избранном пусто</div>
+                <p className="t-display">Сохраните любимое</p>
+                <p className="t-small">
+                  Нажмите на сердечко на карточке рецепта, чтобы добавить в избранное
+                </p>
+              </>
             ) : (
-              isAuthenticated && (
-                <Link href="/recipes/new" className="btn btn-ghost">
-                  Добавить первый рецепт
-                </Link>
-              )
+              <>
+                <div className="state-eyebrow">Пусто</div>
+                <p className="t-display">
+                  {q ? "Ничего не нашли" : "Рецептов пока нет"}
+                </p>
+                {q ? (
+                  <p className="t-small">Попробуйте другой запрос</p>
+                ) : (
+                  isAuthenticated && (
+                    <Link href="/recipes/new" className="btn btn-ghost">
+                      Добавить первый рецепт
+                    </Link>
+                  )
+                )}
+              </>
             )}
           </div>
         ) : (
@@ -114,7 +143,11 @@ export default async function HomePage({
                   href={`/recipes/${recipe.id}?page=${page}`}
                   style={{ textDecoration: "none", color: "inherit" }}
                 >
-                  <RecipeCard recipe={recipe} categories={categories} />
+                  <RecipeCard
+                    recipe={recipe}
+                    categories={categories}
+                    showFavorite={isAuthenticated}
+                  />
                 </Link>
               ))}
             </div>

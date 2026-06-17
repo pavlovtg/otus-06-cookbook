@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { proxyFetch } from "@/lib/server-fetch";
 
 const GATEWAY_URL = process.env["GATEWAY_URL"] ?? "http://api-gateway";
 const UPSTREAM = `${GATEWAY_URL}/api/cookbook/v1/categories`;
@@ -9,7 +10,7 @@ export async function PUT(
 ) {
   const { id } = await params;
   const body: unknown = await req.json();
-  const res = await fetch(`${UPSTREAM}/${id}`, {
+  const res = await proxyFetch(req, `${UPSTREAM}/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -21,11 +22,11 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const res = await fetch(`${UPSTREAM}/${id}`, {
+  const res = await proxyFetch(req, `${UPSTREAM}/${id}`, {
     method: "DELETE",
     cache: "no-store",
   });

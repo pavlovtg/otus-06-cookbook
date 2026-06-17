@@ -43,6 +43,12 @@ paths:
             enum: [title_asc, title_desc]
             default: title_asc
           description: Порядок сортировки по названию
+        - name: favorites
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Если true — возвращать только рецепты из избранного текущего пользователя
       responses:
         "200":
           description: Постраничный список рецептов
@@ -243,6 +249,77 @@ paths:
                 format: binary
         "400":
           description: Некорректный идентификатор или фото не найдено
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/recipes/{id}/favorites:
+    post:
+      summary: Добавить рецепт в избранное
+      operationId: addFavorite
+      tags:
+        - Recipes
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "201":
+          description: Рецепт добавлен в избранное
+        "400":
+          description: Некорректный идентификатор или рецепт не найден
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Не авторизован
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    delete:
+      summary: Удалить рецепт из избранного
+      operationId: removeFavorite
+      tags:
+        - Recipes
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Рецепт удалён из избранного
+        "400":
+          description: Некорректный идентификатор или рецепт не найден
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Не авторизован
           content:
             application/problem+json:
               schema:
@@ -844,6 +921,11 @@ components:
           nullable: true
           description: Идентификатор автора рецепта
           example: null
+        isFavorite:
+          type: boolean
+          nullable: true
+          description: Добавлен ли рецепт в избранное текущим пользователем (null если пользователь не авторизован)
+          example: true
     RecipeIngredientDto:
       type: object
       required:

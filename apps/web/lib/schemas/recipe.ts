@@ -39,6 +39,7 @@ export const RecipeShortDtoSchema = z.object({
   isPublic: z.boolean(),
   authorName: z.string().nullable(),
   authorId: z.string().uuid().nullable().optional(),
+  isFavorite: z.boolean().nullable().optional(),
 });
 
 export type RecipeShortDto = z.infer<typeof RecipeShortDtoSchema>;
@@ -57,6 +58,7 @@ export const RecipeDtoSchema = z.object({
   isPublic: z.boolean(),
   authorName: z.string().nullable(),
   authorId: z.string().uuid().nullable().optional(),
+  isFavorite: z.boolean().nullable().optional(),
 });
 
 export type RecipeDto = z.infer<typeof RecipeDtoSchema>;

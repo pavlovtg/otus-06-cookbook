@@ -90,9 +90,58 @@ public sealed class RecipePrivacyTests(RecipeMicroserviceFixture fixture) : IAsy
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
+    // ── Автор видит свой приватный рецепт в списке (воспроизводит e2e тест 5) ─
+
+    [Fact]
+    public async Task GetRecipes_AuthorUser_SeesOwnPrivateRecipeInSearchResults()
+    {
+        // Регистрируем нового пользователя (как в e2e: _register_and_login)
+        var authorHeader = await fixture.GetAuthHeaderAsync();
+
+        var unique = Guid.NewGuid().ToString("N")[..8];
+        var recipeId = await CreateRecipeAsync($"Мой приватный {unique}", isPublic: false, authHeader: authorHeader);
+
+        using var msg = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/recipes?q={unique}&pageSize=100");
+        msg.Headers.Authorization = authorHeader;
+        var response = await _client.SendAsync(msg);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<PagedResult<RecipeShortDto>>();
+        Assert.NotNull(result);
+        var ids = result.Items.Select(r => r.Id).ToList();
+        Assert.Contains(recipeId, ids);
+    }
+
+    // ── Автор получает 200 на свой приватный рецепт (воспроизводит e2e тест 6) ─
+
+    [Fact]
+    public async Task GetRecipeById_PrivateRecipe_NewAuthUser_Returns200ForOwner()
+    {
+        // Регистрируем нового пользователя (как в e2e: _register_and_login)
+        var authorHeader = await fixture.GetAuthHeaderAsync();
+
+        var recipeId = await CreateRecipeAsync("Приватный рецепт автора", isPublic: false, authHeader: authorHeader);
+
+        using var msg = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/recipes/{recipeId}");
+        msg.Headers.Authorization = authorHeader;
+        var response = await _client.SendAsync(msg);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var dto = await response.Content.ReadFromJsonAsync<RecipeDto>();
+        Assert.NotNull(dto);
+        Assert.Equal(recipeId, dto.Id);
+        Assert.False(dto.IsPublic);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private async Task<Guid> CreateRecipeAsync(string title, bool isPublic)
+    private Task<Guid> CreateRecipeAsync(string title, bool isPublic)
+        => CreateRecipeAsync(title, isPublic, _authHeader);
+
+    private async Task<Guid> CreateRecipeAsync(
+        string title,
+        bool isPublic,
+        System.Net.Http.Headers.AuthenticationHeaderValue authHeader)
     {
         var req = new RecipeRequest(
             Title: title,
@@ -106,7 +155,7 @@ public sealed class RecipePrivacyTests(RecipeMicroserviceFixture fixture) : IAsy
             CategoryIds: []);
 
         using var msg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/recipes");
-        msg.Headers.Authorization = _authHeader;
+        msg.Headers.Authorization = authHeader;
         msg.Content = JsonContent.Create(req);
         var response = await _client.SendAsync(msg);
         response.EnsureSuccessStatusCode();

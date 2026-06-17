@@ -16,6 +16,7 @@ internal static class CookbookSeeder
         await SeedRecipeIngredientsAsync(db, cancellationToken);
         await SeedRecipeCategoriesAsync(db, cancellationToken);
         await SeedPhotosAsync(db, photosPath, cancellationToken);
+        await SeedUserFavoritesAsync(db, cancellationToken);
     }
 
     private static async Task SeedUsersAsync(RecipeRepository db, IPasswordHasher passwordHasher, CancellationToken cancellationToken)
@@ -306,5 +307,30 @@ internal static class CookbookSeeder
                 return file;
         }
         return null;
+    }
+
+    private static async Task SeedUserFavoritesAsync(RecipeRepository db, CancellationToken cancellationToken)
+    {
+        if (SeedData.UserFavoriteSeeds.Length == 0)
+            return;
+
+        await using var tx = await db.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            foreach (var (userId, recipeId) in SeedData.UserFavoriteSeeds)
+            {
+                var exists = await db.UserFavorites.FindAsync([userId, recipeId], cancellationToken);
+                if (exists is null)
+                    await db.UserFavorites.AddAsync(UserFavorite.Create(userId, recipeId), cancellationToken);
+            }
+
+            await db.SaveChangesAsync(cancellationToken);
+            await tx.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await tx.RollbackAsync(cancellationToken);
+            throw;
+        }
     }
 }
