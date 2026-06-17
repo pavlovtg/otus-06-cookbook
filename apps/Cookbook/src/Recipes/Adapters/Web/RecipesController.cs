@@ -56,6 +56,9 @@ internal sealed class RecipesController : ControllerBase
         var currentUser = _authService.GetCurrentUser(User);
         var currentUserId = currentUser is not null ? UserId.From(currentUser.Id) : (UserId?)null;
 
+        if (favorites == true && currentUserId is null)
+            return Unauthorized(UnauthorizedProblemDetails());
+
         var result = await _recipeService.GetRecipesPagedAsync(page, pageSize, q, sortOrder, currentUserId, favorites, cancellationToken);
 
         var dto = new PagedResult<RecipeShortDto>(

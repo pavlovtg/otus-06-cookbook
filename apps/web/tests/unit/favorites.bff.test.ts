@@ -12,13 +12,13 @@ afterEach(() => {
 });
 
 describe("addFavorite", () => {
-  it("отправляет POST на /api/recipes/:id/favorites", async () => {
+  it("отправляет POST на /api/cookbook/v1/recipes/:id/favorites", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(new Response(null, { status: 200 }));
 
     await addFavorite(RECIPE_ID);
 
     expect(vi.mocked(fetch)).toHaveBeenCalledWith(
-      expect.stringContaining(`/api/recipes/${RECIPE_ID}/favorites`),
+      expect.stringContaining(`/api/cookbook/v1/recipes/${RECIPE_ID}/favorites`),
       expect.objectContaining({ method: "POST" }),
     );
   });
@@ -37,13 +37,13 @@ describe("addFavorite", () => {
 });
 
 describe("removeFavorite", () => {
-  it("отправляет DELETE на /api/recipes/:id/favorites", async () => {
+  it("отправляет DELETE на /api/cookbook/v1/recipes/:id/favorites", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(new Response(null, { status: 204 }));
 
     await removeFavorite(RECIPE_ID);
 
     expect(vi.mocked(fetch)).toHaveBeenCalledWith(
-      expect.stringContaining(`/api/recipes/${RECIPE_ID}/favorites`),
+      expect.stringContaining(`/api/cookbook/v1/recipes/${RECIPE_ID}/favorites`),
       expect.objectContaining({ method: "DELETE" }),
     );
   });

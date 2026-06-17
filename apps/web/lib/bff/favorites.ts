@@ -1,4 +1,4 @@
-const CLIENT_BASE = `/api/recipes`;
+const CLIENT_BASE = `/api/cookbook/v1/recipes`;
 
 export async function addFavorite(recipeId: string): Promise<void> {
   const response = await fetch(`${CLIENT_BASE}/${recipeId}/favorites`, {
