@@ -48,8 +48,8 @@ services:
   api-gateway:
     container_name: ${API_GATEWAY_CONTAINER_NAME:?NO_API_GATEWAY_CONTAINER_NAME}
     build:
-      context: apps
-      dockerfile: ApiGateway/Dockerfile
+      context: .
+      dockerfile: apps/ApiGateway/Dockerfile
     environment:
       ASPNETCORE_URLS: ${ASPNETCORE_URLS:?NO_ASPNETCORE_URLS}
       Logging__LogLevel__Microsoft.AspNetCore: ${DEFAULT_MICROSOFT_ASPNETCORE_LOG_LEVEL:?NO_DEFAULT_MICROSOFT_ASPNETCORE_LOG_LEVEL}

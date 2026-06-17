@@ -31,6 +31,14 @@ server {
         proxy_cache_purge photos_cache $scheme$proxy_host$1;
     }
 
+    location /api-docs {
+        set $gateway ${GATEWAY_URL};
+        proxy_pass $gateway;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
     location /api/ {
         set $gateway ${GATEWAY_URL};
         proxy_pass $gateway;
