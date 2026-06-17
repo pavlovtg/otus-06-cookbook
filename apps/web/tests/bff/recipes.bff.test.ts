@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getRecipes } from "@/lib/bff/recipes";
+import { getRecipes } from "@/lib/bff/recipes.server";
 import { RecipePagedResultSchema } from "@/lib/schemas/recipe";
 
 const mockRecipeShort = {

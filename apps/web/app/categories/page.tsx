@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import logger from "@/lib/logger";
-import { getCategories } from "@/lib/bff/categories";
+import { getCategories } from "@/lib/bff/categories.server";
 import {
   CategoryType,
   CategoryTypeLabels,

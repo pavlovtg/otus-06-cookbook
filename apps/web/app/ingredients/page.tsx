@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import logger from "@/lib/logger";
-import { getIngredients } from "@/lib/bff/ingredients";
+import { getIngredients } from "@/lib/bff/ingredients.server";
 import {
   IngredientCategory,
   IngredientCategoryLabels,

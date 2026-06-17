@@ -3,11 +3,10 @@ import {
   createRecipe,
   deleteRecipe,
   deleteRecipePhoto,
-  getRecipe,
-  getRecipes,
   updateRecipe,
   uploadRecipePhoto,
 } from "@/lib/bff/recipes";
+import { getRecipe, getRecipes } from "@/lib/bff/recipes.server";
 
 const PHOTO_ID = "aaaaaaaa-0000-0000-0000-000000000001";
 
