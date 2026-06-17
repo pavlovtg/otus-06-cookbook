@@ -16,7 +16,7 @@ export function getSessionOptions(): SessionOptions {
     password: secret,
     cookieName: "cookbook_session",
     cookieOptions: {
-      secure: process.env["NODE_ENV"] === "production",
+      secure: process.env["Session__CookieSecure"] === "true",
       httpOnly: true,
       sameSite: "lax",
     },
