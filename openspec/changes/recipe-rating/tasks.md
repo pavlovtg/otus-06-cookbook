@@ -2,10 +2,10 @@
 
 ## 1. Domain
 
-- [ ] 1.1 Создать `RecipeRating.cs` — value object с полями `UserId`, `Value` (int 1–5), фабричный метод `Create` с валидацией
-- [ ] 1.2 Создать `RatingValueOutOfRangeException.cs` — доменное исключение для значений вне диапазона 1–5
-- [ ] 1.3 Добавить в `Recipe`: поле `float? AverageRating`, коллекцию `IReadOnlyList<RecipeRating> Ratings`, метод `SetAverageRating(float? value)`
-- [ ] 1.4 Добавить в `RecipeConstraints.cs` константы `RatingMin = 1` и `RatingMax = 5`
+- [x] 1.1 Создать `RecipeRating.cs` — value object с полями `UserId`, `Value` (int 1–5), фабричный метод `Create` с валидацией
+- [x] 1.2 Создать `RatingValueOutOfRangeException.cs` — доменное исключение для значений вне диапазона 1–5
+- [x] 1.3 Добавить в `Recipe`: поле `float? AverageRating`, коллекцию `IReadOnlyList<RecipeRating> Ratings`, метод `SetAverageRating(float? value)`
+- [x] 1.4 Добавить в `RecipeConstraints.cs` константы `RatingMin = 1` и `RatingMax = 5`
 
 ## 2. Application
 
