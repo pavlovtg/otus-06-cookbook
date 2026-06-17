@@ -65,8 +65,9 @@ def test_recipe_detail_back_button_returns_to_list(page: Page, base_url: str) ->
     expect(page.locator(".recipes-grid")).to_be_visible()
 
 
-def test_create_recipe_success(page: Page, base_url: str) -> None:
+def test_create_recipe_success(logged_in_page: Page, base_url: str) -> None:
     """10.5 Успешное создание рецепта."""
+    page = logged_in_page
     page.goto(f"{base_url}/recipes/new")
 
     page.fill("#title", VALID_RECIPE["title"])
@@ -82,8 +83,9 @@ def test_create_recipe_success(page: Page, base_url: str) -> None:
     expect(page.locator(".detail-bar .title")).to_contain_text(VALID_RECIPE["title"])
 
 
-def test_create_recipe_validation_error(page: Page, base_url: str) -> None:
+def test_create_recipe_validation_error(logged_in_page: Page, base_url: str) -> None:
     """10.6 Ошибка валидации при создании рецепта с пустым названием."""
+    page = logged_in_page
     page.goto(f"{base_url}/recipes/new")
 
     page.fill("#title", "")
@@ -98,8 +100,9 @@ def test_create_recipe_validation_error(page: Page, base_url: str) -> None:
     expect(page).to_have_url(f"{base_url}/recipes/new")
 
 
-def test_edit_recipe_prefills_form(page: Page, base_url: str) -> None:
+def test_edit_recipe_prefills_form(logged_in_page: Page, base_url: str) -> None:
     """10.7 Форма редактирования предзаполнена данными рецепта."""
+    page = logged_in_page
     page.goto(base_url)
     page.locator(".recipe-card").first.click()
 
@@ -110,8 +113,9 @@ def test_edit_recipe_prefills_form(page: Page, base_url: str) -> None:
     expect(page.locator("#title")).to_have_value(recipe_title)
 
 
-def test_delete_recipe_cancel(page: Page, base_url: str) -> None:
+def test_delete_recipe_cancel(logged_in_page: Page, base_url: str) -> None:
     """10.9 Отмена удаления рецепта."""
+    page = logged_in_page
     page.goto(base_url)
     page.locator(".recipe-card").first.click()
 
@@ -150,8 +154,9 @@ def test_recipe_card_without_photo_renders_svg(page: Page, base_url: str) -> Non
         expect(cards_with_svg.first).to_be_visible()
 
 
-def test_recipe_detail_photo_actions_visible(page: Page, base_url: str) -> None:
+def test_recipe_detail_photo_actions_visible(logged_in_page: Page, base_url: str) -> None:
     """TEST-7: Кнопки управления фото видны на детальной странице."""
+    page = logged_in_page
     page.goto(base_url)
     page.locator(".recipe-card").first.click()
 
@@ -185,8 +190,9 @@ def _create_recipe_and_open(page: Page, base_url: str, title: str) -> None:
     expect(page).to_have_url(re.compile(r"/recipes/(?!new)"))
 
 
-def test_upload_photo_button_visible_when_no_photo(page: Page, base_url: str) -> None:
+def test_upload_photo_button_visible_when_no_photo(logged_in_page: Page, base_url: str) -> None:
     """TEST-7.1: Новый рецепт без фото показывает кнопку «Загрузить фото»."""
+    page = logged_in_page
     _create_recipe_and_open(page, base_url, "Тест фото 7.1")
 
     upload_btn = page.locator(".photo-actions button", has_text="Загрузить фото")
@@ -197,8 +203,9 @@ def test_upload_photo_button_visible_when_no_photo(page: Page, base_url: str) ->
     expect(page.locator(".photo-actions button", has_text="Удалить фото")).not_to_be_visible()
 
 
-def test_upload_photo_uploads_file(page: Page, base_url: str) -> None:
+def test_upload_photo_uploads_file(logged_in_page: Page, base_url: str) -> None:
     """TEST-7.2: Загрузка фото через кнопку «Загрузить фото»."""
+    page = logged_in_page
     _create_recipe_and_open(page, base_url, "Тест фото 7.2")
 
     # Загружаем файл через скрытый input
@@ -213,8 +220,9 @@ def test_upload_photo_uploads_file(page: Page, base_url: str) -> None:
     expect(page.locator(".main-photo img")).to_be_visible()
 
 
-def test_replace_photo_button_visible_when_has_photo(page: Page, base_url: str) -> None:
+def test_replace_photo_button_visible_when_has_photo(logged_in_page: Page, base_url: str) -> None:
     """TEST-7.3: После загрузки фото видна кнопка «Заменить фото», но не «Загрузить фото»."""
+    page = logged_in_page
     _create_recipe_and_open(page, base_url, "Тест фото 7.3")
 
     page.locator(".photo-actions input[type=file]").set_input_files(PHOTO_FILE)
@@ -226,8 +234,9 @@ def test_replace_photo_button_visible_when_has_photo(page: Page, base_url: str) 
     expect(page.locator(".photo-actions button", has_text="Загрузить фото")).not_to_be_visible()
 
 
-def test_replace_photo_uploads_new_file(page: Page, base_url: str) -> None:
+def test_replace_photo_uploads_new_file(logged_in_page: Page, base_url: str) -> None:
     """TEST-7.4: Кнопка «Заменить фото» загружает новый файл — фото остаётся видимым."""
+    page = logged_in_page
     _create_recipe_and_open(page, base_url, "Тест фото 7.4")
 
     # Загружаем первое фото
@@ -246,8 +255,9 @@ def test_replace_photo_uploads_new_file(page: Page, base_url: str) -> None:
     expect(page.locator(".photo-actions button", has_text="Загрузить фото")).not_to_be_visible()
 
 
-def test_delete_photo_cancel(page: Page, base_url: str) -> None:
+def test_delete_photo_cancel(logged_in_page: Page, base_url: str) -> None:
     """TEST-7.5: Отмена удаления фото — фото остаётся."""
+    page = logged_in_page
     _create_recipe_and_open(page, base_url, "Тест фото 7.5")
 
     page.locator(".photo-actions input[type=file]").set_input_files(PHOTO_FILE)
@@ -262,8 +272,9 @@ def test_delete_photo_cancel(page: Page, base_url: str) -> None:
     expect(page.locator(".photo-actions button", has_text="Удалить фото")).to_be_visible()
 
 
-def test_delete_photo_confirm(page: Page, base_url: str) -> None:
+def test_delete_photo_confirm(logged_in_page: Page, base_url: str) -> None:
     """TEST-7.6: Подтверждение удаления фото — фото удаляется, появляется «Загрузить фото»."""
+    page = logged_in_page
     _create_recipe_and_open(page, base_url, "Тест фото 7.6")
 
     page.locator(".photo-actions input[type=file]").set_input_files(PHOTO_FILE)
@@ -319,8 +330,9 @@ def _create_recipe_with_categories(page: Page, base_url: str, title: str) -> Non
     expect(page).to_have_url(re.compile(r"/recipes/(?!new)"), timeout=10000)
 
 
-def test_create_recipe_with_categories_shows_tags_in_card(page: Page, base_url: str) -> None:
+def test_create_recipe_with_categories_shows_tags_in_card(logged_in_page: Page, base_url: str) -> None:
     """8.1: Создать рецепт с категориями → категории отображаются в карточке."""
+    page = logged_in_page
     title = "Тест категорий 8.1"
     _create_recipe_with_categories(page, base_url, title)
 
@@ -340,8 +352,9 @@ def test_create_recipe_with_categories_shows_tags_in_card(page: Page, base_url: 
     expect(tags.first).to_be_visible()
 
 
-def test_create_recipe_with_categories_shows_tags_on_detail(page: Page, base_url: str) -> None:
+def test_create_recipe_with_categories_shows_tags_on_detail(logged_in_page: Page, base_url: str) -> None:
     """8.1: Создать рецепт с категориями → категории отображаются на детальной странице."""
+    page = logged_in_page
     title = "Тест категорий 8.1 detail"
     _create_recipe_with_categories(page, base_url, title)
 
@@ -353,8 +366,9 @@ def test_create_recipe_with_categories_shows_tags_on_detail(page: Page, base_url
     expect(detail_tags.first).to_be_visible()
 
 
-def test_recipe_without_categories_card_shows_no_tags(page: Page, base_url: str) -> None:
+def test_recipe_without_categories_card_shows_no_tags(logged_in_page: Page, base_url: str) -> None:
     """8.3: Рецепт без категорий — карточка не показывает теги."""
+    page = logged_in_page
     title = "Тест без категорий 8.3 карточка"
     # Создаём рецепт без категорий
     page.goto(f"{base_url}/recipes/new")
@@ -383,8 +397,9 @@ def test_recipe_without_categories_card_shows_no_tags(page: Page, base_url: str)
     expect(tags).to_have_count(0)
 
 
-def test_recipe_without_categories_detail_shows_no_tags(page: Page, base_url: str) -> None:
+def test_recipe_without_categories_detail_shows_no_tags(logged_in_page: Page, base_url: str) -> None:
     """8.3: Рецепт без категорий — детальная страница не показывает теги."""
+    page = logged_in_page
     title = "Тест без категорий 8.3 детальная"
     # Создаём рецепт без категорий
     page.goto(f"{base_url}/recipes/new")
@@ -511,8 +526,9 @@ def test_sort_changes_card_order(page: Page, base_url: str) -> None:
     )
 
 
-def test_edit_recipe_categories_update(page: Page, base_url: str) -> None:
+def test_edit_recipe_categories_update(logged_in_page: Page, base_url: str) -> None:
     """8.2: Редактировать рецепт → категории обновляются."""
+    page = logged_in_page
     title = "Тест категорий 8.2"
     _create_recipe_with_categories(page, base_url, title)
 
@@ -545,17 +561,18 @@ def test_edit_recipe_categories_update(page: Page, base_url: str) -> None:
 _API_BASE = "/api/cookbook/v1"
 
 
-def _api_create_ingredient(base_url: str, title: str) -> str:
+def _api_create_ingredient(base_url: str, title: str, auth_token: str) -> str:
     """Создаёт ингредиент через API и возвращает его id."""
     resp = httpx.post(
         f"{base_url}{_API_BASE}/ingredients",
         json={"title": title, "unit": "г", "defaultAmount": 100.0, "category": "vegetables"},
+        headers={"Authorization": f"Bearer {auth_token}"},
     )
     assert resp.status_code == 201, resp.text
     return resp.json()["id"]
 
 
-def _api_create_recipe_with_ingredient(base_url: str, title: str, ingredient_id: str, amount: float, servings: int) -> str:
+def _api_create_recipe_with_ingredient(base_url: str, title: str, ingredient_id: str, amount: float, servings: int, auth_token: str) -> str:
     """Создаёт рецепт с одним ингредиентом через API и возвращает его id."""
     resp = httpx.post(
         f"{base_url}{_API_BASE}/recipes",
@@ -568,18 +585,20 @@ def _api_create_recipe_with_ingredient(base_url: str, title: str, ingredient_id:
             "instructions": "Шаг 1.",
             "ingredients": [{"ingredientId": ingredient_id, "amount": amount}],
             "categoryIds": [],
+            "isPublic": True,
         },
+        headers={"Authorization": f"Bearer {auth_token}"},
     )
     assert resp.status_code == 201, resp.text
     return resp.json()["id"]
 
 
-def test_ingredients_scale_plus_button(page: Page, base_url: str) -> None:
+def test_ingredients_scale_plus_button(page: Page, base_url: str, auth_token: str) -> None:
     """recipe-scale 3.6: Нажатие «+» на детальной странице пересчитывает количество ингредиента."""
     # Создаём данные через API
-    ingredient_id = _api_create_ingredient(base_url, "Морковь scale-тест")
+    ingredient_id = _api_create_ingredient(base_url, "Морковь scale-тест", auth_token)
     recipe_id = _api_create_recipe_with_ingredient(
-        base_url, "Рецепт scale-тест", ingredient_id, amount=100.0, servings=4
+        base_url, "Рецепт scale-тест", ingredient_id, amount=100.0, servings=4, auth_token=auth_token
     )
 
     # Открываем детальную страницу

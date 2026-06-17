@@ -40,7 +40,7 @@ public sealed class CookbookSeederTests : IAsyncLifetime
     public async Task SeedAsync_EmptyDb_InsertsAllIngredients()
     {
         await using var seedCtx = _factory.Create();
-        await CookbookSeeder.SeedAsync(seedCtx);
+        await CookbookSeeder.SeedAsync(seedCtx, new Recipes.Infrastructure.BcryptPasswordHasher());
 
         await using var readCtx = _factory.Create();
         var count = await readCtx.Ingredients.CountAsync();
@@ -52,7 +52,7 @@ public sealed class CookbookSeederTests : IAsyncLifetime
     public async Task SeedAsync_EmptyDb_InsertsAllRecipes()
     {
         await using var seedCtx = _factory.Create();
-        await CookbookSeeder.SeedAsync(seedCtx);
+        await CookbookSeeder.SeedAsync(seedCtx, new Recipes.Infrastructure.BcryptPasswordHasher());
 
         await using var readCtx = _factory.Create();
         var count = await readCtx.Recipes.CountAsync();
@@ -64,7 +64,7 @@ public sealed class CookbookSeederTests : IAsyncLifetime
     public async Task SeedAsync_EmptyDb_InsertsRecipeIngredients()
     {
         await using var seedCtx = _factory.Create();
-        await CookbookSeeder.SeedAsync(seedCtx);
+        await CookbookSeeder.SeedAsync(seedCtx, new Recipes.Infrastructure.BcryptPasswordHasher());
 
         await using var readCtx = _factory.Create();
         var borscht = await readCtx.Recipes
@@ -79,10 +79,10 @@ public sealed class CookbookSeederTests : IAsyncLifetime
     public async Task SeedAsync_CalledTwice_DoesNotDuplicate()
     {
         await using (var ctx1 = _factory.Create())
-            await CookbookSeeder.SeedAsync(ctx1);
+            await CookbookSeeder.SeedAsync(ctx1, new Recipes.Infrastructure.BcryptPasswordHasher());
 
         await using (var ctx2 = _factory.Create())
-            await CookbookSeeder.SeedAsync(ctx2);
+            await CookbookSeeder.SeedAsync(ctx2, new Recipes.Infrastructure.BcryptPasswordHasher());
 
         await using var readCtx = _factory.Create();
         var ingredientCount = await readCtx.Ingredients.CountAsync();
@@ -96,7 +96,7 @@ public sealed class CookbookSeederTests : IAsyncLifetime
     public async Task SeedAsync_ExistingIngredient_UpdatesIt()
     {
         await using (var ctx1 = _factory.Create())
-            await CookbookSeeder.SeedAsync(ctx1);
+            await CookbookSeeder.SeedAsync(ctx1, new Recipes.Infrastructure.BcryptPasswordHasher());
 
         var seedIngredient = SeedData.Ingredients[0];
         await using (var modifyCtx = _factory.Create())
@@ -108,7 +108,7 @@ public sealed class CookbookSeederTests : IAsyncLifetime
         }
 
         await using (var ctx2 = _factory.Create())
-            await CookbookSeeder.SeedAsync(ctx2);
+            await CookbookSeeder.SeedAsync(ctx2, new Recipes.Infrastructure.BcryptPasswordHasher());
 
         await using var readCtx = _factory.Create();
         var result = await readCtx.Ingredients.FindAsync([seedIngredient.Id]);
@@ -124,19 +124,19 @@ public sealed class CookbookSeederTests : IAsyncLifetime
     public async Task SeedAsync_ExistingRecipe_UpdatesIt()
     {
         await using (var ctx1 = _factory.Create())
-            await CookbookSeeder.SeedAsync(ctx1);
+            await CookbookSeeder.SeedAsync(ctx1, new Recipes.Infrastructure.BcryptPasswordHasher());
 
         var seedRecipe = SeedData.Recipes[0];
         await using (var modifyCtx = _factory.Create())
         {
             var recipe = await modifyCtx.Recipes.FindAsync([seedRecipe.Id]);
             Assert.NotNull(recipe);
-            recipe.Update("Изменённый заголовок", null, 10, Difficulty.Easy, 1, "Шаг 1.");
+            recipe.Update("Изменённый заголовок", null, 10, Difficulty.Easy, 1, "Шаг 1.", isPublic: true);
             await modifyCtx.SaveChangesAsync();
         }
 
         await using (var ctx2 = _factory.Create())
-            await CookbookSeeder.SeedAsync(ctx2);
+            await CookbookSeeder.SeedAsync(ctx2, new Recipes.Infrastructure.BcryptPasswordHasher());
 
         await using var readCtx = _factory.Create();
         var result = await readCtx.Recipes.FindAsync([seedRecipe.Id]);
@@ -149,7 +149,7 @@ public sealed class CookbookSeederTests : IAsyncLifetime
     public async Task SeedAsync_RecipeIngredients_BorschtHasExpectedCount()
     {
         await using var seedCtx = _factory.Create();
-        await CookbookSeeder.SeedAsync(seedCtx);
+        await CookbookSeeder.SeedAsync(seedCtx, new Recipes.Infrastructure.BcryptPasswordHasher());
 
         var borschtId = RecipeId.From(new Guid("11111111-0000-0000-0000-000000000001"));
         var expectedCount = SeedData.Recipes
@@ -171,7 +171,7 @@ public sealed class CookbookSeederTests : IAsyncLifetime
     public async Task SeedAsync_EmptyDb_InsertsRecipeCategories()
     {
         await using var seedCtx = _factory.Create();
-        await CookbookSeeder.SeedAsync(seedCtx);
+        await CookbookSeeder.SeedAsync(seedCtx, new Recipes.Infrastructure.BcryptPasswordHasher());
 
         var borschtId = RecipeId.From(new Guid("11111111-0000-0000-0000-000000000001"));
 
@@ -188,7 +188,7 @@ public sealed class CookbookSeederTests : IAsyncLifetime
     public async Task SeedAsync_EmptyDb_BorschtHasExpectedCategoryCount()
     {
         await using var seedCtx = _factory.Create();
-        await CookbookSeeder.SeedAsync(seedCtx);
+        await CookbookSeeder.SeedAsync(seedCtx, new Recipes.Infrastructure.BcryptPasswordHasher());
 
         var borschtId = RecipeId.From(new Guid("11111111-0000-0000-0000-000000000001"));
         var expectedCount = SeedData.RecipeCategorySeeds
@@ -208,10 +208,10 @@ public sealed class CookbookSeederTests : IAsyncLifetime
     public async Task SeedAsync_CalledTwice_DoesNotDuplicateCategories()
     {
         await using (var ctx1 = _factory.Create())
-            await CookbookSeeder.SeedAsync(ctx1);
+            await CookbookSeeder.SeedAsync(ctx1, new Recipes.Infrastructure.BcryptPasswordHasher());
 
         await using (var ctx2 = _factory.Create())
-            await CookbookSeeder.SeedAsync(ctx2);
+            await CookbookSeeder.SeedAsync(ctx2, new Recipes.Infrastructure.BcryptPasswordHasher());
 
         var borschtId = RecipeId.From(new Guid("11111111-0000-0000-0000-000000000001"));
         var expectedCount = SeedData.RecipeCategorySeeds
@@ -231,7 +231,7 @@ public sealed class CookbookSeederTests : IAsyncLifetime
     public async Task SeedAsync_RecipeCategories_AllSeedRecipesHaveCategories()
     {
         await using var seedCtx = _factory.Create();
-        await CookbookSeeder.SeedAsync(seedCtx);
+        await CookbookSeeder.SeedAsync(seedCtx, new Recipes.Infrastructure.BcryptPasswordHasher());
 
         await using var readCtx = _factory.Create();
 

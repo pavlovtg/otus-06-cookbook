@@ -8,8 +8,6 @@ import {
   type PagedIngredient,
 } from "@/lib/schemas/ingredient";
 
-const GATEWAY_URL = process.env["GATEWAY_URL"] ?? "http://api-gateway";
-const SERVER_BASE = `${GATEWAY_URL}/api/cookbook/v1/ingredients`;
 const CLIENT_BASE = `/api/cookbook/v1/ingredients`;
 
 export async function getIngredients(params?: {
@@ -18,12 +16,12 @@ export async function getIngredients(params?: {
   page?: number;
   pageSize?: number;
 }): Promise<PagedIngredient> {
-  const base = typeof window === "undefined" ? SERVER_BASE : CLIENT_BASE;
-  const url = new URL(base, typeof window === "undefined" ? undefined : window.location.origin);
+  const url = new URL(CLIENT_BASE, window.location.origin);
   if (params?.title) url.searchParams.set("title", params.title);
   if (params?.category) url.searchParams.set("category", params.category);
   if (params?.page != null) url.searchParams.set("page", String(params.page));
-  if (params?.pageSize != null) url.searchParams.set("pageSize", String(params.pageSize));
+  if (params?.pageSize != null)
+    url.searchParams.set("pageSize", String(params.pageSize));
 
   const response = await fetch(url.toString(), { cache: "no-store" });
 
@@ -36,8 +34,7 @@ export async function getIngredients(params?: {
 }
 
 export async function getIngredient(id: string): Promise<Ingredient> {
-  const base = typeof window === "undefined" ? SERVER_BASE : CLIENT_BASE;
-  const response = await fetch(`${base}/${id}`, { cache: "no-store" });
+  const response = await fetch(`${CLIENT_BASE}/${id}`, { cache: "no-store" });
 
   if (!response.ok) {
     throw new Error(`Failed to fetch ingredient ${id}: ${response.status}`);

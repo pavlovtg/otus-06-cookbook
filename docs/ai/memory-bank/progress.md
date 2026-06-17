@@ -13,44 +13,37 @@
 - Удаление рецепта
 - CRUD ингредиентов (backend + тесты + frontend схемы/BFF + E2E тесты)
 - `recipe-ingredients` — все 56 задач (секции 1–8) полностью реализованы
+- Авторизация (`user-auth`) — JWT, BCrypt, iron-session, BFF, middleware, UI (login/register/user-chip)
+- `recipe-author` (секции 1–4, 7.1–7.3) — backend: домен, миграция, фильтрация, 403, контракт, контроллер
+- `recipe-author` (секции 5, 6, 7.4) — frontend: Zod-схемы, BFF, форма (чекбокс isPublic), RecipeCard (author-inline, photo-private), детальная страница (authorName, tag-private, 403), Storybook, E2E тесты
 
 ## В работе
 
-Нет активных задач.
+`user-favorites` — все секции 1–9 выполнены (59/59 задач).
 
 ## Заархивировано
 
 - `recipe-categories` (31/31 задач) → `openspec/changes/archive/2026-06-16-recipe-categories/`
+- `user-auth` (76/76 задач) → `openspec/changes/archive/2026-06-17-user-auth/`
+- `recipe-author` (29/29 задач) → `openspec/changes/archive/2026-06-17-recipe-author/`
 
-## Выполнено (UI-тесты фото)
+## Выполнено (последнее — recipe-author frontend)
 
-- TEST-7.1–7.6: UI-тесты кнопок «Загрузить фото», «Заменить фото», «Удалить фото» в `tests/ui/test_recipes.py`
-  - 7.1: кнопка «Загрузить фото» видна для рецепта без фото
-  - 7.2: загрузка файла через скрытый `<input>` → появляются «Заменить»/«Удалить», `<img>` виден
-  - 7.3: после загрузки видна «Заменить фото», «Загрузить фото» скрыта
-  - 7.4: «Заменить фото» загружает новый файл, `src` меняется
-  - 7.5: отмена `confirm()` — фото остаётся
-  - 7.6: подтверждение `confirm()` — фото удаляется, появляется «Загрузить фото»
-
-## Выполнено (prompt 16-cookbook-seeder)
-
-- Рефакторинг загрузки начальных данных: `CookbookSeeder` (оркестратор, 3 транзакции)
-- Удалены `IngredientSeeder` и `RecipeSeeder`
-- `SeedData.Recipes` наполнены ингредиентами (все 10 рецептов)
-- Обновлён AR-0054 (оркестратор, порядок транзакций, идемпотентность)
-- Тесты: `CookbookSeederTests` (7 кейсов), удалены старые тесты сидеров
-
-## Выполнено (последнее)
-
-- Багфикс `RecipesController`: `CategoryDomainException` не перехватывалась в `CreateRecipe`/`UpdateRecipe` → `500`. Добавлен `catch (CategoryDomainException)` перед `catch (RecipeDomainException)` в обоих методах → тест `CreateRecipe_WithNonExistentCategoryId_Returns400` проходит.
-- Багфикс unit-тестов фронтенда: фикстуры в 4 файлах (`recipe.schema.test.ts`, `recipe.bff.test.ts`, `photos.test.ts`, `RecipeCard.test.tsx`) не содержали `categoryIds` → Zod-парсинг падал → в рантайме `categories = []` → все карточки показывали fallback-сложность. Добавлен `categoryIds: []` во все фикстуры.
-- Багфикс e2e-тестов: `VALID_RECIPE` в `tests/e2e/test_recipes_api.py` не содержал `categoryIds` → backend `[ApiController]` возвращал `400` (model binding failure для non-nullable `IReadOnlyList<Guid>`). Добавлен `"categoryIds": []`.
-- Багфикс fallback-тегов: рецепт без категорий показывал сложность/порции/время как теги. Убран fallback из `RecipeCard.tsx` и `app/recipes/[id]/page.tsx` — теперь пустой `categoryIds` → пустой блок тегов. Добавлены UI-тесты `test_recipe_without_categories_card_shows_no_tags` и `test_recipe_without_categories_detail_shows_no_tags`.
+- Zod: `isPublic: z.boolean()` и `authorName: z.string().nullable()` в `RecipeShortDtoSchema`, `RecipeDtoSchema`; `isPublic` в `RecipeRequestSchema`
+- BFF: `isPublic` передаётся автоматически через `RecipeRequestSchema.parse(data)`
+- `RecipeForm.tsx`: чекбокс `<label class="checkbox">` с `name="is_public"`, предзаполнение в edit-форме
+- `RecipeCard.tsx`: `.photo-private` + `LockIcon` при `!isPublic`; `.author-inline` + `UserIcon` + `authorName` в `.footer`
+- `recipes/[id]/page.tsx`: `authorName` + `UserIcon` и `tag-private` + `LockIcon` в `.detail-bar .meta`; обработка 403 с UI-сообщением
+- Storybook: stories `Private` (переименована), `WithAuthor`, `PrivateWithAuthor`
+- E2E: `tests/e2e/test_recipe_visibility_api.py` — 10 сценариев (публичный/приватный, анонимный/автор/другой пользователь, поля isPublic/authorName)
+- Unit-тесты: `validDto`, `validShortDto`, `validRequest` обновлены; добавлены тесты `isPublic = false` и `без isPublic`
 
 ## Выполнено (ранее)
 
-- Фикс UI-тестов ингредиентов и формы рецепта (четыре этапа):
-  1. Добавлены BFF-роуты Next.js: `app/api/cookbook/v1/ingredients/route.ts` (GET, POST), `app/api/cookbook/v1/ingredients/[id]/route.ts` (GET, PUT, DELETE)
-  2. Заменён `router.refresh()` на `router.push(pathname+search)` в `IngredientModal.tsx` и `DeleteIngredientButton.tsx`
-  3. Добавлен `export const dynamic = "force-dynamic"` в 4 страницы: `(public)/page.tsx`, `ingredients/page.tsx`, `recipes/[id]/page.tsx`, `recipes/[id]/edit/page.tsx`
-  4. `getIngredients`/`getIngredient` в `lib/bff/ingredients.ts` — выбор base по `typeof window`: SSR → `SERVER_BASE`, CSR → `CLIENT_BASE` (иначе браузер не мог достучаться до `http://api-gateway`)
+- Багфикс `RecipesController`: `CategoryDomainException` не перехватывалась → добавлен catch
+- Багфикс unit-тестов фронтенда: фикстуры без `categoryIds` → добавлен `categoryIds: []`
+- Багфикс e2e-тестов: `VALID_RECIPE` без `categoryIds` → добавлен `"categoryIds": []`
+- Багфикс fallback-тегов: убран fallback из `RecipeCard.tsx` и `page.tsx`
+- Фикс UI-тестов ингредиентов: BFF-роуты, `router.push`, `force-dynamic`, SSR/CSR base URL
+- Рефакторинг `CookbookSeeder`, UI-тесты фото
+- Багфикс UI-тестов: `SEED_PASSWORD = "1234567890"` в `conftest.py` и `test_auth.py` (было `"Password1!"`)

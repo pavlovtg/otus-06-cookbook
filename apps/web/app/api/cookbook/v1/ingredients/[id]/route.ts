@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { proxyFetch } from "@/lib/server-fetch";
 
 const GATEWAY_URL = process.env["GATEWAY_URL"] ?? "http://api-gateway";
 const upstream = (id: string) =>
@@ -8,9 +9,9 @@ interface Params {
   params: Promise<{ id: string }>;
 }
 
-export async function GET(_req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, { params }: Params) {
   const { id } = await params;
-  const res = await fetch(upstream(id), { cache: "no-store" });
+  const res = await proxyFetch(req, upstream(id), { cache: "no-store" });
   const data: unknown = await res.json();
   return NextResponse.json(data, { status: res.status });
 }
@@ -18,7 +19,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 export async function PUT(req: NextRequest, { params }: Params) {
   const { id } = await params;
   const body: unknown = await req.json();
-  const res = await fetch(upstream(id), {
+  const res = await proxyFetch(req, upstream(id), {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -27,9 +28,9 @@ export async function PUT(req: NextRequest, { params }: Params) {
   return new NextResponse(null, { status: res.status });
 }
 
-export async function DELETE(_req: NextRequest, { params }: Params) {
+export async function DELETE(req: NextRequest, { params }: Params) {
   const { id } = await params;
-  const res = await fetch(upstream(id), {
+  const res = await proxyFetch(req, upstream(id), {
     method: "DELETE",
     cache: "no-store",
   });

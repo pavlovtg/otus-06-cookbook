@@ -14,8 +14,7 @@
 | `api-gateway` | `api-gateway` | API Gateway (YARP) |
 | `web` | — | Frontend + BFF (Next.js) |
 | `postgresql` | — | СУБД (PostgreSQL) |
-| `recipes` | `cookbook` | Сервис рецептов |
-| `authorization` | `identity-and-access` | Сервис авторизации |
+| `recipes` | `cookbook` | Сервис рецептов (включает auth-модуль) |
 
 ## Именование БД и схем
 
@@ -24,4 +23,3 @@
 | Сервис | БД | Схема |
 |--------|----|-------|
 | `recipes` | `recipes` | `cookbook` |
-| `authorization` | `authorization` | `identity_and_access` |

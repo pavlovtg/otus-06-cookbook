@@ -55,5 +55,17 @@ internal sealed class RecipeConfiguration : IEntityTypeConfiguration<Recipe>
                 id => id.HasValue ? id.Value.Value : (Guid?)null,
                 value => value.HasValue ? RecipePhotoId.From(value.Value) : null)
             .IsRequired(false);
+
+        entity.Property(r => r.IsPublic)
+            .HasColumnName("is_public")
+            .IsRequired()
+            .HasDefaultValue(true);
+
+        entity.Property(r => r.AuthorId)
+            .HasColumnName("author_id")
+            .HasConversion(
+                id => id.HasValue ? id.Value.Value : (Guid?)null,
+                value => value.HasValue ? UserId.From(value.Value) : null)
+            .IsRequired(false);
     }
 }

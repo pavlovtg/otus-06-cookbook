@@ -34,6 +34,7 @@ services:
       dockerfile: Dockerfile
     environment:
       GATEWAY_URL: ${GATEWAY_URL:?NO_GATEWAY_URL}
+      Session__Secret: ${Session__Secret:?NO_Session__Secret}
     networks:
       - frontend-net
     healthcheck:
@@ -81,6 +82,9 @@ services:
       DatabaseConnection__Username: ${POSTGRES_USER:?NO_POSTGRES_USER}
       DatabaseConnection__Password: ${POSTGRES_PASSWORD:?NO_POSTGRES_PASSWORD}
       Seeder__PhotosPath: /app/seed/photos
+      JWT__Secret: ${JWT__Secret:?NO_JWT__Secret}
+      JWT__Issuer: ${JWT__Issuer:?NO_JWT__Issuer}
+      JWT__Audience: ${JWT__Audience:?JWT__Audience}
     networks:
       - backend-net
     healthcheck:

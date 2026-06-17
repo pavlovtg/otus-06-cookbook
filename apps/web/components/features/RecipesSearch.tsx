@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { SearchInput } from "@/components/ui/SearchInput";
 import type { Category } from "@/lib/schemas/category";
 import type { Ingredient } from "@/lib/schemas/ingredient";
+import { HeartIcon } from "@/components/icons";
 
 const MAX_QUERY_LENGTH = 300;
 
@@ -146,6 +147,60 @@ export function RecipesSortAside({
           onKeyDown={(e) => e.key === "Enter" && handleSortChange(opt.value)}
         >
           <span>{opt.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Mode aside (Все / Избранное) ────────────────────────────────────────────
+
+interface RecipesModeAsideProps {
+  initialMode?: string;
+}
+
+export function RecipesModeAside({ initialMode = "" }: RecipesModeAsideProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const currentMode = searchParams.get("mode") ?? initialMode;
+
+  function setMode(mode: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (mode) {
+      params.set("mode", mode);
+    } else {
+      params.delete("mode");
+    }
+    params.set("page", "1");
+    router.push(`/?${params.toString()}`);
+  }
+
+  const modes = [
+    { value: "", label: "Все рецепты" },
+    { value: "favorites", label: "Избранное", icon: <HeartIcon size={14} /> },
+  ];
+
+  return (
+    <div className="aside-block">
+      <span className="aside-label">Показать</span>
+      {modes.map((m) => (
+        <div
+          key={m.value}
+          data-mode={m.value || "all"}
+          className={[
+            "aside-item",
+            currentMode === m.value ? "is-active" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          role="button"
+          tabIndex={0}
+          onClick={() => setMode(m.value)}
+          onKeyDown={(e) => e.key === "Enter" && setMode(m.value)}
+        >
+          {m.icon && <span style={{ display: "inline-flex", marginRight: 6 }}>{m.icon}</span>}
+          <span>{m.label}</span>
         </div>
       ))}
     </div>

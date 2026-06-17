@@ -10,4 +10,7 @@ internal sealed record RecipeDto(
     string Instructions,
     IReadOnlyList<RecipeIngredientDto> Ingredients,
     Guid? PhotoId,
-    IReadOnlyList<Guid> CategoryIds);
+    IReadOnlyList<Guid> CategoryIds,
+    bool IsPublic,
+    string? AuthorName,
+    Guid? AuthorId);

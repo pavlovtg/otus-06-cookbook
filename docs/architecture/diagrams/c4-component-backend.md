@@ -1,16 +1,16 @@
-# C4 Component — Backend (доменный сервис)
+# C4 Component — Backend (recipes-сервис)
 
-Источник: ADR-0011, ADR-0012, ADR-0013, ADR-0014, AR-0006, AR-0007, AR-0013
+Источник: ADR-0011, ADR-0012, ADR-0013, ADR-0014, ADR-0035, AR-0006, AR-0007, AR-0013
 
 ## Описание
 
-Внутреннее устройство типового доменного backend-сервиса (например, `recipe-service`) в гексагональной архитектуре. Domain (агрегаты, VO, доменные события) изолирован от инфраструктуры; Application определяет use-cases и порты к домен-нужной инфраструктуре (репозитории и т.п.). Аутентификация/авторизация — инфраструктурный cross-cutting слой: JWT-middleware и S2S-клиент к auth-service в нём не являются доменными портами/адаптерами.
+Внутреннее устройство `recipes`-сервиса в гексагональной архитектуре. Domain (агрегаты, VO, доменные события) изолирован от инфраструктуры; Application определяет use-cases и порты. Auth-модуль — инфраструктурный cross-cutting слой: JWT-middleware, issuer и хранение пользователей. Не является доменным портом/адаптером.
 
 ## Диаграмма
 
 ```plantuml
 @startuml
-title C4 L3 — Components: recipe-service (Hexagonal)
+title C4 L3 — Components: recipes-service (Hexagonal)
 
 skinparam rectangle {
   BackgroundColor<<adapter>> #85BBF0
@@ -31,19 +31,18 @@ skinparam database {
 }
 
 rectangle "api-gateway (YARP)\n[Container]" as yarp <<ext>>
-rectangle "auth-service\n[Container]" as auth <<ext>>
-database "recipe-postgres\n[PostgreSQL]" as pg
+database "postgresql\n[PostgreSQL]" as pg
 
-rectangle "recipe-service (.NET 10)" as svc <<boundary>> {
+rectangle "recipes-service (.NET 10)" as svc <<boundary>> {
 
   rectangle "Infrastructure (cross-cutting)" as infra <<boundary>> {
     rectangle "JWT Middleware\nвалидация sig,\niss, aud, exp" as jwt <<infra>>
-    rectangle "Auth S2S client\nполучение JWT по\nclient_credentials" as s2s <<infra>>
+    rectangle "JWT Issuer\nвыдача токенов\n(login/register)" as issuer <<infra>>
     rectangle "Problem+JSON\nerror mapping" as err <<infra>>
   }
 
   rectangle "Inbound adapters" as inb <<boundary>> {
-    rectangle "HTTP API\nMinimal API /\nControllers" as http <<adapter>>
+    rectangle "HTTP API\nControllers" as http <<adapter>>
   }
 
   rectangle "Application\n(use cases, ports)" as app <<boundary>> {
@@ -60,15 +59,15 @@ rectangle "recipe-service (.NET 10)" as svc <<boundary>> {
   }
 }
 
-yarp --> jwt        : HTTPS\n[Bearer JWT]
-jwt  --> http       : ClaimsPrincipal\nв HttpContext
-http --> uc         : вызов use case
-uc   --> ports
-uc   --> model
-ports <|.. repo     : реализует
-repo --> pg         : SQL (EF Core)
+yarp    --> jwt     : HTTPS\n[Bearer JWT]
+jwt     --> http    : ClaimsPrincipal\nв HttpContext
+http    --> uc      : вызов use case
+uc      --> ports
+uc      --> model
+ports  <|.. repo    : реализует
+repo    --> pg      : SQL (EF Core)
+issuer  --> pg      : SELECT/INSERT users
 
 http ..> err        : 4xx/5xx
-s2s  --> auth       : HTTP /auth/token\n(используется,\nкогда сервис сам\nвызывает другие)
 @enduml
 ```

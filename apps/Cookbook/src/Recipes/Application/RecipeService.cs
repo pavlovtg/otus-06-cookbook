@@ -8,21 +8,66 @@ internal sealed class RecipeService : IRecipeService
 {
     private readonly IRecipeRepository _repository;
     private readonly ICategoryRepository _categoryRepository;
+    private readonly IUserRepository _userRepository;
 
-    public RecipeService(IRecipeRepository repository, ICategoryRepository categoryRepository)
+    public RecipeService(IRecipeRepository repository, ICategoryRepository categoryRepository, IUserRepository userRepository)
     {
         _repository = repository;
         _categoryRepository = categoryRepository;
+        _userRepository = userRepository;
     }
 
-    public async Task<PagedResult<Recipe>> GetRecipesPagedAsync(
+    public async Task<PagedResult<RecipeShortWithAuthor>> GetRecipesPagedAsync(
         int page,
         int pageSize,
         string? q = null,
         RecipeSortOrder sort = RecipeSortOrder.TitleAsc,
+        UserId? currentUserId = null,
+        bool? favorites = null,
         CancellationToken cancellationToken = default)
     {
-        return await _repository.GetRecipesPagedAsync(page, pageSize, q, sort, cancellationToken);
+        var result = await _repository.GetRecipesPagedAsync(page, pageSize, q, sort, currentUserId, favorites, cancellationToken);
+
+        var authorIds = result.Items
+            .Where(r => r.AuthorId.HasValue)
+            .Select(r => r.AuthorId!.Value)
+            .DistinctBy(id => id.Value)
+            .ToList();
+
+        var authorNames = authorIds.Count > 0
+            ? await _userRepository.GetDisplayNamesByIdsAsync(authorIds, cancellationToken)
+            : new Dictionary<UserId, string>();
+
+        IReadOnlySet<RecipeId> favoriteIds = currentUserId.HasValue
+            ? await _repository.GetFavoriteIdsAsync(currentUserId.Value, cancellationToken)
+            : new HashSet<RecipeId>();
+
+        var items = result.Items
+            .Select(r =>
+            {
+                string? authorName = r.AuthorId.HasValue && authorNames.TryGetValue(r.AuthorId.Value, out var name)
+                    ? name
+                    : null;
+                bool? isFavorite = currentUserId.HasValue ? favoriteIds.Contains(r.Id) : null;
+                return new RecipeShortWithAuthor(r, authorName, isFavorite);
+            })
+            .ToList();
+
+        return new PagedResult<RecipeShortWithAuthor>(items, result.Total, result.Page, result.PageSize);
+    }
+
+    public async Task AddFavoriteAsync(UserId userId, RecipeId recipeId, CancellationToken cancellationToken = default)
+    {
+        _ = await _repository.GetByIdAsync(recipeId, cancellationToken)
+            ?? throw new RecipeNotFoundException(recipeId);
+        await _repository.AddFavoriteAsync(userId, recipeId, cancellationToken);
+        await _repository.CommitAsync(cancellationToken);
+    }
+
+    public async Task RemoveFavoriteAsync(UserId userId, RecipeId recipeId, CancellationToken cancellationToken = default)
+    {
+        await _repository.RemoveFavoriteAsync(userId, recipeId, cancellationToken);
+        await _repository.CommitAsync(cancellationToken);
     }
 
     public async Task<Recipe> GetByIdAsync(RecipeId id, CancellationToken cancellationToken = default)
@@ -31,10 +76,18 @@ internal sealed class RecipeService : IRecipeService
             ?? throw new RecipeNotFoundException(id);
     }
 
-    public async Task<RecipeWithIngredientDetails> GetByIdWithDetailsAsync(RecipeId id, CancellationToken cancellationToken = default)
+    public async Task<RecipeWithIngredientDetails> GetByIdWithDetailsAsync(
+        RecipeId id,
+        UserId? currentUserId = null,
+        CancellationToken cancellationToken = default)
     {
-        return await _repository.GetByIdWithDetailsAsync(id, cancellationToken)
+        var details = await _repository.GetByIdWithDetailsAsync(id, cancellationToken)
             ?? throw new RecipeNotFoundException(id);
+
+        if (!details.Recipe.IsPublic && details.Recipe.AuthorId != currentUserId)
+            throw new RecipeForbiddenException();
+
+        return details;
     }
 
     public async Task<Recipe> CreateAsync(
@@ -44,10 +97,15 @@ internal sealed class RecipeService : IRecipeService
         Difficulty difficulty,
         int servings,
         string instructions,
+        bool isPublic,
+        UserId? authorId,
         IEnumerable<RecipeIngredientInput> ingredients,
         IEnumerable<CategoryId> categoryIds,
         CancellationToken cancellationToken = default)
     {
+        if (authorId is null)
+            throw new RecipeUnauthorizedException();
+
         var recipeIngredients = ingredients
             .Select(i => RecipeIngredient.Create(i.IngredientId, i.Amount))
             .ToList();
@@ -55,7 +113,7 @@ internal sealed class RecipeService : IRecipeService
         var categoryTypes = await BuildCategoryTypesAsync(categoryIds, cancellationToken);
 
         var recipe = Recipe.Create(RecipeId.New(), title, description, cookingTime, difficulty, servings, instructions,
-            recipeIngredients, categoryTypes);
+            recipeIngredients, categoryTypes, isPublic, authorId);
         await _repository.CreateAsync(recipe, cancellationToken);
         await _repository.CommitAsync(cancellationToken);
         return recipe;
@@ -69,12 +127,18 @@ internal sealed class RecipeService : IRecipeService
         Difficulty difficulty,
         int servings,
         string instructions,
+        bool isPublic,
+        UserId? currentUserId,
+        UserRole? currentUserRole,
         IEnumerable<RecipeIngredientInput> ingredients,
         IEnumerable<CategoryId> categoryIds,
         CancellationToken cancellationToken = default)
     {
         var recipe = await _repository.GetByIdAsync(id, cancellationToken)
             ?? throw new RecipeNotFoundException(id);
+
+        if (!CanModifyRecipe(recipe, currentUserId, currentUserRole))
+            throw new RecipeForbiddenException();
 
         var recipeIngredients = ingredients
             .Select(i => RecipeIngredient.Create(i.IngredientId, i.Amount))
@@ -83,18 +147,29 @@ internal sealed class RecipeService : IRecipeService
         var categoryTypes = await BuildCategoryTypesAsync(categoryIds, cancellationToken);
 
         recipe.Update(title, description, cookingTime, difficulty, servings, instructions,
-            recipeIngredients, categoryTypes);
+            isPublic, recipeIngredients, categoryTypes);
         await _repository.UpdateAsync(recipe, cancellationToken);
         await _repository.CommitAsync(cancellationToken);
     }
 
-    public async Task DeleteAsync(RecipeId id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(RecipeId id, UserId? currentUserId, UserRole? currentUserRole, CancellationToken cancellationToken = default)
     {
         var recipe = await _repository.GetByIdAsync(id, cancellationToken)
             ?? throw new RecipeNotFoundException(id);
 
+        if (!CanModifyRecipe(recipe, currentUserId, currentUserRole))
+            throw new RecipeForbiddenException();
+
         await _repository.DeleteAsync(recipe.Id, cancellationToken);
         await _repository.CommitAsync(cancellationToken);
+    }
+
+    private static bool CanModifyRecipe(Recipe recipe, UserId? currentUserId, UserRole? currentUserRole)
+    {
+        if (currentUserRole == UserRole.Admin)
+            return true;
+
+        return recipe.AuthorId is not null && recipe.AuthorId == currentUserId;
     }
 
     private async Task<IReadOnlyDictionary<CategoryId, CategoryType>> BuildCategoryTypesAsync(

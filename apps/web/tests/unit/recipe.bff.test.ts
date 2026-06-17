@@ -3,11 +3,10 @@ import {
   createRecipe,
   deleteRecipe,
   deleteRecipePhoto,
-  getRecipe,
-  getRecipes,
   updateRecipe,
   uploadRecipePhoto,
 } from "@/lib/bff/recipes";
+import { getRecipe, getRecipes } from "@/lib/bff/recipes.server";
 
 const PHOTO_ID = "aaaaaaaa-0000-0000-0000-000000000001";
 
@@ -19,6 +18,8 @@ const mockRecipeShort = {
   difficulty: "everyday",
   photoId: null,
   categoryIds: [],
+  isPublic: true,
+  authorName: "Иван",
 };
 
 const mockRecipe = {
@@ -32,6 +33,8 @@ const mockRecipe = {
   ingredients: [],
   photoId: null,
   categoryIds: [],
+  isPublic: true,
+  authorName: "Иван",
 };
 
 const mockRequest = {
@@ -43,6 +46,7 @@ const mockRequest = {
   instructions: "1. Сварить бульон.",
   ingredients: [],
   categoryIds: [],
+  isPublic: true,
 };
 
 beforeEach(() => {

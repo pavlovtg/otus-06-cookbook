@@ -10,8 +10,13 @@ namespace Recipes.Tests.Microservice;
 public sealed class IngredientsCrudTests(RecipeMicroserviceFixture fixture) : IAsyncLifetime
 {
     private readonly HttpClient _client = fixture.Client;
+    private System.Net.Http.Headers.AuthenticationHeaderValue _authHeader = null!;
 
-    public Task InitializeAsync() => fixture.TruncateAsync();
+    public async Task InitializeAsync()
+    {
+        await fixture.TruncateAsync();
+        _authHeader = await fixture.GetAuthHeaderAsync();
+    }
 
     public Task DisposeAsync() => Task.CompletedTask;
 
@@ -237,10 +242,14 @@ public sealed class IngredientsCrudTests(RecipeMicroserviceFixture fixture) : IA
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [new RecipeIngredientRequest(ingredient.Id, 100m)],
             CategoryIds: []
         );
-        var recipeResponse = await _client.PostAsJsonAsync("/api/v1/recipes", recipeRequest);
+        using var recipeMsg1 = new HttpRequestMessage(HttpMethod.Post, "/api/v1/recipes");
+        recipeMsg1.Headers.Authorization = _authHeader;
+        recipeMsg1.Content = JsonContent.Create(recipeRequest);
+        var recipeResponse = await _client.SendAsync(recipeMsg1);
         recipeResponse.EnsureSuccessStatusCode();
 
         var deleteResponse = await _client.DeleteAsync($"/api/v1/ingredients/{ingredient.Id}");
@@ -260,10 +269,14 @@ public sealed class IngredientsCrudTests(RecipeMicroserviceFixture fixture) : IA
             Difficulty: "easy",
             Servings: 2,
             Instructions: "Шаг 1.",
+            IsPublic: true,
             Ingredients: [new RecipeIngredientRequest(ingredient.Id, 100m)],
             CategoryIds: []
         );
-        var recipeResponse = await _client.PostAsJsonAsync("/api/v1/recipes", recipeRequest);
+        using var recipeMsg2 = new HttpRequestMessage(HttpMethod.Post, "/api/v1/recipes");
+        recipeMsg2.Headers.Authorization = _authHeader;
+        recipeMsg2.Content = JsonContent.Create(recipeRequest);
+        var recipeResponse = await _client.SendAsync(recipeMsg2);
         recipeResponse.EnsureSuccessStatusCode();
 
         var deleteResponse = await _client.DeleteAsync($"/api/v1/ingredients/{ingredient.Id}");

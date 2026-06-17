@@ -41,8 +41,7 @@
 | AR-0009: Frontend и BFF — TypeScript / Node.js | Frontend и BFF только на TypeScript / Node.js LTS; исключение из AR-0005 | [AR-0009](docs/architecture/rules/frontend/AR-0009-frontend-typescript-nodejs.md) | frontend |
 | AR-0010: BFF boundary | BFF stateless, без бизнес-логики, без БД; JWT не покидает сервер; UI и BFF — один Next.js-процесс | [AR-0010](docs/architecture/rules/frontend/AR-0010-bff-boundary.md) | frontend |
 | AR-0011: Edge reverse proxy обязателен | Весь внешний трафик через nginx; Next.js и YARP не публикуются наружу | [AR-0011](docs/architecture/rules/general/AR-0011-edge-reverse-proxy-mandatory.md) | general |
-| AR-0012: Auth-service — единственный issuer JWT | Все JWT выпускает только auth-service; доменные сервисы и BFF — не выпускают | [AR-0012](docs/architecture/rules/rest-api/AR-0012-auth-service-sole-issuer.md) | rest-api |
-| AR-0013: JWT-валидация обязательна на downstream | Каждый backend за gateway повторно валидирует JWT (sig, iss, aud, exp) | [AR-0013](docs/architecture/rules/rest-api/AR-0013-jwt-validation-on-downstream.md) | rest-api |
+| AR-0013: JWT-валидация обязательна в recipes-сервисе | recipes-сервис валидирует JWT (sig, iss, aud, exp); YARP — чистый прокси | [AR-0013](docs/architecture/rules/rest-api/AR-0013-jwt-validation-on-downstream.md) | rest-api |
 | AR-0014: Ошибки REST API — Problem+JSON | Все 4xx/5xx сериализуются по RFC 7807 с `application/problem+json` | [AR-0014](docs/architecture/rules/rest-api/AR-0014-error-responses-problem-json.md) | rest-api |
 | AR-0015: Contract-First — OpenAPI до реализации | Любой API описывается в OpenAPI YAML (≥ 3.0.0) до написания кода; файл в `docs/contracts/<bc>/<service>.yaml` | [AR-0015](docs/architecture/rules/rest-api/AR-0015-contract-first-openapi.md) | rest-api |
 | AR-0016: Соглашение о маршрутизации на API Gateway | Маршруты gateway: `/api/{bounded-context}/...` → сервис; gateway стрипает bounded-context-префикс | [AR-0016](docs/architecture/rules/rest-api/AR-0016-gateway-routing-convention.md) | rest-api |
@@ -89,6 +88,7 @@
 | AR-0060: Загрузка фото — серверная валидация и генерация thumbnail | Серверная валидация MIME (jpeg/png) и размера (≤ 10 МБ); thumbnail 400×300 через ImageSharp; оригинал и thumbnail в одной строке | [AR-0060](docs/architecture/rules/backend/AR-0060-recipe-photo-upload-validation-thumbnail.md) | backend |
 | AR-0061: Раздача фотографий рецептов через публичный endpoint | Фото раздаются через backend endpoint без JWT; `Cache-Control: public, max-age=86400`; shared volume запрещён | [AR-0061](docs/architecture/rules/rest-api/AR-0061-recipe-photo-serving.md) | rest-api |
 | AR-0062: Seed-фотографии загружаются через CookbookSeeder | Seed-фото из `apps/seed/photos/` загружаются в `recipe_photos` через `CookbookSeeder` в транзакции с рецептами; идемпотентно | [AR-0062](docs/architecture/rules/backend/AR-0062-recipe-photo-seeding.md) | backend |
+| AR-0063: BFF Server Components используют serverFetch | Серверные BFF-функции (`lib/bff/*.ts`) из Server Components используют `serverFetch` через динамический `await import` — автоматически добавляет `Authorization` из сессии; статический импорт и прямой `fetch` к `SERVER_BASE` запрещены | [AR-0063](docs/architecture/rules/frontend/AR-0063-server-fetch-in-bff.md) | frontend |
 
 ## Стандарты
 
@@ -132,8 +132,8 @@
 | ADR-0018: Tailwind CSS + shadcn/ui *(заменён ADR-0031)* | Система стилей и базовых компонентов UI — заменена чистым CSS из Storybook | [ADR-0018](docs/adr/archive/ADR-0018-tailwind-shadcn.md) | frontend |
 | ADR-0019: Zod как валидация схем | Единая библиотека валидации и источник TS-типов | [ADR-0019](docs/adr/frontend/ADR-0019-zod-schema-validation.md) | frontend |
 | ADR-0020: Nginx как edge reverse proxy | Edge reverse proxy перед Next.js и YARP с кэшем статики | [ADR-0020](docs/adr/general/ADR-0020-nginx-as-edge-reverse-proxy.md) | general |
-| ADR-0021: Auth-service как отдельный сервис | JWT выпускается выделенным сервисом auth-service за YARP | [ADR-0021](docs/adr/rest-api/ADR-0021-dedicated-auth-service.md) | rest-api |
-| ADR-0022: S2S через OAuth 2.0 client_credentials | Сервис-клиенты получают JWT через client_credentials у auth-service | [ADR-0022](docs/adr/rest-api/ADR-0022-s2s-client-credentials.md) | rest-api |
+| ADR-0021: Auth-service как отдельный сервис *(заменён ADR-0035)* | Выделенный auth-service — заменён модулем внутри recipes-сервиса | [ADR-0021](docs/adr/archive/ADR-0021-dedicated-auth-service.md) | rest-api |
+| ADR-0022: S2S через OAuth 2.0 client_credentials *(заменён ADR-0035)* | S2S client_credentials — не нужен в MVP с одним сервисом | [ADR-0022](docs/adr/archive/ADR-0022-s2s-client-credentials.md) | rest-api |
 | ADR-0023: Contract-First подход к проектированию API | OpenAPI YAML (≥ 3.0.0) создаётся до реализации; файлы в `docs/contracts/<bc>/<service>.yaml` | [ADR-0023](docs/adr/rest-api/ADR-0023-contract-first-openapi.md) | rest-api |
 | ADR-0024: Соглашение о маршрутизации на API Gateway | Маршруты gateway: `/api/{bounded-context}/...` → сервис; gateway стрипает bounded-context-префикс | [ADR-0024](docs/adr/rest-api/ADR-0024-gateway-routing-convention.md) | rest-api |
 | ADR-0025: Database-per-Service — изоляция данных по сервисам | Каждый сервис владеет собственной БД; доступ к чужой БД запрещён; именование БД и схем — lowercase snake_case | [ADR-0025](docs/adr/database/ADR-0025-database-per-service.md) | database |
@@ -146,18 +146,17 @@
 | ADR-0032: Application-слой управляет транзакциями явно | Управление транзакцией — ответственность Application-слоя; репозитории накапливают изменения, но не фиксируют их самостоятельно | [ADR-0032](docs/adr/dotnet/ADR-0032-application-manages-transactions.md) | dotnet |
 | ADR-0033: Стратегия тестирования | Семиуровневая пирамида тестирования: unit, integration (DB/FS/classic), microservice, e2e API, UI e2e; coverage ≥ 80%; тесты пишутся сразу после кода | [ADR-0033](docs/adr/general/ADR-0033-testing-strategy.md) | general |
 | ADR-0034: Хранение фотографий рецептов в PostgreSQL | Фото хранятся в PostgreSQL (bytea) в отдельной таблице cookbook-сервиса; Docker volume для файлов не используется | [ADR-0034](docs/adr/database/ADR-0034-recipe-photos-in-postgresql.md) | database |
+| ADR-0035: Auth как модуль внутри recipes-сервиса | Заменяет ADR-0021 и ADR-0022; auth-модуль в recipes-сервисе; YARP — чистый прокси; S2S не нужен | [ADR-0035](docs/adr/rest-api/ADR-0035-auth-module-in-recipes-service.md) | rest-api |
 
 ## Диаграммы
 
 | Название | Описание для агента | Файл | Тип C4 | Источник |
 |----------|---------------------|------|--------|----------|
 | C4 Context — Cookbook | Системный контекст: единственный внешний актор — пользователь в браузере; внешних систем нет | [c4-context.md](docs/architecture/diagrams/c4-context.md) | L1 Context | ADR-0008 |
-| C4 Containers — Cookbook | Контейнеры Docker Compose: nginx → Next.js (UI+BFF) / YARP → auth-service, доменные сервисы; у каждого сервиса своя PG | [c4-containers.md](docs/architecture/diagrams/c4-containers.md) | L2 Container | ADR-0007, ADR-0008, ADR-0010, ADR-0015, ADR-0017, ADR-0020, ADR-0021 |
+| C4 Containers — Cookbook | Контейнеры Docker Compose: nginx → Next.js (UI+BFF) / YARP → recipes-сервис (включает auth-модуль); одна PostgreSQL | [c4-containers.md](docs/architecture/diagrams/c4-containers.md) | L2 Container | ADR-0007, ADR-0008, ADR-0010, ADR-0015, ADR-0017, ADR-0020, ADR-0035 |
 | C4 Component — Frontend (web) | Внутреннее устройство Next.js: граница client UI ↔ серверный BFF, JWT хранится server-side | [c4-component-frontend.md](docs/architecture/diagrams/c4-component-frontend.md) | L3 Component | ADR-0015, ADR-0017, AR-0010 |
-| C4 Component — Backend | Гексагональная архитектура доменного сервиса: Domain / Application / Adapters; auth — инфраструктурный cross-cutting слой | [c4-component-backend.md](docs/architecture/diagrams/c4-component-backend.md) | L3 Component | ADR-0011, ADR-0012, ADR-0013, ADR-0014, AR-0006, AR-0007, AR-0013 |
-| C4 Component — auth-service | Устройство единственного issuer JWT: /auth/login, /auth/token, Identity domain, JWT issuer | [c4-component-auth-service.md](docs/architecture/diagrams/c4-component-auth-service.md) | L3 Component | ADR-0021, ADR-0022, AR-0012 |
-| Flow — User login + защищённый запрос | Логин через BFF и последующий вызов защищённого ресурса; JWT не покидает сервер, в браузер только httpOnly cookie | [flow-user-login.md](docs/architecture/diagrams/flow-user-login.md) | Dynamic | ADR-0005, ADR-0017, ADR-0021, AR-0010, AR-0012, AR-0013 |
-| Flow — S2S client_credentials | Межсервисный вызов: service-A получает JWT у auth-service по client_credentials и зовёт service-B напрямую внутри Compose-сети | [flow-s2s-client-credentials.md](docs/architecture/diagrams/flow-s2s-client-credentials.md) | Dynamic | ADR-0022, AR-0012, AR-0013 |
+| C4 Component — Backend | Гексагональная архитектура recipes-сервиса: Domain / Application / Adapters; auth-модуль (JWT issuer + middleware) — инфраструктурный cross-cutting слой | [c4-component-backend.md](docs/architecture/diagrams/c4-component-backend.md) | L3 Component | ADR-0011, ADR-0012, ADR-0013, ADR-0014, ADR-0035, AR-0006, AR-0007, AR-0013 |
+| Flow — User login + защищённый запрос | Логин через BFF → YARP → recipes-сервис; JWT не покидает сервер, в браузер только httpOnly cookie | [flow-user-login.md](docs/architecture/diagrams/flow-user-login.md) | Dynamic | ADR-0005, ADR-0017, ADR-0035, AR-0010, AR-0013 |
 
 ## Формат документов
 
