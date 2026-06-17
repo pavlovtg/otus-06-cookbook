@@ -17,6 +17,8 @@ const validDto = {
   ingredients: [],
   photoId: null,
   categoryIds: [],
+  isPublic: true,
+  authorName: "Анна Воронова",
 };
 
 const validRequest = {
@@ -28,6 +30,7 @@ const validRequest = {
   instructions: "1. Сварить бульон.",
   ingredients: [],
   categoryIds: [],
+  isPublic: true,
 };
 
 const validShortDto = {
@@ -38,6 +41,8 @@ const validShortDto = {
   difficulty: "everyday",
   photoId: null,
   categoryIds: [],
+  isPublic: true,
+  authorName: null,
 };
 
 describe("RecipeDtoSchema", () => {
@@ -130,6 +135,20 @@ describe("RecipeRequestSchema", () => {
       ...validRequest,
       instructions: "",
     });
+    expect(result.success).toBe(false);
+  });
+
+  it("принимает isPublic = false", () => {
+    const result = RecipeRequestSchema.safeParse({
+      ...validRequest,
+      isPublic: false,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("отклоняет запрос без isPublic", () => {
+    const { isPublic: _, ...withoutIsPublic } = validRequest;
+    const result = RecipeRequestSchema.safeParse(withoutIsPublic);
     expect(result.success).toBe(false);
   });
 });

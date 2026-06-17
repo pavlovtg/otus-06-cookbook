@@ -14,6 +14,8 @@
 - CRUD ингредиентов (backend + тесты + frontend схемы/BFF + E2E тесты)
 - `recipe-ingredients` — все 56 задач (секции 1–8) полностью реализованы
 - Авторизация (`user-auth`) — JWT, BCrypt, iron-session, BFF, middleware, UI (login/register/user-chip)
+- `recipe-author` (секции 1–4, 7.1–7.3) — backend: домен, миграция, фильтрация, 403, контракт, контроллер
+- `recipe-author` (секции 5, 6, 7.4) — frontend: Zod-схемы, BFF, форма (чекбокс isPublic), RecipeCard (author-inline, photo-private), детальная страница (authorName, tag-private, 403), Storybook, E2E тесты
 
 ## В работе
 
@@ -24,16 +26,16 @@
 - `recipe-categories` (31/31 задач) → `openspec/changes/archive/2026-06-16-recipe-categories/`
 - `user-auth` (76/76 задач) → `openspec/changes/archive/2026-06-17-user-auth/`
 
-## Выполнено (последнее — user-auth)
+## Выполнено (последнее — recipe-author frontend)
 
-- Backend: `User`, `UserRole`, `IUserRepository`, `IAuthService`, `AuthService` (BCrypt cost 12, JWT HS256 TTL 24h)
-- Backend: `AuthController` (register, login, logout, me), JWT-middleware, `[Authorize]` на CUD рецептов
-- Backend: миграция `users`, `SeedUsersAsync` (user + admin)
-- Frontend BFF: `lib/bff/auth.ts`, route handlers `/api/cookbook/v1/auth/*`, iron-session
-- Frontend UI: `/login`, `/register`, user-chip в шапке, скрытие кнопок для гостей
-- Middleware: редирект на `/login` для `/recipes/new` и `/recipes/[id]/edit`
-- Тесты: unit (Zod, BFF), microservice (AuthController), E2E API, UI (4 теста auth)
-- Багфикс: hard navigation после логина; маршрут `/api/cookbook/v1/auth/...`
+- Zod: `isPublic: z.boolean()` и `authorName: z.string().nullable()` в `RecipeShortDtoSchema`, `RecipeDtoSchema`; `isPublic` в `RecipeRequestSchema`
+- BFF: `isPublic` передаётся автоматически через `RecipeRequestSchema.parse(data)`
+- `RecipeForm.tsx`: чекбокс `<label class="checkbox">` с `name="is_public"`, предзаполнение в edit-форме
+- `RecipeCard.tsx`: `.photo-private` + `LockIcon` при `!isPublic`; `.author-inline` + `UserIcon` + `authorName` в `.footer`
+- `recipes/[id]/page.tsx`: `authorName` + `UserIcon` и `tag-private` + `LockIcon` в `.detail-bar .meta`; обработка 403 с UI-сообщением
+- Storybook: stories `Private` (переименована), `WithAuthor`, `PrivateWithAuthor`
+- E2E: `tests/e2e/test_recipe_visibility_api.py` — 10 сценариев (публичный/приватный, анонимный/автор/другой пользователь, поля isPublic/authorName)
+- Unit-тесты: `validDto`, `validShortDto`, `validRequest` обновлены; добавлены тесты `isPublic = false` и `без isPublic`
 
 ## Выполнено (ранее)
 

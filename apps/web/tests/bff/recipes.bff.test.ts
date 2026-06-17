@@ -10,6 +10,8 @@ const mockRecipeShort = {
   difficulty: "everyday",
   photoId: null,
   categoryIds: [],
+  isPublic: true,
+  authorName: "Анна Воронова",
 };
 
 const mockPagedResult = {

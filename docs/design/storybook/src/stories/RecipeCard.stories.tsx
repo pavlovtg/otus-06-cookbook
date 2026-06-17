@@ -42,10 +42,30 @@ export const WithoutPhoto: S = {
 };
 
 export const Private: S = {
+  name: 'Приватный рецепт',
   args: {
     recipe: recipes.find((x) => !x.is_public)!,
     author: getUser('u1'),
     rating: 5,
+  },
+};
+
+export const WithAuthor: S = {
+  name: 'С именем автора',
+  args: {
+    recipe: r,
+    author: getUser(r.author_id),
+    rating: avgRating(r.id),
+  },
+};
+
+export const PrivateWithAuthor: S = {
+  name: 'Приватный с автором',
+  args: {
+    recipe: recipes.find((x) => !x.is_public)!,
+    author: getUser('u1'),
+    rating: 5,
+    showFavorite: false,
   },
 };
 
