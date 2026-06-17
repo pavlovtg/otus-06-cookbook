@@ -42,35 +42,35 @@
 
 ## 6. Frontend — BFF
 
-- [ ] 6.1 Установить `iron-session` в `apps/web`
-- [ ] 6.2 Создать `lib/bff/auth.ts` с функциями `login`, `register`, `logout`, `getMe`
-- [ ] 6.3 Создать Zod-схемы `LoginRequest`, `RegisterRequest`, `UserDto` в `lib/schemas/auth.ts`
-- [ ] 6.4 Создать Route Handler `app/api/cookbook/v1/auth/login/route.ts` (проксирует на gateway, сохраняет JWT в session)
-- [ ] 6.5 Создать Route Handler `app/api/cookbook/v1/auth/register/route.ts`
-- [ ] 6.6 Создать Route Handler `app/api/cookbook/v1/auth/logout/route.ts` (проксирует `POST /api/v1/auth/logout` с Bearer на gateway, очищает session)
-- [ ] 6.7 Создать Route Handler `app/api/cookbook/v1/auth/me/route.ts`
-- [ ] 6.8 Добавить `SESSION_SECRET` в `.env` и `docker-compose.yml`
-- [ ] 6.9 Обновить существующие BFF-функции рецептов: добавить `Authorization: Bearer` из session
+- [x] 6.1 Установить `iron-session` в `apps/web`
+- [x] 6.2 Создать `lib/bff/auth.ts` с функциями `login`, `register`, `logout`, `getMe`
+- [x] 6.3 Создать Zod-схемы `LoginRequest`, `RegisterRequest`, `UserDto` в `lib/schemas/auth.ts`
+- [x] 6.4 Создать Route Handler `app/api/cookbook/v1/auth/login/route.ts` (проксирует на gateway, сохраняет JWT в session)
+- [x] 6.5 Создать Route Handler `app/api/cookbook/v1/auth/register/route.ts`
+- [x] 6.6 Создать Route Handler `app/api/cookbook/v1/auth/logout/route.ts` (проксирует `POST /api/v1/auth/logout` с Bearer на gateway, очищает session)
+- [x] 6.7 Создать Route Handler `app/api/cookbook/v1/auth/me/route.ts`
+- [x] 6.8 Добавить `SESSION_SECRET` в `.env` и `docker-compose.yml`
+- [x] 6.9 Обновить существующие BFF-функции рецептов: добавить `Authorization: Bearer` из session
 
 ## 7. Frontend — middleware и защита маршрутов
 
-- [ ] 7.1 Создать `middleware.ts` в `apps/web`: редирект на `/login` для `/recipes/new` и `/recipes/[id]/edit` без session
+- [x] 7.1 Создать `middleware.ts` в `apps/web`: редирект на `/login` для `/recipes/new` и `/recipes/[id]/edit` без session
 
 ## 8. Frontend — UI (по макету `docs/design/mockup/index.html` + `styles.css`, компоненты из `docs/design/storybook/`)
 
-- [ ] 8.1 Создать страницу `/login` — форма входа (email, password) в стиле `.auth-card` из макета; ссылка «Нет аккаунта? Зарегистрироваться»
-- [ ] 8.2 Создать страницу `/register` — форма регистрации (displayName, email, password) в стиле `.auth-card`; ссылка «Уже есть аккаунт? Войти»
-- [ ] 8.3 Обновить шапку (`layout.tsx`): для авторизованных — `.user-chip` с аватаром, именем, тегом роли и кнопкой «Выйти»; для гостей — кнопки «Войти» / «Зарегистрироваться» (см. `#user-slot` в макете)
-- [ ] 8.4 Скрыть кнопку «Новый рецепт» для неавторизованных пользователей
-- [ ] 8.5 Скрыть кнопки «Редактировать» и «Удалить» рецепт для неавторизованных пользователей
+- [x] 8.1 Создать страницу `/login` — форма входа (email, password) в стиле `.auth-card` из макета; ссылка «Нет аккаунта? Зарегистрироваться»
+- [x] 8.2 Создать страницу `/register` — форма регистрации (displayName, email, password) в стиле `.auth-card`; ссылка «Уже есть аккаунт? Войти»
+- [x] 8.3 Обновить шапку (`layout.tsx`): для авторизованных — `.user-chip` с аватаром, именем, тегом роли и кнопкой «Выйти»; для гостей — кнопки «Войти» / «Зарегистрироваться» (см. `#user-slot` в макете)
+- [x] 8.4 Скрыть кнопку «Новый рецепт» для неавторизованных пользователей
+- [x] 8.5 Скрыть кнопки «Редактировать» и «Удалить» рецепт для неавторизованных пользователей
 
 ## 9. Frontend — тесты
 
-- [ ] 9.1 Unit-тесты Zod-схем `auth.ts`
-- [ ] 9.2 Unit-тесты BFF `auth.bff.test.ts` (мокированный fetch)
+- [x] 9.1 Unit-тесты Zod-схем `auth.ts`
+- [x] 9.2 Unit-тесты BFF `auth.bff.test.ts` (мокированный fetch)
 
 ## 10. E2E тесты
 
-- [ ] 10.1 E2E API тест: регистрация → логин → запрос к защищённому эндпоинту
-- [ ] 10.2 E2E API тест: попытка создать рецепт без токена → 401
-- [ ] 10.3 E2E API тест: логин → логаут → повторный запрос к защищённому эндпоинту → 401
+- [x] 10.1 E2E API тест: регистрация → логин → запрос к защищённому эндпоинту
+- [x] 10.2 E2E API тест: попытка создать рецепт без токена → 401
+- [x] 10.3 E2E API тест: логин → логаут → повторный запрос к защищённому эндпоинту → 401

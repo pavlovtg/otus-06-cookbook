@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { proxyFetch } from "@/lib/server-fetch";
 
 const GATEWAY_URL = process.env["GATEWAY_URL"] ?? "http://api-gateway";
 const upstream = (id: string) =>
@@ -11,7 +12,7 @@ interface Params {
 export async function POST(req: NextRequest, { params }: Params) {
   const { id } = await params;
   const formData = await req.formData();
-  const res = await fetch(upstream(id), {
+  const res = await proxyFetch(req, upstream(id), {
     method: "POST",
     body: formData,
     cache: "no-store",
@@ -20,9 +21,9 @@ export async function POST(req: NextRequest, { params }: Params) {
   return NextResponse.json(data, { status: res.status });
 }
 
-export async function DELETE(_req: NextRequest, { params }: Params) {
+export async function DELETE(req: NextRequest, { params }: Params) {
   const { id } = await params;
-  const res = await fetch(upstream(id), {
+  const res = await proxyFetch(req, upstream(id), {
     method: "DELETE",
     cache: "no-store",
   });

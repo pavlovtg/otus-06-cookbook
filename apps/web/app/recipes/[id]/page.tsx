@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getRecipe } from "@/lib/bff/recipes";
 import { getCategories } from "@/lib/bff/categories";
+import { getSession } from "@/lib/session";
 import { RecipePhoto } from "@/components/photo";
 import { Tag } from "@/components/ui/Tag";
 import { ArrowLeftIcon, ClockIcon, FlameIcon } from "@/components/icons";
@@ -39,6 +40,9 @@ export default async function RecipeDetailPage({ params, searchParams }: Props) 
     notFound();
   }
 
+  const session = await getSession();
+  const isAuthenticated = !!session.user;
+
   const recipeCats = recipe.categoryIds
     .map((cid) => allCategories.find((c) => c.id === cid))
     .filter((c): c is NonNullable<typeof c> => c !== undefined);
@@ -67,15 +71,17 @@ export default async function RecipeDetailPage({ params, searchParams }: Props) 
         <div className="detail-tags">
           {recipeCats.map((c) => <Tag key={c.id}>{c.name}</Tag>)}
         </div>
-        <div className="detail-actions">
-          <Link
-            href={`/recipes/${recipe.id}/edit`}
-            className="btn btn-ghost btn-sm"
-          >
-            Редактировать
-          </Link>
-          <DeleteRecipeButton id={recipe.id} />
-        </div>
+        {isAuthenticated && (
+          <div className="detail-actions">
+            <Link
+              href={`/recipes/${recipe.id}/edit`}
+              className="btn btn-ghost btn-sm"
+            >
+              Редактировать
+            </Link>
+            <DeleteRecipeButton id={recipe.id} />
+          </div>
+        )}
       </div>
 
       <div className="detail-grid">

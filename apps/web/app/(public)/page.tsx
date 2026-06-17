@@ -6,6 +6,7 @@ import logger from "@/lib/logger";
 import { getRecipes } from "@/lib/bff/recipes";
 import { getCategories } from "@/lib/bff/categories";
 import { getIngredients } from "@/lib/bff/ingredients";
+import { getSession } from "@/lib/session";
 import { RecipeCard } from "@/components/features/RecipeCard";
 import { PaginationNav } from "@/components/ui/PaginationNav";
 import {
@@ -52,6 +53,8 @@ export default async function HomePage({
   }
 
   const totalPages = Math.ceil(total / pageSize);
+  const session = await getSession();
+  const isAuthenticated = !!session.user;
 
   return (
     <div className="layout-with-aside">
@@ -69,9 +72,11 @@ export default async function HomePage({
           <div className="left">
             <h1 className="t-heading">Рецепты</h1>
           </div>
-          <Link href="/recipes/new" className="btn btn-primary">
-            + Новый рецепт
-          </Link>
+          {isAuthenticated && (
+            <Link href="/recipes/new" className="btn btn-primary">
+              + Новый рецепт
+            </Link>
+          )}
         </div>
 
         <div className="toolbar">
@@ -93,9 +98,11 @@ export default async function HomePage({
             {q ? (
               <p className="t-small">Попробуйте другой запрос</p>
             ) : (
-              <Link href="/recipes/new" className="btn btn-ghost">
-                Добавить первый рецепт
-              </Link>
+              isAuthenticated && (
+                <Link href="/recipes/new" className="btn btn-ghost">
+                  Добавить первый рецепт
+                </Link>
+              )
             )}
           </div>
         ) : (
