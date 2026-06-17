@@ -2,13 +2,11 @@
 
 ## Текущая задача
 
-Исправление падающих UI-тестов после добавления авторизации в recipes-сервис.
+Нет активных задач. Change `user-auth` заархивирован.
 
-## Что сделано
+## Последнее завершённое
 
-- `apps/web/app/login/page.tsx` — заменён `router.push + router.refresh` на `window.location.href` (hard navigation) для корректного обновления серверного layout после логина
-- `tests/ui/conftest.py` — добавлены фикстуры `auth_token` (session, JWT через API) и `logged_in_page` (function, логин через UI)
-- `tests/ui/test_recipes.py` — все тесты, требующие авторизации, переведены на `logged_in_page`; `_api_create_ingredient` и `_api_create_recipe_with_ingredient` принимают `auth_token`; `test_ingredients_scale_plus_button` принимает `auth_token`
+Change `user-auth` (авторизация) — полностью реализован и заархивирован в `openspec/changes/archive/2026-06-17-user-auth/`.
 
 ## Ключевые решения
 
@@ -19,3 +17,4 @@
 - Token blacklist — не реализован, тест скипнут
 - Hard navigation после логина нужна, т.к. Next.js layout — серверный компонент и не перерендеривается при soft navigation
 - Auth route.ts использовали `/api/v1/auth/...` напрямую к gateway, но gateway знает только `/api/cookbook/**` → исправлено на `/api/cookbook/v1/auth/...`
+- iron-session хранит JWT в зашифрованной cookie `cookbook_session`

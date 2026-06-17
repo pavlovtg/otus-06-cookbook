@@ -13,6 +13,7 @@
 - Удаление рецепта
 - CRUD ингредиентов (backend + тесты + frontend схемы/BFF + E2E тесты)
 - `recipe-ingredients` — все 56 задач (секции 1–8) полностью реализованы
+- Авторизация (`user-auth`) — JWT, BCrypt, iron-session, BFF, middleware, UI (login/register/user-chip)
 
 ## В работе
 
@@ -21,36 +22,24 @@
 ## Заархивировано
 
 - `recipe-categories` (31/31 задач) → `openspec/changes/archive/2026-06-16-recipe-categories/`
+- `user-auth` (76/76 задач) → `openspec/changes/archive/2026-06-17-user-auth/`
 
-## Выполнено (UI-тесты фото)
+## Выполнено (последнее — user-auth)
 
-- TEST-7.1–7.6: UI-тесты кнопок «Загрузить фото», «Заменить фото», «Удалить фото» в `tests/ui/test_recipes.py`
-  - 7.1: кнопка «Загрузить фото» видна для рецепта без фото
-  - 7.2: загрузка файла через скрытый `<input>` → появляются «Заменить»/«Удалить», `<img>` виден
-  - 7.3: после загрузки видна «Заменить фото», «Загрузить фото» скрыта
-  - 7.4: «Заменить фото» загружает новый файл, `src` меняется
-  - 7.5: отмена `confirm()` — фото остаётся
-  - 7.6: подтверждение `confirm()` — фото удаляется, появляется «Загрузить фото»
-
-## Выполнено (prompt 16-cookbook-seeder)
-
-- Рефакторинг загрузки начальных данных: `CookbookSeeder` (оркестратор, 3 транзакции)
-- Удалены `IngredientSeeder` и `RecipeSeeder`
-- `SeedData.Recipes` наполнены ингредиентами (все 10 рецептов)
-- Обновлён AR-0054 (оркестратор, порядок транзакций, идемпотентность)
-- Тесты: `CookbookSeederTests` (7 кейсов), удалены старые тесты сидеров
-
-## Выполнено (последнее)
-
-- Багфикс `RecipesController`: `CategoryDomainException` не перехватывалась в `CreateRecipe`/`UpdateRecipe` → `500`. Добавлен `catch (CategoryDomainException)` перед `catch (RecipeDomainException)` в обоих методах → тест `CreateRecipe_WithNonExistentCategoryId_Returns400` проходит.
-- Багфикс unit-тестов фронтенда: фикстуры в 4 файлах (`recipe.schema.test.ts`, `recipe.bff.test.ts`, `photos.test.ts`, `RecipeCard.test.tsx`) не содержали `categoryIds` → Zod-парсинг падал → в рантайме `categories = []` → все карточки показывали fallback-сложность. Добавлен `categoryIds: []` во все фикстуры.
-- Багфикс e2e-тестов: `VALID_RECIPE` в `tests/e2e/test_recipes_api.py` не содержал `categoryIds` → backend `[ApiController]` возвращал `400` (model binding failure для non-nullable `IReadOnlyList<Guid>`). Добавлен `"categoryIds": []`.
-- Багфикс fallback-тегов: рецепт без категорий показывал сложность/порции/время как теги. Убран fallback из `RecipeCard.tsx` и `app/recipes/[id]/page.tsx` — теперь пустой `categoryIds` → пустой блок тегов. Добавлены UI-тесты `test_recipe_without_categories_card_shows_no_tags` и `test_recipe_without_categories_detail_shows_no_tags`.
+- Backend: `User`, `UserRole`, `IUserRepository`, `IAuthService`, `AuthService` (BCrypt cost 12, JWT HS256 TTL 24h)
+- Backend: `AuthController` (register, login, logout, me), JWT-middleware, `[Authorize]` на CUD рецептов
+- Backend: миграция `users`, `SeedUsersAsync` (user + admin)
+- Frontend BFF: `lib/bff/auth.ts`, route handlers `/api/cookbook/v1/auth/*`, iron-session
+- Frontend UI: `/login`, `/register`, user-chip в шапке, скрытие кнопок для гостей
+- Middleware: редирект на `/login` для `/recipes/new` и `/recipes/[id]/edit`
+- Тесты: unit (Zod, BFF), microservice (AuthController), E2E API, UI (4 теста auth)
+- Багфикс: hard navigation после логина; маршрут `/api/cookbook/v1/auth/...`
 
 ## Выполнено (ранее)
 
-- Фикс UI-тестов ингредиентов и формы рецепта (четыре этапа):
-  1. Добавлены BFF-роуты Next.js: `app/api/cookbook/v1/ingredients/route.ts` (GET, POST), `app/api/cookbook/v1/ingredients/[id]/route.ts` (GET, PUT, DELETE)
-  2. Заменён `router.refresh()` на `router.push(pathname+search)` в `IngredientModal.tsx` и `DeleteIngredientButton.tsx`
-  3. Добавлен `export const dynamic = "force-dynamic"` в 4 страницы: `(public)/page.tsx`, `ingredients/page.tsx`, `recipes/[id]/page.tsx`, `recipes/[id]/edit/page.tsx`
-  4. `getIngredients`/`getIngredient` в `lib/bff/ingredients.ts` — выбор base по `typeof window`: SSR → `SERVER_BASE`, CSR → `CLIENT_BASE` (иначе браузер не мог достучаться до `http://api-gateway`)
+- Багфикс `RecipesController`: `CategoryDomainException` не перехватывалась → добавлен catch
+- Багфикс unit-тестов фронтенда: фикстуры без `categoryIds` → добавлен `categoryIds: []`
+- Багфикс e2e-тестов: `VALID_RECIPE` без `categoryIds` → добавлен `"categoryIds": []`
+- Багфикс fallback-тегов: убран fallback из `RecipeCard.tsx` и `page.tsx`
+- Фикс UI-тестов ингредиентов: BFF-роуты, `router.push`, `force-dynamic`, SSR/CSR base URL
+- Рефакторинг `CookbookSeeder`, UI-тесты фото
