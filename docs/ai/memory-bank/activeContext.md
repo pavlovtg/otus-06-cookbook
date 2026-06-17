@@ -2,7 +2,7 @@
 
 ## Текущая задача
 
-`user-favorites` секция 9: E2E тесты (9.1 + 9.2) — выполнено.
+Багфикс UI-тестов: `SEED_PASSWORD` в `tests/ui/conftest.py` и `tests/ui/test_auth.py` исправлен с `"Password1!"` на `"1234567890"` (соответствует `CookbookSeeder.cs`).
 
 ## Последнее завершённое
 

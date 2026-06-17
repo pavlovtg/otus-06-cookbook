@@ -7,7 +7,7 @@ from playwright.sync_api import Page
 BASE_URL_DEFAULT = "http://localhost:5500"
 
 SEED_EMAIL = "user@cookbook.local"
-SEED_PASSWORD = "Password1!"
+SEED_PASSWORD = "1234567890"
 
 _API_AUTH = "/api/cookbook/v1/auth"
 

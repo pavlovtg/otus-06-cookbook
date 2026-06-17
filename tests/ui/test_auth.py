@@ -2,7 +2,7 @@ from playwright.sync_api import Page, expect
 
 # Seed-данные из CookbookSeeder
 SEED_EMAIL = "user@cookbook.local"
-SEED_PASSWORD = "Password1!"
+SEED_PASSWORD = "1234567890"
 
 
 def _login(page: Page, base_url: str) -> None:

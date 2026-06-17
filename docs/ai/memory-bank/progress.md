@@ -46,3 +46,4 @@
 - Багфикс fallback-тегов: убран fallback из `RecipeCard.tsx` и `page.tsx`
 - Фикс UI-тестов ингредиентов: BFF-роуты, `router.push`, `force-dynamic`, SSR/CSR base URL
 - Рефакторинг `CookbookSeeder`, UI-тесты фото
+- Багфикс UI-тестов: `SEED_PASSWORD = "1234567890"` в `conftest.py` и `test_auth.py` (было `"Password1!"`)
