@@ -17,6 +17,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<User> Users => Set<User>();
     public DbSet<UserFavorite> UserFavorites => Set<UserFavorite>();
+    public DbSet<RecipeRating> RecipeRatings => Set<RecipeRating>();
 
     public RecipeRepository(DbContextOptions<RecipeRepository> options) : base(options) { }
 
@@ -37,9 +38,10 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         modelBuilder.ApplyConfiguration(new CategoryConfiguration());
         modelBuilder.ApplyConfiguration(new UserConfiguration());
         modelBuilder.ApplyConfiguration(new UserFavoriteConfiguration());
+        modelBuilder.ApplyConfiguration(new RecipeRatingConfiguration());
     }
 
-    public async Task<PagedResult<Recipe>> GetRecipesPagedAsync(
+    public async Task<PagedResult<RecipeListItem>> GetRecipesPagedAsync(
         int page,
         int pageSize,
         string? q = null,
@@ -86,16 +88,40 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
 
         var total = await query.CountAsync(cancellationToken);
 
-        var ordered = sort == RecipeSortOrder.TitleDesc
-            ? query.OrderByDescending(r => r.Title)
-            : query.OrderBy(r => r.Title);
+        IOrderedQueryable<Recipe> ordered = sort switch
+        {
+            RecipeSortOrder.TitleDesc => query.OrderByDescending(r => r.Title),
+            RecipeSortOrder.RatingDesc => query.OrderByDescending(r => r.AverageRating == null ? 0 : 1)
+                                               .ThenByDescending(r => r.AverageRating),
+            _ => query.OrderBy(r => r.Title),
+        };
 
-        var items = await ordered
+        var recipes = await ordered
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
 
-        return new PagedResult<Recipe>(items, total, page, pageSize);
+        List<RecipeListItem> items;
+        if (currentUserId.HasValue)
+        {
+            var uid = currentUserId.Value;
+            var recipeIds = recipes.Select(r => r.Id).ToList();
+            var myRatingsMap = await RecipeRatings
+                .AsNoTracking()
+                .Where(rr => rr.UserId == uid && recipeIds.Contains(rr.RecipeId))
+                .Select(rr => new { rr.RecipeId, rr.Value })
+                .ToListAsync(cancellationToken);
+            var myRatingsDict = myRatingsMap.ToDictionary(x => x.RecipeId, x => (int?)x.Value);
+            items = recipes
+                .Select(r => new RecipeListItem(r, myRatingsDict.GetValueOrDefault(r.Id)))
+                .ToList();
+        }
+        else
+        {
+            items = recipes.Select(r => new RecipeListItem(r, null)).ToList();
+        }
+
+        return new PagedResult<RecipeListItem>(items, total, page, pageSize);
     }
 
     public async Task<Recipe?> GetByIdAsync(RecipeId id, CancellationToken cancellationToken = default)
@@ -353,6 +379,60 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
     async Task IUserRepository.CreateAsync(User user, CancellationToken cancellationToken)
     {
         await Users.AddAsync(user, cancellationToken);
+    }
+
+    // ── IRecipeRepository: ratings ───────────────────────────────────────────
+
+    public async Task UpsertRatingAsync(UserId userId, RecipeId recipeId, int value, CancellationToken cancellationToken = default)
+    {
+        var existing = await RecipeRatings
+            .FirstOrDefaultAsync(r => r.UserId == userId && r.RecipeId == recipeId, cancellationToken);
+
+        if (existing is not null)
+        {
+            existing.UpdateValue(value);
+            RecipeRatings.Update(existing);
+        }
+        else
+        {
+            await RecipeRatings.AddAsync(RecipeRating.Create(userId, recipeId, value), cancellationToken);
+        }
+    }
+
+    public async Task<bool> DeleteRatingAsync(UserId userId, RecipeId recipeId, CancellationToken cancellationToken = default)
+    {
+        var existing = await RecipeRatings
+            .FirstOrDefaultAsync(r => r.UserId == userId && r.RecipeId == recipeId, cancellationToken);
+
+        if (existing is null)
+            return false;
+
+        RecipeRatings.Remove(existing);
+        return true;
+    }
+
+    public async Task<float?> GetAverageRatingAsync(RecipeId recipeId, CancellationToken cancellationToken = default)
+    {
+        var hasRatings = await RecipeRatings
+            .AsNoTracking()
+            .AnyAsync(r => r.RecipeId == recipeId, cancellationToken);
+
+        if (!hasRatings)
+            return null;
+
+        return (float?)await RecipeRatings
+            .AsNoTracking()
+            .Where(r => r.RecipeId == recipeId)
+            .AverageAsync(r => (double)r.Value, cancellationToken);
+    }
+
+    public async Task<int?> GetMyRatingAsync(UserId userId, RecipeId recipeId, CancellationToken cancellationToken = default)
+    {
+        return await RecipeRatings
+            .AsNoTracking()
+            .Where(r => r.UserId == userId && r.RecipeId == recipeId)
+            .Select(r => (int?)r.Value)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     // ── IRecipeRepository: favorites ─────────────────────────────────────────

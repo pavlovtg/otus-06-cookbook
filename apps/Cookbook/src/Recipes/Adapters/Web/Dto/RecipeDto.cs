@@ -13,4 +13,6 @@ internal sealed record RecipeDto(
     IReadOnlyList<Guid> CategoryIds,
     bool IsPublic,
     string? AuthorName,
-    Guid? AuthorId);
+    Guid? AuthorId,
+    float? AverageRating,
+    int? MyRating);

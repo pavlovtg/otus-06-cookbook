@@ -2,19 +2,21 @@
 
 ## Текущая задача
 
-Создан change `recipe-rating` в OpenSpec. Все артефакты готовы к реализации (`/opsx:apply`).
+`recipe-rating` — реализация секций 3 и 4 завершена. Следующие: секции 2.4–2.7, 5.
 
 ## Последнее завершённое
 
-`user-favorites` секции 1–2:
+`recipe-rating` секции 3 и 4 (+ частично 2):
 
-1. Домен: `UserFavorite.cs` — сущность с `UserId` + `RecipeId`.
-2. EF конфигурация: `UserFavoriteConfiguration.cs` — PK `(user_id, recipe_id)`, FK CASCADE на `users` и `recipes`.
-3. Миграция: `20260617121414_AddUserFavorites` сгенерирована через `dotnet ef`.
-4. `IRecipeRepository`: добавлены `AddFavoriteAsync`, `RemoveFavoriteAsync`, `GetFavoriteIdsAsync`.
-5. `RecipeRepository`: реализованы через EF (`AnyAsync` + `AddAsync` / `FirstOrDefaultAsync` + `Remove` / `Where + ToListAsync`).
-6. `RecipeShortWithAuthor`: добавлено поле `bool? IsFavorite`.
-7. `RecipeService.GetRecipesPagedAsync`: загружает `favoriteIds` через `GetFavoriteIdsAsync` и заполняет `IsFavorite` (null для анонимов).
+1. `RecipeRatingConfiguration.cs` — EF конфигурация таблицы `recipe_ratings`, составной PK `(user_id, recipe_id)`, FK CASCADE.
+2. `RecipeConfiguration.cs` — добавлена колонка `average_rating` (`float?`).
+3. Миграция `AddRecipeRatings` сгенерирована через `dotnet ef`.
+4. `RecipeRating.UpdateValue` — метод обновления значения с валидацией.
+5. `IRecipeRepository` — добавлены `UpsertRatingAsync`, `DeleteRatingAsync`, `GetAverageRatingAsync`, `GetMyRatingAsync`.
+6. `RecipeRepository` — реализованы все 4 метода рейтинга.
+7. `RecipeSortOrder.RatingDesc` — добавлено значение.
+8. `GetRecipesPagedAsync` — добавлена сортировка `RatingDesc` (NULLS LAST через `OrderByDescending(null→0, 1).ThenByDescending`).
+9. `RecipeShortWithAuthor` — добавлены поля `float? AverageRating` и `int? MyRating`.
 
 ## Ключевые решения
 

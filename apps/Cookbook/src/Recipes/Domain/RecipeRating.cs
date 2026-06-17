@@ -17,4 +17,12 @@ internal sealed class RecipeRating
 
         return new() { UserId = userId, RecipeId = recipeId, Value = value };
     }
+
+    public void UpdateValue(int value)
+    {
+        if (value < RecipeConstraints.RatingMin || value > RecipeConstraints.RatingMax)
+            throw new RatingValueOutOfRangeException(value);
+
+        Value = value;
+    }
 }

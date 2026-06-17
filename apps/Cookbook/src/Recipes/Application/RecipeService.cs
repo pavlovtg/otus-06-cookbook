@@ -29,8 +29,8 @@ internal sealed class RecipeService : IRecipeService
         var result = await _repository.GetRecipesPagedAsync(page, pageSize, q, sort, currentUserId, favorites, cancellationToken);
 
         var authorIds = result.Items
-            .Where(r => r.AuthorId.HasValue)
-            .Select(r => r.AuthorId!.Value)
+            .Where(r => r.Recipe.AuthorId.HasValue)
+            .Select(r => r.Recipe.AuthorId!.Value)
             .DistinctBy(id => id.Value)
             .ToList();
 
@@ -45,11 +45,11 @@ internal sealed class RecipeService : IRecipeService
         var items = result.Items
             .Select(r =>
             {
-                string? authorName = r.AuthorId.HasValue && authorNames.TryGetValue(r.AuthorId.Value, out var name)
+                string? authorName = r.Recipe.AuthorId.HasValue && authorNames.TryGetValue(r.Recipe.AuthorId.Value, out var name)
                     ? name
                     : null;
-                bool? isFavorite = currentUserId.HasValue ? favoriteIds.Contains(r.Id) : null;
-                return new RecipeShortWithAuthor(r, authorName, isFavorite);
+                bool? isFavorite = currentUserId.HasValue ? favoriteIds.Contains(r.Recipe.Id) : null;
+                return new RecipeShortWithAuthor(r.Recipe, authorName, isFavorite, r.Recipe.AverageRating, r.MyRating);
             })
             .ToList();
 
@@ -161,6 +161,32 @@ internal sealed class RecipeService : IRecipeService
             throw new RecipeForbiddenException();
 
         await _repository.DeleteAsync(recipe.Id, cancellationToken);
+        await _repository.CommitAsync(cancellationToken);
+    }
+
+    public async Task<RatingSummary> SetRatingAsync(UserId userId, RecipeId recipeId, int value, CancellationToken cancellationToken = default)
+    {
+        RecipeRating.Create(userId, recipeId, value); // валидация диапазона
+        await _repository.UpsertRatingAsync(userId, recipeId, value, cancellationToken);
+        var avg = await _repository.GetAverageRatingAsync(recipeId, cancellationToken);
+        var recipe = await _repository.GetByIdAsync(recipeId, cancellationToken)
+            ?? throw new RecipeNotFoundException(recipeId);
+        recipe.SetAverageRating(avg);
+        await _repository.UpdateAsync(recipe, cancellationToken);
+        await _repository.CommitAsync(cancellationToken);
+        return new RatingSummary(avg, value);
+    }
+
+    public async Task DeleteRatingAsync(UserId userId, RecipeId recipeId, CancellationToken cancellationToken = default)
+    {
+        var deleted = await _repository.DeleteRatingAsync(userId, recipeId, cancellationToken);
+        if (!deleted)
+            throw new RatingNotFoundException();
+        var avg = await _repository.GetAverageRatingAsync(recipeId, cancellationToken);
+        var recipe = await _repository.GetByIdAsync(recipeId, cancellationToken)
+            ?? throw new RecipeNotFoundException(recipeId);
+        recipe.SetAverageRating(avg);
+        await _repository.UpdateAsync(recipe, cancellationToken);
         await _repository.CommitAsync(cancellationToken);
     }
 

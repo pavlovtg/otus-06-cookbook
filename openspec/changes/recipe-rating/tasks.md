@@ -9,36 +9,36 @@
 
 ## 2. Application
 
-- [ ] 2.1 Добавить в `IRecipeRepository` методы: `UpsertRatingAsync`, `DeleteRatingAsync`, `GetAverageRatingAsync`, `GetMyRatingAsync`
-- [ ] 2.2 Добавить значение `RatingDesc` в `RecipeSortOrder`
-- [ ] 2.3 Добавить в `RecipeShortWithAuthor` поля `float? AverageRating` и `int? MyRating`
-- [ ] 2.4 Добавить в `IRecipeService` методы `SetRatingAsync` и `DeleteRatingAsync`
-- [ ] 2.5 Реализовать `RecipeService.SetRatingAsync`: upsert оценки → пересчёт AVG → `Recipe.SetAverageRating` → `CommitAsync`
-- [ ] 2.6 Реализовать `RecipeService.DeleteRatingAsync`: удаление оценки (400 если нет) → пересчёт AVG → `Recipe.SetAverageRating` → `CommitAsync`
-- [ ] 2.7 Обновить `RecipeService.GetRecipesPagedAsync`: передавать `AverageRating` и `MyRating` в `RecipeShortWithAuthor`
+- [x] 2.1 Добавить в `IRecipeRepository` методы: `UpsertRatingAsync`, `DeleteRatingAsync`, `GetAverageRatingAsync`, `GetMyRatingAsync`
+- [x] 2.2 Добавить значение `RatingDesc` в `RecipeSortOrder`
+- [x] 2.3 Добавить в `RecipeShortWithAuthor` поля `float? AverageRating` и `int? MyRating`
+- [x] 2.4 Добавить в `IRecipeService` методы `SetRatingAsync` и `DeleteRatingAsync`
+- [x] 2.5 Реализовать `RecipeService.SetRatingAsync`: upsert оценки → пересчёт AVG → `Recipe.SetAverageRating` → `CommitAsync`
+- [x] 2.6 Реализовать `RecipeService.DeleteRatingAsync`: удаление оценки (400 если нет) → пересчёт AVG → `Recipe.SetAverageRating` → `CommitAsync`
+- [x] 2.7 Обновить `RecipeService.GetRecipesPagedAsync`: передавать `AverageRating` и `MyRating` в `RecipeShortWithAuthor`
 
 ## 3. Database
 
-- [ ] 3.1 Создать `RecipeRatingConfiguration.cs` — EF конфигурация таблицы `recipe_ratings` (PK составной, FK на users и recipes с CASCADE)
-- [ ] 3.2 Добавить `float? AverageRating` в `RecipeConfiguration.cs` (колонка `average_rating`)
-- [ ] 3.3 Сгенерировать миграцию `AddRecipeRatings` через `dotnet ef migrations add`
+- [x] 3.1 Создать `RecipeRatingConfiguration.cs` — EF конфигурация таблицы `recipe_ratings` (PK составной, FK на users и recipes с CASCADE)
+- [x] 3.2 Добавить `float? AverageRating` в `RecipeConfiguration.cs` (колонка `average_rating`)
+- [x] 3.3 Сгенерировать миграцию `AddRecipeRatings` через `dotnet ef migrations add`
 
 ## 4. Repository
 
-- [ ] 4.1 Реализовать `RecipeRepository.UpsertRatingAsync` — upsert через EF (find + update или add)
-- [ ] 4.2 Реализовать `RecipeRepository.DeleteRatingAsync` — поиск и удаление, возврат `bool`
-- [ ] 4.3 Реализовать `RecipeRepository.GetAverageRatingAsync` — `AVG` через EF LINQ
-- [ ] 4.4 Реализовать `RecipeRepository.GetMyRatingAsync` — поиск по `(userId, recipeId)`
-- [ ] 4.5 Обновить `RecipeRepository.GetRecipesPagedAsync`: добавить `RatingDesc` в сортировку (`ORDER BY average_rating DESC NULLS LAST`), передавать `AverageRating` и `MyRating`
+- [x] 4.1 Реализовать `RecipeRepository.UpsertRatingAsync` — upsert через EF (find + update или add)
+- [x] 4.2 Реализовать `RecipeRepository.DeleteRatingAsync` — поиск и удаление, возврат `bool`
+- [x] 4.3 Реализовать `RecipeRepository.GetAverageRatingAsync` — `AVG` через EF LINQ
+- [x] 4.4 Реализовать `RecipeRepository.GetMyRatingAsync` — поиск по `(userId, recipeId)`
+- [x] 4.5 Обновить `RecipeRepository.GetRecipesPagedAsync`: добавить `RatingDesc` в сортировку (`ORDER BY average_rating DESC NULLS LAST`), передавать `AverageRating` и `MyRating`
 
 ## 5. Web Adapter
 
-- [ ] 5.1 Добавить `float? AverageRating` и `int? MyRating` в `RecipeShortDto` и `RecipeDto`
-- [ ] 5.2 Создать `RatingRequest.cs` — DTO с полем `int Value`
-- [ ] 5.3 Создать `RatingSummaryDto.cs` — DTO с полями `float? AverageRating` и `int? MyRating`
-- [ ] 5.4 Добавить в `RecipesController` эндпоинты `PUT /api/v1/recipes/{id}/rating` и `DELETE /api/v1/recipes/{id}/rating`
-- [ ] 5.5 Обновить маппинг в `RecipesController`: передавать `AverageRating` и `MyRating` из `RecipeShortWithAuthor` в `RecipeShortDto`
-- [ ] 5.6 Обновить `GlobalExceptionHandler`: обрабатывать `RatingValueOutOfRangeException` → 400
+- [x] 5.1 Добавить `float? AverageRating` и `int? MyRating` в `RecipeShortDto` и `RecipeDto`
+- [x] 5.2 Создать `RatingRequest.cs` — DTO с полем `int Value`
+- [x] 5.3 Создать `RatingSummaryDto.cs` — DTO с полями `float? AverageRating` и `int? MyRating`
+- [x] 5.4 Добавить в `RecipesController` эндпоинты `PUT /api/v1/recipes/{id}/rating` и `DELETE /api/v1/recipes/{id}/rating`
+- [x] 5.5 Обновить маппинг в `RecipesController`: передавать `AverageRating` и `MyRating` из `RecipeShortWithAuthor` в `RecipeShortDto`
+- [x] 5.6 Обновить `GlobalExceptionHandler`: обрабатывать `RatingValueOutOfRangeException` → 400
 
 ## 6. OpenAPI Contract
 

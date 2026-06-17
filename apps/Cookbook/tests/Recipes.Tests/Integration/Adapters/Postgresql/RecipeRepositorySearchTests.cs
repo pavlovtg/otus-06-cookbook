@@ -46,7 +46,7 @@ public sealed class RecipeRepositorySearchTests(RecipeIntegrationFixture fixture
         var result = await readCtx.GetRecipesPagedAsync(1, 100, q: "борщ");
 
         Assert.Single(result.Items);
-        Assert.Equal("Борщ украинский", result.Items[0].Title);
+        Assert.Equal("Борщ украинский", result.Items[0].Recipe.Title);
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public sealed class RecipeRepositorySearchTests(RecipeIntegrationFixture fixture
         var result = await readCtx.GetRecipesPagedAsync(1, 100, q: "украинский");
 
         Assert.Single(result.Items);
-        Assert.Equal("Рецепт 1", result.Items[0].Title);
+        Assert.Equal("Рецепт 1", result.Items[0].Recipe.Title);
     }
 
     // ── Фильтрация по category.name ──────────────────────────────────────────
@@ -113,7 +113,7 @@ public sealed class RecipeRepositorySearchTests(RecipeIntegrationFixture fixture
         var result = await readCtx.GetRecipesPagedAsync(1, 100, q: "завтрак");
 
         Assert.Single(result.Items);
-        Assert.Equal("Омлет", result.Items[0].Title);
+        Assert.Equal("Омлет", result.Items[0].Recipe.Title);
     }
 
     // ── Фильтрация по ingredient.title ───────────────────────────────────────
@@ -146,7 +146,7 @@ public sealed class RecipeRepositorySearchTests(RecipeIntegrationFixture fixture
         var result = await readCtx.GetRecipesPagedAsync(1, 100, q: "картофель");
 
         Assert.Single(result.Items);
-        Assert.Equal("Картофельный суп", result.Items[0].Title);
+        Assert.Equal("Картофельный суп", result.Items[0].Recipe.Title);
     }
 
     // ── AND-логика по нескольким словам ──────────────────────────────────────
@@ -166,7 +166,7 @@ public sealed class RecipeRepositorySearchTests(RecipeIntegrationFixture fixture
         var result = await readCtx.GetRecipesPagedAsync(1, 100, q: "борщ украинский");
 
         Assert.Single(result.Items);
-        Assert.Equal("Борщ украинский", result.Items[0].Title);
+        Assert.Equal("Борщ украинский", result.Items[0].Recipe.Title);
     }
 
     [Fact]
@@ -201,7 +201,7 @@ public sealed class RecipeRepositorySearchTests(RecipeIntegrationFixture fixture
         await using var readCtx = _factory.Create();
         var result = await readCtx.GetRecipesPagedAsync(1, 100, sort: RecipeSortOrder.TitleAsc);
 
-        var titles = result.Items.Select(r => r.Title).ToList();
+        var titles = result.Items.Select(r => r.Recipe.Title).ToList();
         Assert.Equal(titles.OrderBy(t => t).ToList(), titles);
     }
 
@@ -219,7 +219,7 @@ public sealed class RecipeRepositorySearchTests(RecipeIntegrationFixture fixture
         await using var readCtx = _factory.Create();
         var result = await readCtx.GetRecipesPagedAsync(1, 100, sort: RecipeSortOrder.TitleDesc);
 
-        var titles = result.Items.Select(r => r.Title).ToList();
+        var titles = result.Items.Select(r => r.Recipe.Title).ToList();
         Assert.Equal(titles.OrderByDescending(t => t).ToList(), titles);
     }
 }

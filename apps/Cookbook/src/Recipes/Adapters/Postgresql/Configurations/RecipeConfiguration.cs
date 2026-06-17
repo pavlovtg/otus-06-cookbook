@@ -67,5 +67,9 @@ internal sealed class RecipeConfiguration : IEntityTypeConfiguration<Recipe>
                 id => id.HasValue ? id.Value.Value : (Guid?)null,
                 value => value.HasValue ? UserId.From(value.Value) : null)
             .IsRequired(false);
+
+        entity.Property(r => r.AverageRating)
+            .HasColumnName("average_rating")
+            .IsRequired(false);
     }
 }

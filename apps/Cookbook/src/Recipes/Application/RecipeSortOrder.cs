@@ -4,4 +4,5 @@ internal enum RecipeSortOrder
 {
     TitleAsc,
     TitleDesc,
+    RatingDesc,
 }

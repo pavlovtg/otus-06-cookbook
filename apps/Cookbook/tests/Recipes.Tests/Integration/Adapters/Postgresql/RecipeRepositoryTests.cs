@@ -84,8 +84,8 @@ public sealed class RecipeRepositoryTests(RecipeIntegrationFixture fixture) : IA
         await using var readCtx = _factory.Create();
         var result = await readCtx.GetRecipesPagedAsync(1, 1000);
 
-        Assert.Contains(result.Items, r => r.Id == r1.Id);
-        Assert.Contains(result.Items, r => r.Id == r2.Id);
+        Assert.Contains(result.Items, r => r.Recipe.Id == r1.Id);
+        Assert.Contains(result.Items, r => r.Recipe.Id == r2.Id);
     }
 
     [Fact]
@@ -124,8 +124,8 @@ public sealed class RecipeRepositoryTests(RecipeIntegrationFixture fixture) : IA
         Assert.Equal(2, page1.Items.Count);
         Assert.Equal(2, page2.Items.Count);
 
-        var page1Ids = page1.Items.Select(r => r.Id).ToHashSet();
-        Assert.All(page2.Items, r => Assert.DoesNotContain(r.Id, page1Ids));
+        var page1Ids = page1.Items.Select(r => r.Recipe.Id).ToHashSet();
+        Assert.All(page2.Items, r => Assert.DoesNotContain(r.Recipe.Id, page1Ids));
     }
 
     // ── UpdateAsync ──────────────────────────────────────────────────────────
