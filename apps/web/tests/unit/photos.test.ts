@@ -31,6 +31,8 @@ describe("RecipeDtoSchema — photoId", () => {
     instructions: "1. Сварить бульон.",
     ingredients: [],
     categoryIds: [],
+    isPublic: true,
+    authorName: null,
   };
 
   it("принимает photoId: null", () => {
@@ -65,6 +67,8 @@ describe("RecipeShortDtoSchema — photoId", () => {
     cookingTime: 120,
     difficulty: "everyday",
     categoryIds: [],
+    isPublic: true,
+    authorName: null,
   };
 
   it("принимает photoId: null", () => {

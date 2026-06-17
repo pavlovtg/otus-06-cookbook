@@ -6,7 +6,7 @@
 
 ## Последнее завершённое
 
-Change `recipe-author` заархивирован → `openspec/changes/archive/2026-06-17-recipe-author/`. Delta specs синхронизированы в основные спеки: добавлены `recipe-author-display`, `recipe-visibility`; обновлены `recipe-create`, `recipe-detail`, `recipe-edit`, `recipe-list`.
+Исправлены упавшие unit-тесты: в моках `recipe.bff.test.ts` и `photos.test.ts` добавлены поля `isPublic` и `authorName`, которые были добавлены в Zod-схемы в рамках `recipe-author`, но тесты не обновили. Все 306 тестов проходят.
 
 ## Ключевые решения
 
