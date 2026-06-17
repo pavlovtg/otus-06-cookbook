@@ -2,11 +2,13 @@
 
 ## Текущая задача
 
-`recipe-rating` — реализация секций 3 и 4 завершена. Следующие: секции 2.4–2.7, 5.
+`recipe-rating` — исправлены падающие unit-тесты. Следующие: секции 2.4–2.7, 5.
 
 ## Последнее завершённое
 
-`recipe-rating` секции 3 и 4 (+ частично 2):
+Фикс `RecipeService.SetRatingAsync`: добавлен `CommitAsync` после `UpsertRatingAsync` и перед `GetAverageRatingAsync`. Без этого `GetAverageRatingAsync` (AsNoTracking) читал из БД до коммита → возвращал `null` → тесты падали.
+
+Ранее реализовано (`recipe-rating` секции 3 и 4):
 
 1. `RecipeRatingConfiguration.cs` — EF конфигурация таблицы `recipe_ratings`, составной PK `(user_id, recipe_id)`, FK CASCADE.
 2. `RecipeConfiguration.cs` — добавлена колонка `average_rating` (`float?`).

@@ -66,23 +66,23 @@
 
 ## 9. Frontend BFF
 
-- [ ] 9.1 Создать `apps/web/lib/bff/ratings.ts` с функциями `setRating` и `deleteRating`
-- [ ] 9.2 Добавить поля `averageRating` и `myRating` в `RecipeShortDtoSchema` и `RecipeDtoSchema`
-- [ ] 9.3 Создать `RatingSummaryDtoSchema` в `apps/web/lib/bff/ratings.ts`
+- [x] 9.1 Создать `apps/web/lib/bff/ratings.ts` с функциями `setRating` и `deleteRating`
+- [x] 9.2 Добавить поля `averageRating` и `myRating` в `RecipeShortDtoSchema` и `RecipeDtoSchema`
+- [x] 9.3 Создать `RatingSummaryDtoSchema` в `apps/web/lib/bff/ratings.ts`
 
 ## 10. Frontend Tests
 
-- [ ] 10.1 `ratings.schema.test.ts`: Zod-схема `RatingSummaryDtoSchema` валидирует корректные и некорректные данные
-- [ ] 10.2 `ratings.bff.test.ts`: `setRating` вызывает `PUT` с правильным телом; `deleteRating` вызывает `DELETE`
-- [ ] 10.3 `recipes.schema.test.ts`: обновлённые схемы принимают поля `averageRating` и `myRating`
+- [x] 10.1 `ratings.schema.test.ts`: Zod-схема `RatingSummaryDtoSchema` валидирует корректные и некорректные данные
+- [x] 10.2 `ratings.bff.test.ts`: `setRating` вызывает `PUT` с правильным телом; `deleteRating` вызывает `DELETE`
+- [x] 10.3 `recipes.schema.test.ts`: обновлённые схемы принимают поля `averageRating` и `myRating`
 
 ## 11. Frontend UI
 
-- [ ] 11.1 Портировать компонент `StarsRating` из Storybook в `apps/web/components/StarsRating.tsx`
-- [ ] 11.2 Добавить отображение `averageRating` и `myRating` на карточке рецепта в списке
-- [ ] 11.3 Добавить интерактивный виджет `StarsRating` на детальной странице рецепта (только для авторизованных)
-- [ ] 11.4 Добавить переключатель сортировки `rating_desc` в сайдбар страницы списка рецептов
+- [x] 11.1 Портировать компонент `StarsRating` из Storybook в `apps/web/components/StarsRating.tsx`
+- [x] 11.2 Добавить отображение `averageRating` и `myRating` на карточке рецепта в списке
+- [x] 11.3 Добавить интерактивный виджет `StarsRating` на детальной странице рецепта (только для авторизованных)
+- [x] 11.4 Добавить переключатель сортировки `rating_desc` в сайдбар страницы списка рецептов
 
 ## 12. E2E API Tests
 
-- [ ] 12.1 Добавить в `tests/e2e/` тест: логин → выставить оценку → проверить `averageRating` в списке → удалить оценку → проверить `averageRating = null`
+- [x] 12.1 Добавить в `tests/e2e/` тест: логин → выставить оценку → проверить `averageRating` в списке → удалить оценку → проверить `averageRating = null`

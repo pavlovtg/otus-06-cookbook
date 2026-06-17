@@ -113,6 +113,7 @@ interface RecipesSortAsideProps {
 const SORT_OPTIONS: Array<{ value: string; label: string }> = [
   { value: "title_asc", label: "А → Я" },
   { value: "title_desc", label: "Я → А" },
+  { value: "rating_desc", label: "По рейтингу" },
 ];
 
 export function RecipesSortAside({

@@ -14,6 +14,7 @@ import { ArrowLeftIcon, ClockIcon, FlameIcon, UserIcon, LockIcon } from "@/compo
 import { DeleteRecipeButton } from "./DeleteRecipeButton";
 import { RecipePhotoActions } from "./RecipePhotoActions";
 import { FavoriteDetailButton } from "./FavoriteDetailButton";
+import { RatingWidget } from "./RatingWidget";
 import { getRecipePhotoUrl } from "@/lib/bff/photos";
 import { IngredientsCard } from "@/components/features/IngredientsCard";
 
@@ -184,6 +185,15 @@ export default async function RecipeDetailPage({ params, searchParams }: Props) 
             ingredients={recipe.ingredients}
             baseServings={recipe.servings}
           />
+
+          {/* Rating widget — only for authenticated users */}
+          {!!session.user && (
+            <RatingWidget
+              recipeId={recipe.id}
+              initialMyRating={recipe.myRating}
+              initialAverageRating={recipe.averageRating}
+            />
+          )}
 
           {/* Info card */}
           <div className="card card-pad-lg">

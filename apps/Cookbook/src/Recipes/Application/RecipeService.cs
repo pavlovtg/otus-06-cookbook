@@ -168,6 +168,7 @@ internal sealed class RecipeService : IRecipeService
     {
         RecipeRating.Create(userId, recipeId, value); // валидация диапазона
         await _repository.UpsertRatingAsync(userId, recipeId, value, cancellationToken);
+        await _repository.CommitAsync(cancellationToken);
         var avg = await _repository.GetAverageRatingAsync(recipeId, cancellationToken);
         var recipe = await _repository.GetByIdAsync(recipeId, cancellationToken)
             ?? throw new RecipeNotFoundException(recipeId);

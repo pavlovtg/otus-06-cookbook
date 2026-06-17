@@ -4,6 +4,7 @@ import {
   RecipeIngredientDtoSchema,
   RecipeRequestSchema,
   RecipeListSchema,
+  RecipeShortDtoSchema,
 } from "@/lib/schemas/recipe";
 
 const validDto = {
@@ -229,6 +230,58 @@ describe("RecipeIngredientDtoSchema", () => {
       ...validIngredientDto,
       amount: 0.001,
     });
+    expect(result.success).toBe(true);
+  });
+});
+
+// ── averageRating / myRating (10.3) ───────────────────────────────────────────
+
+describe("RecipeShortDtoSchema — поля рейтинга", () => {
+  it("принимает объект с averageRating и myRating", () => {
+    const result = RecipeShortDtoSchema.safeParse({
+      ...validShortDto,
+      averageRating: 4.2,
+      myRating: 4,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("принимает объект с averageRating = null и myRating = null", () => {
+    const result = RecipeShortDtoSchema.safeParse({
+      ...validShortDto,
+      averageRating: null,
+      myRating: null,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("принимает объект без полей averageRating и myRating", () => {
+    const result = RecipeShortDtoSchema.safeParse(validShortDto);
+    expect(result.success).toBe(true);
+  });
+});
+
+describe("RecipeDtoSchema — поля рейтинга", () => {
+  it("принимает объект с averageRating и myRating", () => {
+    const result = RecipeDtoSchema.safeParse({
+      ...validDto,
+      averageRating: 3.7,
+      myRating: 3,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("принимает объект с averageRating = null и myRating = null", () => {
+    const result = RecipeDtoSchema.safeParse({
+      ...validDto,
+      averageRating: null,
+      myRating: null,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("принимает объект без полей averageRating и myRating", () => {
+    const result = RecipeDtoSchema.safeParse(validDto);
     expect(result.success).toBe(true);
   });
 });
