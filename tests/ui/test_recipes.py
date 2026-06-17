@@ -154,8 +154,9 @@ def test_recipe_card_without_photo_renders_svg(page: Page, base_url: str) -> Non
         expect(cards_with_svg.first).to_be_visible()
 
 
-def test_recipe_detail_photo_actions_visible(page: Page, base_url: str) -> None:
+def test_recipe_detail_photo_actions_visible(logged_in_page: Page, base_url: str) -> None:
     """TEST-7: Кнопки управления фото видны на детальной странице."""
+    page = logged_in_page
     page.goto(base_url)
     page.locator(".recipe-card").first.click()
 
