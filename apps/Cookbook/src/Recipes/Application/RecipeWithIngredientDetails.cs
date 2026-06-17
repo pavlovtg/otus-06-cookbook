@@ -5,4 +5,5 @@ namespace Recipes.Application;
 internal sealed record RecipeWithIngredientDetails(
     Recipe Recipe,
     IReadOnlyList<RecipeIngredientDetail> Ingredients,
-    string? AuthorName);
+    string? AuthorName,
+    int? MyRating = null);

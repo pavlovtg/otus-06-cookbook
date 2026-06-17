@@ -12,7 +12,7 @@ export type RatingSummaryDto = z.infer<typeof RatingSummaryDtoSchema>;
 export async function setRating(
   recipeId: string,
   value: number,
-): Promise<void> {
+): Promise<RatingSummaryDto> {
   const response = await fetch(`${CLIENT_BASE}/${recipeId}/rating`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -23,6 +23,9 @@ export async function setRating(
   if (!response.ok) {
     throw new Error(`Failed to set rating: ${response.status}`);
   }
+
+  const data: unknown = await response.json();
+  return RatingSummaryDtoSchema.parse(data);
 }
 
 export async function deleteRating(recipeId: string): Promise<void> {

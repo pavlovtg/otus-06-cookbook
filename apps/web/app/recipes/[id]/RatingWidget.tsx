@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { StarsRating } from "@/components/StarsRating";
 import { setRating, deleteRating } from "@/lib/bff/ratings";
 
@@ -15,6 +16,7 @@ export function RatingWidget({
   initialMyRating,
   initialAverageRating,
 }: RatingWidgetProps) {
+  const router = useRouter();
   const [myRating, setMyRating] = React.useState<number>(initialMyRating ?? 0);
   const [averageRating, setAverageRating] = React.useState<number | null>(
     initialAverageRating ?? null,
@@ -25,9 +27,10 @@ export function RatingWidget({
     if (pending) return;
     setPending(true);
     try {
-      await setRating(recipeId, v);
-      setMyRating(v);
-      // Оптимистично обновляем среднее (точное значение придёт при следующей загрузке)
+      const summary = await setRating(recipeId, v);
+      setMyRating(summary.myRating ?? v);
+      setAverageRating(summary.averageRating);
+      router.refresh();
     } catch {
       // ignore
     } finally {
@@ -41,7 +44,9 @@ export function RatingWidget({
     try {
       await deleteRating(recipeId);
       setMyRating(0);
-      setAverageRating(null);
+      // Среднее пересчитывается на сервере с учётом оценок других пользователей —
+      // полагаемся на router.refresh, который перечитает Server Component.
+      router.refresh();
     } catch {
       // ignore
     } finally {

@@ -357,7 +357,7 @@ internal sealed class RecipesController : ControllerBase
         details.AuthorName,
         details.Recipe.AuthorId?.Value,
         details.Recipe.AverageRating,
-        null);
+        details.MyRating);
 
     private ProblemDetails ProblemDetailsFor(RecipeDomainException ex) =>
         ProblemDetailsFor(ex.GetType().Name);

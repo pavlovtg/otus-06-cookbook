@@ -87,6 +87,12 @@ internal sealed class RecipeService : IRecipeService
         if (!details.Recipe.IsPublic && details.Recipe.AuthorId != currentUserId)
             throw new RecipeForbiddenException();
 
+        if (currentUserId is { } uid)
+        {
+            var myRating = await _repository.GetMyRatingAsync(uid, id, cancellationToken);
+            details = details with { MyRating = myRating };
+        }
+
         return details;
     }
 
