@@ -180,7 +180,7 @@ jobs:
       - uses: docker/setup-buildx-action@v3.10.0
       - uses: docker/build-push-action@v6.16.0
         with:
-          context: apps/
+          context: .
           file: apps/ApiGateway/Dockerfile
           push: false
           cache-from: type=gha

@@ -73,12 +73,12 @@ def test_click_favorites_mode_changes_url(logged_in_page: Page, base_url: str) -
 
 
 def test_favorites_mode_shows_favorites_heading(logged_in_page: Page, base_url: str) -> None:
-    """В режиме «Избранное» заголовок страницы меняется на «Избранное»."""
+    """В режиме «Избранное» пункт сайдбара «Избранное» становится активным."""
     page = logged_in_page
     page.goto(f"{base_url}/?mode=favorites")
 
-    heading = page.locator(".t-heading")
-    expect(heading).to_contain_text("Избранное")
+    active = page.locator("[data-mode='favorites'].is-active")
+    expect(active).to_be_visible()
 
 
 def test_click_all_recipes_mode_returns_to_normal(logged_in_page: Page, base_url: str) -> None:

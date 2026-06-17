@@ -83,19 +83,6 @@ export default async function HomePage({
       </aside>
 
       <div>
-        <div className="page-head">
-          <div className="left">
-            <h1 className="t-heading">
-              {favoritesMode && isAuthenticated ? "Избранное" : "Рецепты"}
-            </h1>
-          </div>
-          {isAuthenticated && (
-            <Link href="/recipes/new" className="btn btn-primary">
-              + Новый рецепт
-            </Link>
-          )}
-        </div>
-
         <div className="toolbar">
           <Suspense>
             <RecipesSearchInput
@@ -104,6 +91,11 @@ export default async function HomePage({
               ingredients={ingredients}
             />
           </Suspense>
+          {isAuthenticated && (
+            <Link href="/recipes/new" className="btn btn-primary">
+              + Новый рецепт
+            </Link>
+          )}
         </div>
 
         {recipes.length === 0 ? (

@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { SearchInput } from "@/components/ui/SearchInput";
 import type { Category } from "@/lib/schemas/category";
 import type { Ingredient } from "@/lib/schemas/ingredient";
-import { HeartIcon } from "@/components/icons";
 
 const MAX_QUERY_LENGTH = 300;
 
@@ -178,12 +177,12 @@ export function RecipesModeAside({ initialMode = "" }: RecipesModeAsideProps) {
 
   const modes = [
     { value: "", label: "Все рецепты" },
-    { value: "favorites", label: "Избранное", icon: <HeartIcon size={14} /> },
+    { value: "favorites", label: "Избранное" },
   ];
 
   return (
     <div className="aside-block">
-      <span className="aside-label">Показать</span>
+      <span className="aside-label">Режим</span>
       {modes.map((m) => (
         <div
           key={m.value}
@@ -199,7 +198,6 @@ export function RecipesModeAside({ initialMode = "" }: RecipesModeAsideProps) {
           onClick={() => setMode(m.value)}
           onKeyDown={(e) => e.key === "Enter" && setMode(m.value)}
         >
-          {m.icon && <span style={{ display: "inline-flex", marginRight: 6 }}>{m.icon}</span>}
           <span>{m.label}</span>
         </div>
       ))}
