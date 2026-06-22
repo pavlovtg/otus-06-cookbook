@@ -17,6 +17,8 @@ import { FavoriteDetailButton } from "./FavoriteDetailButton";
 import { RatingWidget } from "./RatingWidget";
 import { getRecipePhotoUrl } from "@/lib/bff/photos";
 import { IngredientsCard } from "@/components/features/IngredientsCard";
+import { CommentsSection } from "@/components/features/CommentsSection";
+import { getComments } from "@/lib/bff/comments";
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   easy: "Просто",
@@ -78,6 +80,13 @@ export default async function RecipeDetailPage({ params, searchParams }: Props) 
   const isOwner = !!session.user && recipe.authorId === session.user.id;
   const isAdmin = session.user?.role === "admin";
   const canEdit = isOwner || isAdmin;
+
+  const initialComments = await getComments(id, 1, 10).catch(() => ({
+    items: [],
+    total: 0,
+    page: 1,
+    pageSize: 10,
+  }));
 
   const recipeCats = recipe.categoryIds
     .map((cid) => allCategories.find((c) => c.id === cid))
@@ -219,6 +228,15 @@ export default async function RecipeDetailPage({ params, searchParams }: Props) 
           </div>
         </div>
       </div>
+
+      {/* Comments section */}
+      <CommentsSection
+        recipeId={recipe.id}
+        initialData={initialComments}
+        currentUserId={session.user?.id}
+        recipeAuthorId={recipe.authorId}
+        isAdmin={isAdmin}
+      />
     </>
   );
 }

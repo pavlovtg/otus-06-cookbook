@@ -2,23 +2,16 @@
 
 ## Текущая задача
 
-`recipe-rating` — исправлены падающие unit-тесты. Следующие: секции 2.4–2.7, 5.
+Нет активных изменений. Чейндж `recipe-comments` заархивирован.
 
 ## Последнее завершённое
 
-Фикс `RecipeService.SetRatingAsync`: добавлен `CommitAsync` после `UpsertRatingAsync` и перед `GetAverageRatingAsync`. Без этого `GetAverageRatingAsync` (AsNoTracking) читал из БД до коммита → возвращал `null` → тесты падали.
+Архивирование чейнджа `recipe-comments` (35/35 задач):
 
-Ранее реализовано (`recipe-rating` секции 3 и 4):
-
-1. `RecipeRatingConfiguration.cs` — EF конфигурация таблицы `recipe_ratings`, составной PK `(user_id, recipe_id)`, FK CASCADE.
-2. `RecipeConfiguration.cs` — добавлена колонка `average_rating` (`float?`).
-3. Миграция `AddRecipeRatings` сгенерирована через `dotnet ef`.
-4. `RecipeRating.UpdateValue` — метод обновления значения с валидацией.
-5. `IRecipeRepository` — добавлены `UpsertRatingAsync`, `DeleteRatingAsync`, `GetAverageRatingAsync`, `GetMyRatingAsync`.
-6. `RecipeRepository` — реализованы все 4 метода рейтинга.
-7. `RecipeSortOrder.RatingDesc` — добавлено значение.
-8. `GetRecipesPagedAsync` — добавлена сортировка `RatingDesc` (NULLS LAST через `OrderByDescending(null→0, 1).ThenByDescending`).
-9. `RecipeShortWithAuthor` — добавлены поля `float? AverageRating` и `int? MyRating`.
+- Delta specs синхронизированы с основными:
+  - Добавлены новые specs: `recipe-comment-add`, `recipe-comment-delete`, `recipe-comment-list`
+  - Обновлён `recipe-detail/spec.md` — добавлены требования и сценарии секции комментариев
+- Архив: `openspec/changes/archive/2026-06-22-recipe-comments/`
 
 ## Ключевые решения
 
@@ -33,3 +26,5 @@
 - `isPublic` и `authorName` добавлены в Zod-схемы `RecipeShortDtoSchema`, `RecipeDtoSchema`, `RecipeRequestSchema`
 - 403 на детальной странице обрабатывается через проверку `err.message.includes("403")` → показывает UI-сообщение вместо `notFound()`
 - `serverFetch(url, init?)` в `lib/server-fetch.ts` — обёртка для Server Components, автоматически добавляет `Authorization` из `getSession()`. `getRecipe`/`getRecipes` используют `serverFetch` — автор видит свои приватные рецепты.
+- `CommentsSection` — Client Component; первая страница комментариев загружается в Server Component (`getComments` с `.catch`) и передаётся как `initialData`; смена страниц — клиентский fetch
+- Один комментарий на пользователя на рецепт — уникальный индекс `(recipe_id, author_id)` в таблице `recipe_comments`

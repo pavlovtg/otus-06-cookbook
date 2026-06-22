@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Recipes.Adapters.Web.Dto;
 using Recipes.Application;
 using Recipes.Application.Ports;
@@ -15,12 +17,14 @@ internal sealed class RecipesController : ControllerBase
     private readonly IRecipeService _recipeService;
     private readonly IRecipePhotoService _photoService;
     private readonly IAuthService _authService;
+    private readonly IRecipeCommentService _commentService;
 
-    public RecipesController(IRecipeService recipeService, IRecipePhotoService photoService, IAuthService authService)
+    public RecipesController(IRecipeService recipeService, IRecipePhotoService photoService, IAuthService authService, IRecipeCommentService commentService)
     {
         _recipeService = recipeService;
         _photoService = photoService;
         _authService = authService;
+        _commentService = commentService;
     }
 
     private const int DefaultPage = 1;
@@ -324,6 +328,103 @@ internal sealed class RecipesController : ControllerBase
             return BadRequest(ProblemDetailsFor(ex));
         }
     }
+
+    // ── Comments ──────────────────────────────────────────────────────────────
+
+    [HttpGet("{id:guid}/comments")]
+    public async Task<IActionResult> GetComments(
+        Guid id,
+        [FromQuery] int page = DefaultPage,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        if (page < 1)
+            return BadRequest(ProblemDetailsFor("'page' must be greater than or equal to 1."));
+        if (pageSize < 1)
+            return BadRequest(ProblemDetailsFor("'pageSize' must be greater than or equal to 1."));
+
+        try
+        {
+            var result = await _commentService.GetCommentsAsync(RecipeId.From(id), page, pageSize, cancellationToken);
+            var dto = new PagedResult<CommentDto>(
+                result.Items.Select(ToCommentDto).ToList(),
+                result.Total,
+                result.Page,
+                result.PageSize);
+            return Ok(dto);
+        }
+        catch (RecipeDomainException ex)
+        {
+            return BadRequest(ProblemDetailsFor(ex));
+        }
+    }
+
+    [Authorize]
+    [HttpPost("{id:guid}/comments")]
+    public async Task<IActionResult> AddComment(Guid id, [FromBody] CommentRequest request, CancellationToken cancellationToken)
+    {
+        var currentUser = _authService.GetCurrentUser(User);
+        if (currentUser is null)
+            return Unauthorized(UnauthorizedProblemDetails());
+
+        try
+        {
+            var comment = await _commentService.AddCommentAsync(
+                RecipeId.From(id),
+                UserId.From(currentUser.Id),
+                request.Text,
+                cancellationToken);
+            return StatusCode(201, ToCommentDto(comment));
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
+        {
+            return BadRequest(ProblemDetailsFor(nameof(CommentAlreadyExistsException)));
+        }
+        catch (CommentDomainException ex)
+        {
+            return BadRequest(ProblemDetailsFor(ex.GetType().Name));
+        }
+        catch (RecipeDomainException ex)
+        {
+            return BadRequest(ProblemDetailsFor(ex));
+        }
+    }
+
+    [Authorize]
+    [HttpDelete("{id:guid}/comments/{commentId:guid}")]
+    public async Task<IActionResult> DeleteComment(Guid id, Guid commentId, CancellationToken cancellationToken)
+    {
+        var currentUser = _authService.GetCurrentUser(User);
+        if (currentUser is null)
+            return Unauthorized(UnauthorizedProblemDetails());
+
+        try
+        {
+            var currentUserRole = ParseRole(currentUser.Role);
+            await _commentService.DeleteCommentAsync(
+                RecipeCommentId.From(commentId),
+                UserId.From(currentUser.Id),
+                currentUserRole,
+                cancellationToken);
+            return NoContent();
+        }
+        catch (CommentForbiddenException)
+        {
+            return StatusCode(403, ForbiddenProblemDetails());
+        }
+        catch (CommentDomainException ex)
+        {
+            return BadRequest(ProblemDetailsFor(ex.GetType().Name));
+        }
+    }
+
+    private static CommentDto ToCommentDto(CommentDetail c) => new(
+        c.Id.Value,
+        c.RecipeId.Value,
+        c.AuthorId.Value,
+        c.AuthorName,
+        c.Text,
+        c.CreatedAt);
 
     private static RecipeShortDto ToShortDto(RecipeShortWithAuthor item) => new(
         item.Recipe.Id.Value,
