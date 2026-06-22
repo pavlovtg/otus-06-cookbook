@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Recipes.Adapters.Web.Dto;
 using Recipes.Application;
 using Recipes.Application.Ports;
@@ -373,6 +375,10 @@ internal sealed class RecipesController : ControllerBase
                 request.Text,
                 cancellationToken);
             return StatusCode(201, ToCommentDto(comment));
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
+        {
+            return BadRequest(ProblemDetailsFor(nameof(CommentAlreadyExistsException)));
         }
         catch (CommentDomainException ex)
         {
