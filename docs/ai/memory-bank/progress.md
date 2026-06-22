@@ -19,13 +19,14 @@
 
 ## В работе
 
-`recipe-comments` — секции 1–10 выполнены. Осталось: 11 (E2E API), 12 (UI E2E).
+Нет активных изменений.
 
 ## Заархивировано
 
 - `recipe-categories` (31/31 задач) → `openspec/changes/archive/2026-06-16-recipe-categories/`
 - `user-auth` (76/76 задач) → `openspec/changes/archive/2026-06-17-user-auth/`
 - `recipe-author` (29/29 задач) → `openspec/changes/archive/2026-06-17-recipe-author/`
+- `recipe-comments` (35/35 задач) → `openspec/changes/archive/2026-06-22-recipe-comments/`
 
 ## Выполнено (последнее — recipe-author frontend)
 

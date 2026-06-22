@@ -2,21 +2,16 @@
 
 ## Текущая задача
 
-`recipe-comments` — секции 9 (Frontend BFF) и 10 (Frontend UI) выполнены. Осталось: 11 (E2E API), 12 (UI E2E).
+Нет активных изменений. Чейндж `recipe-comments` заархивирован.
 
 ## Последнее завершённое
 
-Реализованы задачи 9.1–9.3 и 10.1–10.5 чейнджа `recipe-comments`:
+Архивирование чейнджа `recipe-comments` (35/35 задач):
 
-- `apps/web/lib/bff/comments.ts` — Zod-схемы (`CommentDtoSchema`, `CommentRequestSchema`, `PagedResultCommentDtoSchema`) + функции `getComments`, `addComment`, `deleteComment`
-- `apps/web/tests/unit/comments.schema.test.ts` — тесты Zod-схем
-- `apps/web/tests/unit/comments.bff.test.ts` — fetch mock тесты
-- `apps/web/components/features/CommentItem.tsx` — компонент по макету (`.comment`, `.avatar`, `.comment-head`)
-- `apps/web/components/features/CommentsSection.tsx` — секция с пагинацией, формой добавления (скрыта если не авторизован или уже оставил комментарий), удалением
-- `apps/web/app/recipes/[id]/page.tsx` — интегрирована `CommentsSection` после `detail-grid`
-- `docs/design/storybook/src/stories/CommentItem.stories.tsx` — stories: `Default`, `WithDelete`, `WithoutDelete`
-
-Все 394 unit-теста прошли.
+- Delta specs синхронизированы с основными:
+  - Добавлены новые specs: `recipe-comment-add`, `recipe-comment-delete`, `recipe-comment-list`
+  - Обновлён `recipe-detail/spec.md` — добавлены требования и сценарии секции комментариев
+- Архив: `openspec/changes/archive/2026-06-22-recipe-comments/`
 
 ## Ключевые решения
 
@@ -32,3 +27,4 @@
 - 403 на детальной странице обрабатывается через проверку `err.message.includes("403")` → показывает UI-сообщение вместо `notFound()`
 - `serverFetch(url, init?)` в `lib/server-fetch.ts` — обёртка для Server Components, автоматически добавляет `Authorization` из `getSession()`. `getRecipe`/`getRecipes` используют `serverFetch` — автор видит свои приватные рецепты.
 - `CommentsSection` — Client Component; первая страница комментариев загружается в Server Component (`getComments` с `.catch`) и передаётся как `initialData`; смена страниц — клиентский fetch
+- Один комментарий на пользователя на рецепт — уникальный индекс `(recipe_id, author_id)` в таблице `recipe_comments`
