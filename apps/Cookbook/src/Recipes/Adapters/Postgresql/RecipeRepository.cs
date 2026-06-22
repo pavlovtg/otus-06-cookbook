@@ -18,6 +18,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
     public DbSet<User> Users => Set<User>();
     public DbSet<UserFavorite> UserFavorites => Set<UserFavorite>();
     public DbSet<RecipeRating> RecipeRatings => Set<RecipeRating>();
+    public DbSet<RecipeComment> RecipeComments => Set<RecipeComment>();
 
     public RecipeRepository(DbContextOptions<RecipeRepository> options) : base(options) { }
 
@@ -39,6 +40,7 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         modelBuilder.ApplyConfiguration(new UserConfiguration());
         modelBuilder.ApplyConfiguration(new UserFavoriteConfiguration());
         modelBuilder.ApplyConfiguration(new RecipeRatingConfiguration());
+        modelBuilder.ApplyConfiguration(new RecipeCommentConfiguration());
     }
 
     public async Task<PagedResult<RecipeListItem>> GetRecipesPagedAsync(
@@ -464,5 +466,79 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
             .ToListAsync(cancellationToken);
 
         return ids.ToHashSet();
+    }
+
+    // ── IRecipeRepository: comments ──────────────────────────────────────────
+
+    public async Task<PagedResult<CommentDetail>> GetCommentsPagedAsync(
+        RecipeId recipeId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var query = RecipeComments
+            .AsNoTracking()
+            .Where(c => c.RecipeId == recipeId);
+
+        var total = await query.CountAsync(cancellationToken);
+
+        var rows = await query
+            .OrderByDescending(c => c.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Join(
+                Users.AsNoTracking(),
+                c => c.AuthorId,
+                u => u.Id,
+                (c, u) => new { Comment = c, AuthorName = u.DisplayName })
+            .ToListAsync(cancellationToken);
+
+        var items = rows
+            .Select(r => new CommentDetail(
+                r.Comment.Id,
+                r.Comment.RecipeId,
+                r.Comment.AuthorId,
+                r.AuthorName,
+                r.Comment.Text,
+                r.Comment.CreatedAt))
+            .ToList();
+
+        return new PagedResult<CommentDetail>(items, total, page, pageSize);
+    }
+
+    public async Task AddCommentAsync(RecipeComment comment, CancellationToken cancellationToken = default)
+    {
+        await RecipeComments.AddAsync(comment, cancellationToken);
+    }
+
+    public async Task DeleteCommentAsync(RecipeCommentId commentId, CancellationToken cancellationToken = default)
+    {
+        var comment = await RecipeComments.FindAsync([commentId], cancellationToken);
+        if (comment is not null)
+            RecipeComments.Remove(comment);
+    }
+
+    public async Task<CommentDetail?> GetCommentAsync(RecipeCommentId commentId, CancellationToken cancellationToken = default)
+    {
+        var row = await RecipeComments
+            .AsNoTracking()
+            .Where(c => c.Id == commentId)
+            .Join(
+                Users.AsNoTracking(),
+                c => c.AuthorId,
+                u => u.Id,
+                (c, u) => new { Comment = c, AuthorName = u.DisplayName })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (row is null)
+            return null;
+
+        return new CommentDetail(
+            row.Comment.Id,
+            row.Comment.RecipeId,
+            row.Comment.AuthorId,
+            row.AuthorName,
+            row.Comment.Text,
+            row.Comment.CreatedAt);
     }
 }

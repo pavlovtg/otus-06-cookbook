@@ -18,6 +18,7 @@ internal static class CookbookSeeder
         await SeedPhotosAsync(db, photosPath, cancellationToken);
         await SeedUserFavoritesAsync(db, cancellationToken);
         await SeedRatingsAsync(db, cancellationToken);
+        await SeedCommentsAsync(db, cancellationToken);
     }
 
     private static async Task SeedUsersAsync(RecipeRepository db, IPasswordHasher passwordHasher, CancellationToken cancellationToken)
@@ -366,6 +367,31 @@ internal static class CookbookSeeder
 
                 var avg = await db.GetAverageRatingAsync(recipeId, cancellationToken);
                 recipe.SetAverageRating(avg);
+            }
+
+            await db.SaveChangesAsync(cancellationToken);
+            await tx.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await tx.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
+
+    private static async Task SeedCommentsAsync(RecipeRepository db, CancellationToken cancellationToken)
+    {
+        if (SeedData.CommentSeeds.Length == 0)
+            return;
+
+        await using var tx = await db.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            foreach (var (id, recipeId, authorId, text) in SeedData.CommentSeeds)
+            {
+                var exists = await db.RecipeComments.FindAsync([id], cancellationToken);
+                if (exists is null)
+                    await db.RecipeComments.AddAsync(RecipeComment.Create(id, recipeId, authorId, text), cancellationToken);
             }
 
             await db.SaveChangesAsync(cancellationToken);

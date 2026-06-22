@@ -2,23 +2,21 @@
 
 ## Текущая задача
 
-`recipe-rating` — исправлены падающие unit-тесты. Следующие: секции 2.4–2.7, 5.
+`recipe-comments` — секции 9 (Frontend BFF) и 10 (Frontend UI) выполнены. Осталось: 11 (E2E API), 12 (UI E2E).
 
 ## Последнее завершённое
 
-Фикс `RecipeService.SetRatingAsync`: добавлен `CommitAsync` после `UpsertRatingAsync` и перед `GetAverageRatingAsync`. Без этого `GetAverageRatingAsync` (AsNoTracking) читал из БД до коммита → возвращал `null` → тесты падали.
+Реализованы задачи 9.1–9.3 и 10.1–10.5 чейнджа `recipe-comments`:
 
-Ранее реализовано (`recipe-rating` секции 3 и 4):
+- `apps/web/lib/bff/comments.ts` — Zod-схемы (`CommentDtoSchema`, `CommentRequestSchema`, `PagedResultCommentDtoSchema`) + функции `getComments`, `addComment`, `deleteComment`
+- `apps/web/tests/unit/comments.schema.test.ts` — тесты Zod-схем
+- `apps/web/tests/unit/comments.bff.test.ts` — fetch mock тесты
+- `apps/web/components/features/CommentItem.tsx` — компонент по макету (`.comment`, `.avatar`, `.comment-head`)
+- `apps/web/components/features/CommentsSection.tsx` — секция с пагинацией, формой добавления (скрыта если не авторизован или уже оставил комментарий), удалением
+- `apps/web/app/recipes/[id]/page.tsx` — интегрирована `CommentsSection` после `detail-grid`
+- `docs/design/storybook/src/stories/CommentItem.stories.tsx` — stories: `Default`, `WithDelete`, `WithoutDelete`
 
-1. `RecipeRatingConfiguration.cs` — EF конфигурация таблицы `recipe_ratings`, составной PK `(user_id, recipe_id)`, FK CASCADE.
-2. `RecipeConfiguration.cs` — добавлена колонка `average_rating` (`float?`).
-3. Миграция `AddRecipeRatings` сгенерирована через `dotnet ef`.
-4. `RecipeRating.UpdateValue` — метод обновления значения с валидацией.
-5. `IRecipeRepository` — добавлены `UpsertRatingAsync`, `DeleteRatingAsync`, `GetAverageRatingAsync`, `GetMyRatingAsync`.
-6. `RecipeRepository` — реализованы все 4 метода рейтинга.
-7. `RecipeSortOrder.RatingDesc` — добавлено значение.
-8. `GetRecipesPagedAsync` — добавлена сортировка `RatingDesc` (NULLS LAST через `OrderByDescending(null→0, 1).ThenByDescending`).
-9. `RecipeShortWithAuthor` — добавлены поля `float? AverageRating` и `int? MyRating`.
+Все 394 unit-теста прошли.
 
 ## Ключевые решения
 
@@ -33,3 +31,4 @@
 - `isPublic` и `authorName` добавлены в Zod-схемы `RecipeShortDtoSchema`, `RecipeDtoSchema`, `RecipeRequestSchema`
 - 403 на детальной странице обрабатывается через проверку `err.message.includes("403")` → показывает UI-сообщение вместо `notFound()`
 - `serverFetch(url, init?)` в `lib/server-fetch.ts` — обёртка для Server Components, автоматически добавляет `Authorization` из `getSession()`. `getRecipe`/`getRecipes` используют `serverFetch` — автор видит свои приватные рецепты.
+- `CommentsSection` — Client Component; первая страница комментариев загружается в Server Component (`getComments` с `.catch`) и передаётся как `initialData`; смена страниц — клиентский fetch

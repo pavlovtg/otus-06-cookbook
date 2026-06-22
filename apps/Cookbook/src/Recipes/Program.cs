@@ -26,6 +26,7 @@ builder.Services.AddScoped<IRecipePhotoRepository>(sp => sp.GetRequiredService<R
 builder.Services.AddScoped<ICategoryRepository>(sp => sp.GetRequiredService<RecipeRepository>());
 builder.Services.AddScoped<IUserRepository>(sp => sp.GetRequiredService<RecipeRepository>());
 builder.Services.AddScoped<IRecipeService, RecipeService>();
+builder.Services.AddScoped<IRecipeCommentService, RecipeCommentService>();
 builder.Services.AddScoped<IIngredientService, IngredientService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ImageSharpThumbnailGenerator>();

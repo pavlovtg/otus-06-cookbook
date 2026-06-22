@@ -18,4 +18,8 @@ internal interface IRecipeRepository : IUnitOfWorkRepository
     Task<bool> DeleteRatingAsync(UserId userId, RecipeId recipeId, CancellationToken cancellationToken = default);
     Task<float?> GetAverageRatingAsync(RecipeId recipeId, CancellationToken cancellationToken = default);
     Task<int?> GetMyRatingAsync(UserId userId, RecipeId recipeId, CancellationToken cancellationToken = default);
+    Task<PagedResult<CommentDetail>> GetCommentsPagedAsync(RecipeId recipeId, int page, int pageSize, CancellationToken cancellationToken = default);
+    Task AddCommentAsync(RecipeComment comment, CancellationToken cancellationToken = default);
+    Task DeleteCommentAsync(RecipeCommentId commentId, CancellationToken cancellationToken = default);
+    Task<CommentDetail?> GetCommentAsync(RecipeCommentId commentId, CancellationToken cancellationToken = default);
 }
