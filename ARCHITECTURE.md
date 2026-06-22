@@ -89,6 +89,7 @@
 | AR-0061: Раздача фотографий рецептов через публичный endpoint | Фото раздаются через backend endpoint без JWT; `Cache-Control: public, max-age=86400`; shared volume запрещён | [AR-0061](docs/architecture/rules/rest-api/AR-0061-recipe-photo-serving.md) | rest-api |
 | AR-0062: Seed-фотографии загружаются через CookbookSeeder | Seed-фото из `apps/seed/photos/` загружаются в `recipe_photos` через `CookbookSeeder` в транзакции с рецептами; идемпотентно | [AR-0062](docs/architecture/rules/backend/AR-0062-recipe-photo-seeding.md) | backend |
 | AR-0063: BFF Server Components используют serverFetch | Серверные BFF-функции (`lib/bff/*.ts`) из Server Components используют `serverFetch` через динамический `await import` — автоматически добавляет `Authorization` из сессии; статический импорт и прямой `fetch` к `SERVER_BASE` запрещены | [AR-0063](docs/architecture/rules/frontend/AR-0063-server-fetch-in-bff.md) | frontend |
+| AR-0064: DnD в планировщике — только @dnd-kit/core и @dnd-kit/utilities | Drag-and-drop планировщика реализуется через `@dnd-kit/core` и `@dnd-kit/utilities`; нативный HTML5 DnD, react-dnd и react-beautiful-dnd запрещены | [AR-0064](docs/architecture/rules/frontend/AR-0064-dnd-kit-planner.md) | frontend |
 
 ## Стандарты
 
@@ -147,6 +148,7 @@
 | ADR-0033: Стратегия тестирования | Семиуровневая пирамида тестирования: unit, integration (DB/FS/classic), microservice, e2e API, UI e2e; coverage ≥ 80%; тесты пишутся сразу после кода | [ADR-0033](docs/adr/general/ADR-0033-testing-strategy.md) | general |
 | ADR-0034: Хранение фотографий рецептов в PostgreSQL | Фото хранятся в PostgreSQL (bytea) в отдельной таблице cookbook-сервиса; Docker volume для файлов не используется | [ADR-0034](docs/adr/database/ADR-0034-recipe-photos-in-postgresql.md) | database |
 | ADR-0035: Auth как модуль внутри recipes-сервиса | Заменяет ADR-0021 и ADR-0022; auth-модуль в recipes-сервисе; YARP — чистый прокси; S2S не нужен | [ADR-0035](docs/adr/rest-api/ADR-0035-auth-module-in-recipes-service.md) | rest-api |
+| ADR-0036: @dnd-kit как библиотека drag-and-drop для планировщика меню | DnD планировщика реализуется через `@dnd-kit/core` и `@dnd-kit/utilities`; нативный HTML5 DnD, react-dnd и react-beautiful-dnd отклонены | [ADR-0036](docs/adr/frontend/ADR-0036-dnd-kit-planner.md) | frontend |
 
 ## Диаграммы
 

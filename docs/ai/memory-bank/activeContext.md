@@ -2,16 +2,15 @@
 
 ## Текущая задача
 
-Нет активных изменений. Чейндж `recipe-comments` заархивирован.
+Нет активных изменений. ADR-0036 и AR-0064 (DnD-библиотека) зафиксированы.
 
 ## Последнее завершённое
 
-Архивирование чейнджа `recipe-comments` (35/35 задач):
+Зафиксирован выбор DnD-решения для планировщика меню:
 
-- Delta specs синхронизированы с основными:
-  - Добавлены новые specs: `recipe-comment-add`, `recipe-comment-delete`, `recipe-comment-list`
-  - Обновлён `recipe-detail/spec.md` — добавлены требования и сценарии секции комментариев
-- Архив: `openspec/changes/archive/2026-06-22-recipe-comments/`
+- `docs/adr/frontend/ADR-0036-dnd-kit-planner.md` — выбор `@dnd-kit/core` + `@dnd-kit/utilities`
+- `docs/architecture/rules/frontend/AR-0064-dnd-kit-planner.md` — правило: только dnd-kit, нативный HTML5 DnD и другие библиотеки запрещены
+- `ARCHITECTURE.md` — обновлены таблицы AR и ADR
 
 ## Ключевые решения
 
@@ -28,3 +27,4 @@
 - `serverFetch(url, init?)` в `lib/server-fetch.ts` — обёртка для Server Components, автоматически добавляет `Authorization` из `getSession()`. `getRecipe`/`getRecipes` используют `serverFetch` — автор видит свои приватные рецепты.
 - `CommentsSection` — Client Component; первая страница комментариев загружается в Server Component (`getComments` с `.catch`) и передаётся как `initialData`; смена страниц — клиентский fetch
 - Один комментарий на пользователя на рецепт — уникальный индекс `(recipe_id, author_id)` в таблице `recipe_comments`
+- DnD планировщика — `@dnd-kit/core` + `@dnd-kit/utilities` (ADR-0036, AR-0064); `useDraggable` на карточке, `useDroppable` на слоте, `DragOverlay` для floating-карточки
