@@ -2,25 +2,13 @@
 
 ## Текущая задача
 
-`menu-planner` — все 13 разделов **завершены** (включая E2E-тесты 13.1 и 13.2).
+Багфикс комментариев — завершён.
 
 ## Последнее завершённое
 
-Frontend-часть планировщика меню (задачи 9–12).
-
-- `lib/schemas/meal-plan.ts` — Zod-схемы DTO и Request (MealPlanItem/Slot/Plan)
-- `lib/bff/meal-plan.server.ts` — `getMealPlan()` (Server Component, `serverFetch`)
-- `lib/bff/meal-plan.ts` — Server Actions `updateMealPlan()` / `clearMealPlan()` (`"use server"`)
-- `lib/planner-utils.ts` — конвертация DTO↔Plan, `emptyPlan()`, константы DAY_LABELS/MEAL_KEYS
-- `components/features/planner/` — `PlannerRecipeCard` (useDraggable), `PlannerSlot` (useDroppable), `PlannerGrid`, `PlannerPanel`
-- `app/planner/page.tsx` — Server Component, redirect если не авторизован
-- `app/planner/PlannerPageClient.tsx` — DndContext, автосохранение debounce 300 мс, диалог очистки
-- `app/layout.tsx` — пункт «Планировщик» с CalendarIcon (только для авторизованных)
-- `lib/icons.tsx` — добавлен `CalendarIcon`
-- `tests/unit/meal-plan.schema.test.ts` — 25 тестов Zod-схем
-- `tests/bff/meal-plan.bff.test.ts` — 10 тестов BFF-функций
-- Установлены `@dnd-kit/core` и `@dnd-kit/utilities`
-- Все 453 теста прошли
+Багфикс: комментарии не отображались, ошибка 400 при повторном добавлении.
+- Создан `lib/bff/comments.server.ts` — серверная версия `getComments` через `serverFetch` + абсолютный `GATEWAY_URL`
+- В `app/recipes/[id]/page.tsx` импорт `getComments` заменён на `@/lib/bff/comments.server`
 
 ## Ключевые решения
 

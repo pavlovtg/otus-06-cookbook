@@ -28,7 +28,13 @@
 - `recipe-author` (29/29 задач) → `openspec/changes/archive/2026-06-17-recipe-author/`
 - `recipe-comments` (35/35 задач) → `openspec/changes/archive/2026-06-22-recipe-comments/`
 
-## Выполнено (последнее — recipe-author frontend)
+## Выполнено (последнее — багфикс комментариев)
+
+- Создан `lib/bff/comments.server.ts` — `getComments` через `serverFetch` + абсолютный `GATEWAY_URL`
+- `app/recipes/[id]/page.tsx`: импорт `getComments` → `@/lib/bff/comments.server`
+- Причина: относительный URL в `comments.ts` не работал на сервере → `initialData` был пустым → комментарии не отображались + форма показывалась даже при наличии комментария → 400
+
+## Выполнено (ранее — recipe-author frontend)
 
 - Zod: `isPublic: z.boolean()` и `authorName: z.string().nullable()` в `RecipeShortDtoSchema`, `RecipeDtoSchema`; `isPublic` в `RecipeRequestSchema`
 - BFF: `isPublic` передаётся автоматически через `RecipeRequestSchema.parse(data)`

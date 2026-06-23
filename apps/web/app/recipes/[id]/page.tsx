@@ -18,7 +18,7 @@ import { RatingWidget } from "./RatingWidget";
 import { getRecipePhotoUrl } from "@/lib/bff/photos";
 import { IngredientsCard } from "@/components/features/IngredientsCard";
 import { CommentsSection } from "@/components/features/CommentsSection";
-import { getComments } from "@/lib/bff/comments";
+import { getComments } from "@/lib/bff/comments.server";
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   easy: "Просто",
