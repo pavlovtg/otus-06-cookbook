@@ -9,7 +9,7 @@ INGREDIENTS_BASE = "/api/cookbook/v1/ingredients"
 def _create_ingredient(base_url: str, auth_token: str) -> str:
     resp = httpx.post(
         f"{base_url}{INGREDIENTS_BASE}",
-        json={"title": "Мука E2E", "unit": "г", "category": 0},
+        json={"title": "Мука E2E", "unit": "г", "defaultAmount": 100.0, "category": "vegetables"},
         headers={"Authorization": f"Bearer {auth_token}"},
     )
     assert resp.status_code == 201, resp.text
