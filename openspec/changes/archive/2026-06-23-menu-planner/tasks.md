@@ -1,0 +1,91 @@
+# menu-planner
+
+## 1. OpenAPI-контракт
+
+- [x] 1.1 Описать схемы `MealPlanDto`, `MealPlanSlotDto`, `MealPlanItemDto` в `docs/contracts/cookbook/cookbook.yaml`
+- [x] 1.2 Описать эндпоинт `GET /api/v1/meal-plan` (200, 401)
+- [x] 1.3 Описать эндпоинт `PUT /api/v1/meal-plan` (200, 400, 401)
+- [x] 1.4 Описать эндпоинт `DELETE /api/v1/meal-plan` (204, 401)
+
+## 2. Backend: доменная модель
+
+- [x] 2.1 Создать enum `WeekDay` (Monday=1..Sunday=7) в Domain
+- [x] 2.2 Создать enum `MealType` (Breakfast=1, Lunch=2, Dinner=3) в Domain
+- [x] 2.3 Создать Value Object `MealPlanId` (`readonly record struct`)
+- [x] 2.4 Создать Value Object `Servings` с валидацией диапазона 1–99
+- [x] 2.5 Создать константы `MealPlanConstraints` (MinServings, MaxServings)
+- [x] 2.6 Создать сущность `MealPlanItem` (recipe_id, servings)
+- [x] 2.7 Создать сущность `MealPlanSlot` (WeekDay, MealType, коллекция MealPlanItem)
+- [x] 2.8 Создать агрегат `MealPlan` с операциями: AddItem, RemoveItem, UpdateServings, Clear, Replace
+
+## 3. Backend: Application-слой
+
+- [x] 3.1 Создать интерфейс `IMealPlanRepository` с методами `GetByUserIdAsync`, `SaveAsync`
+- [x] 3.2 Создать `MealPlanService` с методами `GetAsync` (lazy init), `ReplaceAsync`, `ClearAsync`
+- [x] 3.3 Создать DTO-модели запроса/ответа для API (MealPlanDto, MealPlanSlotDto, MealPlanItemDto)
+
+## 4. Backend: адаптер PostgreSQL
+
+- [x] 4.1 Создать EF Core конфигурацию `MealPlanConfiguration`
+- [x] 4.2 Создать EF Core конфигурацию `MealPlanSlotConfiguration`
+- [x] 4.3 Создать EF Core конфигурацию `MealPlanItemConfiguration`
+- [x] 4.4 Добавить `DbSet` в существующий `DbContext`
+- [x] 4.5 Создать реализацию `MealPlanRepository`
+- [x] 4.6 Создать миграцию EF Core (таблицы `meal_plan_slots`, `meal_plan_items`, уникальный индекс)
+
+## 5. Backend: HTTP-контроллер
+
+- [x] 5.1 Создать `MealPlanController` с эндпоинтами GET, PUT, DELETE `/api/v1/meal-plan`
+- [x] 5.2 Добавить маршрут на API Gateway (`/api/cookbook/v1/meal-plan`)
+
+## 6. Backend: seed-данные
+
+- [x] 6.1 Добавить готовый план меню на неделю для seed-пользователя в `CookbookSeeder`
+
+## 7. Backend: тесты
+
+- [x] 7.1 Unit-тесты агрегата `MealPlan` (`MealPlanTests`)
+- [x] 7.2 Unit-тесты `MealPlanService` с замоканным репозиторием (`MealPlanServiceTests`)
+- [x] 7.3 Integration-тесты репозитория (`MealPlanRepositoryTests`)
+- [x] 7.4 Microservice-тесты `GET /api/v1/meal-plan` (`GetMealPlanTests`)
+- [x] 7.5 Microservice-тесты `PUT /api/v1/meal-plan` (`ReplaceMealPlanTests`)
+- [x] 7.6 Microservice-тесты `DELETE /api/v1/meal-plan` (`ClearMealPlanTests`)
+
+## 8. Storybook: компоненты планировщика
+
+- [x] 8.1 Добавить компонент `PlannerRecipeCard` в `src/domain/` (миниатюра + название, draggable) по макету `docs/design/mockup/index.html` (`.planner-recipe`)
+- [x] 8.2 Добавить компонент `PlannerSlot` в `src/domain/` (слот сетки, dragover-подсветка) по макету (`.planner-slot`, `.planner-slot-item`)
+- [x] 8.3 Добавить компонент `PlannerGrid` в `src/domain/` (сетка 7×3 с заголовками) по макету (`.planner-grid`)
+- [x] 8.4 Добавить компонент `PlannerPanel` в `src/domain/` (горизонтальный скролл + переключатели + поиск) по макету (`.planner-panel`)
+- [x] 8.5 Добавить story `Planner.stories.tsx` с Playground в `src/stories/`
+- [x] 8.6 Добавить mock-данные плана меню в `src/mocks.ts`
+
+## 9. Frontend: BFF
+
+- [x] 9.1 Создать Zod-схемы для MealPlan (запрос/ответ) в `lib/bff/meal-plan.ts`
+- [x] 9.2 Реализовать `getMealPlan()` (Server Component)
+- [x] 9.3 Реализовать Server Actions `updateMealPlan()` и `clearMealPlan()`
+
+## 10. Frontend: страница планировщика
+
+- [x] 10.1 Создать страницу `/planner` (Client Component, защита авторизацией)
+- [x] 10.2 Реализовать панель выбора рецептов (горизонтальный скролл, переключатели Все/Избранное/Мои, поиск) по макету и Storybook-компоненту `PlannerPanel`
+- [x] 10.3 Реализовать сетку 7×3 по макету и Storybook-компоненту `PlannerGrid`
+- [x] 10.4 Подключить `@dnd-kit/core`: `DndContext`, `useDraggable`, `useDroppable`, `DragOverlay`
+- [x] 10.5 Реализовать карточку блюда в слоте (название, поле порций, кнопка удаления) по макету (`.planner-slot-item`)
+- [x] 10.6 Реализовать автосохранение с debounce 300 мс
+- [x] 10.7 Реализовать кнопку «Очистить всё» с диалогом подтверждения
+
+## 11. Frontend: навигация
+
+- [x] 11.1 Добавить пункт «Планировщик» в компонент шапки (только для авторизованных)
+
+## 12. Frontend: тесты
+
+- [x] 12.1 Unit-тесты Zod-схем (`meal-plan.schema.test.ts`)
+- [x] 12.2 Unit-тесты BFF-функций с мокированным fetch (`meal-plan.bff.test.ts`)
+
+## 13. E2E-тесты
+
+- [x] 13.1 E2E API-тесты планировщика (`tests/e2e/test_meal_plan_api.py`)
+- [x] 13.2 UI E2E-тесты планировщика (`tests/ui/test_planner.py`)

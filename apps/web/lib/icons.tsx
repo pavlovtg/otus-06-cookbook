@@ -30,3 +30,12 @@ export const LayersIcon = ({ size, ...p }: IconProps) => (
     <path d="m12 3 9 5-9 5-9-5zM3 13l9 5 9-5M3 17l9 5 9-5" />
   </svg>
 );
+
+export const CalendarIcon = ({ size, ...p }: IconProps) => (
+  <svg {...base(size)} {...p}>
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
+);

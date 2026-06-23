@@ -1450,4 +1450,126 @@ internal static class SeedData
         (UserId.From(new Guid("00000000-0000-0000-0000-000000000003")), RId(35)), // Пирог с яблоками
         (UserId.From(new Guid("00000000-0000-0000-0000-000000000003")), RId(60)), // Торт Наполеон
     ];
+
+    // ── Meal plan seeds ──────────────────────────────────────────────────────
+    // (UserId, MealPlanId, slots)
+    // WeekDay: Monday=1..Sunday=7; MealType: Breakfast=1, Lunch=2, Dinner=3
+    public static readonly (UserId UserId, MealPlanId PlanId, IReadOnlyList<MealPlanSlotInput> Slots)[] MealPlanSeeds =
+    [
+        // User (user@cookbook.local)
+        (
+            UId(1),
+            MealPlanId.From(new Guid("44444444-0000-0000-0000-000000000001")),
+            [
+                new MealPlanSlotInput(WeekDay.Monday,    MealType.Breakfast, [new MealPlanItemInput(RId(4),  Servings.From(2))]),  // Блины
+                new MealPlanSlotInput(WeekDay.Monday,    MealType.Lunch,     [new MealPlanItemInput(RId(1),  Servings.From(4))]),  // Борщ
+                new MealPlanSlotInput(WeekDay.Monday,    MealType.Dinner,    [new MealPlanItemInput(RId(14), Servings.From(4))]),  // Курица в сметане
+                new MealPlanSlotInput(WeekDay.Tuesday,   MealType.Breakfast, [new MealPlanItemInput(RId(26), Servings.From(2))]),  // Сырники
+                new MealPlanSlotInput(WeekDay.Tuesday,   MealType.Lunch,     [new MealPlanItemInput(RId(13), Servings.From(4))]),  // Щи
+                new MealPlanSlotInput(WeekDay.Tuesday,   MealType.Dinner,    [new MealPlanItemInput(RId(22), Servings.From(4))]),  // Рыбные котлеты
+                new MealPlanSlotInput(WeekDay.Wednesday, MealType.Breakfast, [new MealPlanItemInput(RId(4),  Servings.From(2))]),  // Блины
+                new MealPlanSlotInput(WeekDay.Wednesday, MealType.Lunch,     [new MealPlanItemInput(RId(6),  Servings.From(4))]),  // Солянка
+                new MealPlanSlotInput(WeekDay.Wednesday, MealType.Dinner,    [new MealPlanItemInput(RId(3),  Servings.From(4))]),  // Пельмени
+                new MealPlanSlotInput(WeekDay.Thursday,  MealType.Breakfast, [new MealPlanItemInput(RId(2),  Servings.From(2))]),  // Оливье
+                new MealPlanSlotInput(WeekDay.Thursday,  MealType.Lunch,     [new MealPlanItemInput(RId(12), Servings.From(4))]),  // Рассольник
+                new MealPlanSlotInput(WeekDay.Thursday,  MealType.Dinner,    [new MealPlanItemInput(RId(32), Servings.From(4))]),  // Бефстроганов
+                new MealPlanSlotInput(WeekDay.Friday,    MealType.Breakfast, [new MealPlanItemInput(RId(26), Servings.From(2))]),  // Сырники
+                new MealPlanSlotInput(WeekDay.Friday,    MealType.Lunch,     [new MealPlanItemInput(RId(25), Servings.From(4))]),  // Харчо
+                new MealPlanSlotInput(WeekDay.Friday,    MealType.Dinner,    [new MealPlanItemInput(RId(16), Servings.From(2))]),  // Запечённый лосось
+                new MealPlanSlotInput(WeekDay.Saturday,  MealType.Breakfast, [new MealPlanItemInput(RId(4),  Servings.From(4))]),  // Блины
+                new MealPlanSlotInput(WeekDay.Saturday,  MealType.Lunch,     [new MealPlanItemInput(RId(9),  Servings.From(6))]),  // Плов
+                new MealPlanSlotInput(WeekDay.Saturday,  MealType.Dinner,    [new MealPlanItemInput(RId(7),  Servings.From(6))]),  // Шашлык
+                new MealPlanSlotInput(WeekDay.Sunday,    MealType.Breakfast, [new MealPlanItemInput(RId(10), Servings.From(4))]),  // Медовик
+                new MealPlanSlotInput(WeekDay.Sunday,    MealType.Lunch,     [new MealPlanItemInput(RId(1),  Servings.From(4))]),  // Борщ
+                new MealPlanSlotInput(WeekDay.Sunday,    MealType.Dinner,    [new MealPlanItemInput(RId(5),  Servings.From(2))]),  // Котлеты по-киевски
+            ]
+        ),
+
+        // Admin (admin@cookbook.local)
+        (
+            UId(2),
+            MealPlanId.From(new Guid("44444444-0000-0000-0000-000000000002")),
+            [
+                new MealPlanSlotInput(WeekDay.Monday,    MealType.Breakfast, [new MealPlanItemInput(RId(33), Servings.From(2))]),  // Картофельное пюре
+                new MealPlanSlotInput(WeekDay.Monday,    MealType.Lunch,     [new MealPlanItemInput(RId(27), Servings.From(4))]),  // Куриный суп с лапшой
+                new MealPlanSlotInput(WeekDay.Monday,    MealType.Dinner,    [new MealPlanItemInput(RId(20), Servings.From(2))]),  // Паста Карбонара
+                new MealPlanSlotInput(WeekDay.Tuesday,   MealType.Breakfast, [new MealPlanItemInput(RId(17), Servings.From(2))]),  // Греческий салат
+                new MealPlanSlotInput(WeekDay.Tuesday,   MealType.Lunch,     [new MealPlanItemInput(RId(6),  Servings.From(4))]),  // Солянка
+                new MealPlanSlotInput(WeekDay.Tuesday,   MealType.Dinner,    [new MealPlanItemInput(RId(28), Servings.From(4))]),  // Жаркое из свинины
+                new MealPlanSlotInput(WeekDay.Wednesday, MealType.Breakfast, [new MealPlanItemInput(RId(24), Servings.From(4))]),  // Творожная запеканка
+                new MealPlanSlotInput(WeekDay.Wednesday, MealType.Lunch,     [new MealPlanItemInput(RId(8),  Servings.From(4))]),  // Окрошка
+                new MealPlanSlotInput(WeekDay.Wednesday, MealType.Dinner,    [new MealPlanItemInput(RId(19), Servings.From(4))]),  // Пицца Маргарита
+                new MealPlanSlotInput(WeekDay.Thursday,  MealType.Breakfast, [new MealPlanItemInput(RId(33), Servings.From(2))]),  // Картофельное пюре
+                new MealPlanSlotInput(WeekDay.Thursday,  MealType.Lunch,     [new MealPlanItemInput(RId(1),  Servings.From(4))]),  // Борщ
+                new MealPlanSlotInput(WeekDay.Thursday,  MealType.Dinner,    [new MealPlanItemInput(RId(18), Servings.From(4))]),  // Тефтели в томатном соусе
+                new MealPlanSlotInput(WeekDay.Friday,    MealType.Breakfast, [new MealPlanItemInput(RId(17), Servings.From(2))]),  // Греческий салат
+                new MealPlanSlotInput(WeekDay.Friday,    MealType.Lunch,     [new MealPlanItemInput(RId(30), Servings.From(4))]),  // Уха
+                new MealPlanSlotInput(WeekDay.Friday,    MealType.Dinner,    [new MealPlanItemInput(RId(16), Servings.From(2))]),  // Запечённый лосось
+                new MealPlanSlotInput(WeekDay.Saturday,  MealType.Breakfast, [new MealPlanItemInput(RId(24), Servings.From(6))]),  // Творожная запеканка
+                new MealPlanSlotInput(WeekDay.Saturday,  MealType.Lunch,     [new MealPlanItemInput(RId(34), Servings.From(6))]),  // Голубцы
+                new MealPlanSlotInput(WeekDay.Saturday,  MealType.Dinner,    [new MealPlanItemInput(RId(9),  Servings.From(6))]),  // Плов
+                new MealPlanSlotInput(WeekDay.Sunday,    MealType.Breakfast, [new MealPlanItemInput(RId(4),  Servings.From(4))]),  // Блины
+                new MealPlanSlotInput(WeekDay.Sunday,    MealType.Lunch,     [new MealPlanItemInput(RId(25), Servings.From(4))]),  // Харчо
+                new MealPlanSlotInput(WeekDay.Sunday,    MealType.Dinner,    [new MealPlanItemInput(RId(21), Servings.From(4))]),  // Манты
+            ]
+        ),
+
+        // Ренат Агзамов (renat@cookbook.local)
+        (
+            UId(3),
+            MealPlanId.From(new Guid("44444444-0000-0000-0000-000000000003")),
+            [
+                new MealPlanSlotInput(WeekDay.Monday,    MealType.Breakfast, [new MealPlanItemInput(RId(26), Servings.From(2))]),  // Сырники
+                new MealPlanSlotInput(WeekDay.Monday,    MealType.Lunch,     [new MealPlanItemInput(RId(9),  Servings.From(4))]),  // Плов
+                new MealPlanSlotInput(WeekDay.Monday,    MealType.Dinner,    [new MealPlanItemInput(RId(7),  Servings.From(4))]),  // Шашлык
+                new MealPlanSlotInput(WeekDay.Tuesday,   MealType.Breakfast, [new MealPlanItemInput(RId(10), Servings.From(2))]),  // Медовик
+                new MealPlanSlotInput(WeekDay.Tuesday,   MealType.Lunch,     [new MealPlanItemInput(RId(25), Servings.From(4))]),  // Харчо
+                new MealPlanSlotInput(WeekDay.Tuesday,   MealType.Dinner,    [new MealPlanItemInput(RId(21), Servings.From(4))]),  // Манты
+                new MealPlanSlotInput(WeekDay.Wednesday, MealType.Breakfast, [new MealPlanItemInput(RId(26), Servings.From(2))]),  // Сырники
+                new MealPlanSlotInput(WeekDay.Wednesday, MealType.Lunch,     [new MealPlanItemInput(RId(12), Servings.From(4))]),  // Рассольник
+                new MealPlanSlotInput(WeekDay.Wednesday, MealType.Dinner,    [new MealPlanItemInput(RId(32), Servings.From(4))]),  // Бефстроганов
+                new MealPlanSlotInput(WeekDay.Thursday,  MealType.Breakfast, [new MealPlanItemInput(RId(35), Servings.From(4))]),  // Пирог с яблоками
+                new MealPlanSlotInput(WeekDay.Thursday,  MealType.Lunch,     [new MealPlanItemInput(RId(6),  Servings.From(4))]),  // Солянка
+                new MealPlanSlotInput(WeekDay.Thursday,  MealType.Dinner,    [new MealPlanItemInput(RId(3),  Servings.From(4))]),  // Пельмени
+                new MealPlanSlotInput(WeekDay.Friday,    MealType.Breakfast, [new MealPlanItemInput(RId(24), Servings.From(2))]),  // Творожная запеканка
+                new MealPlanSlotInput(WeekDay.Friday,    MealType.Lunch,     [new MealPlanItemInput(RId(1),  Servings.From(4))]),  // Борщ
+                new MealPlanSlotInput(WeekDay.Friday,    MealType.Dinner,    [new MealPlanItemInput(RId(29), Servings.From(4))]),  // Фаршированный перец
+                new MealPlanSlotInput(WeekDay.Saturday,  MealType.Breakfast, [new MealPlanItemInput(RId(10), Servings.From(4))]),  // Медовик
+                new MealPlanSlotInput(WeekDay.Saturday,  MealType.Lunch,     [new MealPlanItemInput(RId(34), Servings.From(6))]),  // Голубцы
+                new MealPlanSlotInput(WeekDay.Saturday,  MealType.Dinner,    [new MealPlanItemInput(RId(5),  Servings.From(4))]),  // Котлеты по-киевски
+                new MealPlanSlotInput(WeekDay.Sunday,    MealType.Breakfast, [new MealPlanItemInput(RId(4),  Servings.From(4))]),  // Блины
+                new MealPlanSlotInput(WeekDay.Sunday,    MealType.Lunch,     [new MealPlanItemInput(RId(9),  Servings.From(6))]),  // Плов
+                new MealPlanSlotInput(WeekDay.Sunday,    MealType.Dinner,    [new MealPlanItemInput(RId(7),  Servings.From(6))]),  // Шашлык
+            ]
+        ),
+
+        // Константин Ивлев (ivlev@cookbook.local)
+        (
+            UId(4),
+            MealPlanId.From(new Guid("44444444-0000-0000-0000-000000000004")),
+            [
+                new MealPlanSlotInput(WeekDay.Monday,    MealType.Breakfast, [new MealPlanItemInput(RId(17), Servings.From(2))]),  // Греческий салат
+                new MealPlanSlotInput(WeekDay.Monday,    MealType.Lunch,     [new MealPlanItemInput(RId(1),  Servings.From(4))]),  // Борщ
+                new MealPlanSlotInput(WeekDay.Monday,    MealType.Dinner,    [new MealPlanItemInput(RId(32), Servings.From(4))]),  // Бефстроганов
+                new MealPlanSlotInput(WeekDay.Tuesday,   MealType.Breakfast, [new MealPlanItemInput(RId(2),  Servings.From(2))]),  // Оливье
+                new MealPlanSlotInput(WeekDay.Tuesday,   MealType.Lunch,     [new MealPlanItemInput(RId(6),  Servings.From(4))]),  // Солянка
+                new MealPlanSlotInput(WeekDay.Tuesday,   MealType.Dinner,    [new MealPlanItemInput(RId(20), Servings.From(2))]),  // Паста Карбонара
+                new MealPlanSlotInput(WeekDay.Wednesday, MealType.Breakfast, [new MealPlanItemInput(RId(33), Servings.From(2))]),  // Картофельное пюре
+                new MealPlanSlotInput(WeekDay.Wednesday, MealType.Lunch,     [new MealPlanItemInput(RId(27), Servings.From(4))]),  // Куриный суп с лапшой
+                new MealPlanSlotInput(WeekDay.Wednesday, MealType.Dinner,    [new MealPlanItemInput(RId(5),  Servings.From(2))]),  // Котлеты по-киевски
+                new MealPlanSlotInput(WeekDay.Thursday,  MealType.Breakfast, [new MealPlanItemInput(RId(17), Servings.From(2))]),  // Греческий салат
+                new MealPlanSlotInput(WeekDay.Thursday,  MealType.Lunch,     [new MealPlanItemInput(RId(9),  Servings.From(4))]),  // Плов
+                new MealPlanSlotInput(WeekDay.Thursday,  MealType.Dinner,    [new MealPlanItemInput(RId(7),  Servings.From(4))]),  // Шашлык
+                new MealPlanSlotInput(WeekDay.Friday,    MealType.Breakfast, [new MealPlanItemInput(RId(26), Servings.From(2))]),  // Сырники
+                new MealPlanSlotInput(WeekDay.Friday,    MealType.Lunch,     [new MealPlanItemInput(RId(30), Servings.From(4))]),  // Уха
+                new MealPlanSlotInput(WeekDay.Friday,    MealType.Dinner,    [new MealPlanItemInput(RId(22), Servings.From(4))]),  // Рыбные котлеты
+                new MealPlanSlotInput(WeekDay.Saturday,  MealType.Breakfast, [new MealPlanItemInput(RId(4),  Servings.From(4))]),  // Блины
+                new MealPlanSlotInput(WeekDay.Saturday,  MealType.Lunch,     [new MealPlanItemInput(RId(28), Servings.From(6))]),  // Жаркое из свинины
+                new MealPlanSlotInput(WeekDay.Saturday,  MealType.Dinner,    [new MealPlanItemInput(RId(19), Servings.From(4))]),  // Пицца Маргарита
+                new MealPlanSlotInput(WeekDay.Sunday,    MealType.Breakfast, [new MealPlanItemInput(RId(10), Servings.From(4))]),  // Медовик
+                new MealPlanSlotInput(WeekDay.Sunday,    MealType.Lunch,     [new MealPlanItemInput(RId(34), Servings.From(6))]),  // Голубцы
+                new MealPlanSlotInput(WeekDay.Sunday,    MealType.Dinner,    [new MealPlanItemInput(RId(21), Servings.From(4))]),  // Манты
+            ]
+        ),
+    ];
 }

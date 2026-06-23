@@ -7,7 +7,7 @@ using Recipes.Domain;
 
 namespace Recipes.Adapters.Postgresql;
 
-internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredientRepository, IRecipePhotoRepository, ICategoryRepository, IUserRepository
+internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredientRepository, IRecipePhotoRepository, ICategoryRepository, IUserRepository, IMealPlanRepository
 {
     public const string DefaultSchema = "cookbook";
 
@@ -19,6 +19,9 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
     public DbSet<UserFavorite> UserFavorites => Set<UserFavorite>();
     public DbSet<RecipeRating> RecipeRatings => Set<RecipeRating>();
     public DbSet<RecipeComment> RecipeComments => Set<RecipeComment>();
+    public DbSet<MealPlan> MealPlans => Set<MealPlan>();
+    public DbSet<MealPlanSlot> MealPlanSlots => Set<MealPlanSlot>();
+    public DbSet<MealPlanItem> MealPlanItems => Set<MealPlanItem>();
 
     public RecipeRepository(DbContextOptions<RecipeRepository> options) : base(options) { }
 
@@ -41,6 +44,9 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
         modelBuilder.ApplyConfiguration(new UserFavoriteConfiguration());
         modelBuilder.ApplyConfiguration(new RecipeRatingConfiguration());
         modelBuilder.ApplyConfiguration(new RecipeCommentConfiguration());
+        modelBuilder.ApplyConfiguration(new MealPlanConfiguration());
+        modelBuilder.ApplyConfiguration(new MealPlanSlotConfiguration());
+        modelBuilder.ApplyConfiguration(new MealPlanItemConfiguration());
     }
 
     public async Task<PagedResult<RecipeListItem>> GetRecipesPagedAsync(
@@ -540,5 +546,95 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
             row.AuthorName,
             row.Comment.Text,
             row.Comment.CreatedAt);
+    }
+
+    // ── IMealPlanRepository ──────────────────────────────────────────────────
+
+    public async Task<MealPlan?> GetPlanByUserIdAsync(UserId userId, CancellationToken cancellationToken = default)
+    {
+        return await MealPlans
+            .Include(p => p.Slots)
+                .ThenInclude(s => s.Items)
+            .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
+    }
+
+    public async Task<MealPlanView?> GetPlanViewByUserIdAsync(UserId userId, CancellationToken cancellationToken = default)
+    {
+        var plan = await MealPlans
+            .AsNoTracking()
+            .Where(p => p.UserId == userId)
+            .Select(p => new { p.Id })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (plan is null)
+            return null;
+
+        var rows = await (
+            from slot in MealPlanSlots.AsNoTracking()
+            where EF.Property<MealPlanId>(slot, "meal_plan_id") == plan.Id
+            from item in MealPlanItems.AsNoTracking()
+                .Where(i => EF.Property<Guid?>(i, "MealPlanSlotId") == slot.Id)
+                .DefaultIfEmpty()
+            join recipe in Recipes.AsNoTracking()
+                on item!.RecipeId equals recipe.Id into recipeJoin
+            from recipe in recipeJoin.DefaultIfEmpty()
+            select new
+            {
+                SlotId = slot.Id,
+                slot.WeekDay,
+                slot.MealType,
+                Item = item,
+                RecipeTitle = recipe != null ? recipe.Title : null,
+            }).ToListAsync(cancellationToken);
+
+        var slots = rows
+            .GroupBy(r => new { r.SlotId, r.WeekDay, r.MealType })
+            .OrderBy(g => g.Key.WeekDay)
+            .ThenBy(g => g.Key.MealType)
+            .Select(g => new MealPlanSlotView(
+                g.Key.WeekDay,
+                g.Key.MealType,
+                g.Where(r => r.Item != null)
+                    .Select(r => new MealPlanItemView(
+                        r.Item!.Id,
+                        r.Item.RecipeId.Value,
+                        r.RecipeTitle ?? string.Empty,
+                        r.Item.Servings.Value))
+                    .ToList()))
+            .ToList();
+
+        return new MealPlanView(plan.Id.Value, slots);
+    }
+
+    public async Task SavePlanAsync(MealPlan mealPlan, CancellationToken cancellationToken = default)
+    {
+        var exists = await MealPlans
+            .AnyAsync(p => p.Id == mealPlan.Id, cancellationToken);
+
+        if (!exists)
+        {
+            await MealPlans.AddAsync(mealPlan, cancellationToken);
+        }
+        else
+        {
+            // Удаляем старые слоты (Items удаляются каскадно через OnDelete(Cascade))
+            var oldSlots = await MealPlanSlots
+                .Where(s => EF.Property<MealPlanId>(s, "meal_plan_id") == mealPlan.Id)
+                .ToListAsync(cancellationToken);
+            MealPlanSlots.RemoveRange(oldSlots);
+
+            // Обновляем план и добавляем новые слоты
+            var planEntry = Entry(mealPlan);
+            if (planEntry.State == EntityState.Detached)
+                MealPlans.Attach(mealPlan);
+            planEntry.State = EntityState.Modified;
+
+            foreach (var slot in mealPlan.Slots)
+            {
+                Entry(slot).State = EntityState.Added;
+                foreach (var item in slot.Items)
+                    Entry(item).State = EntityState.Added;
+            }
+        }
     }
 }

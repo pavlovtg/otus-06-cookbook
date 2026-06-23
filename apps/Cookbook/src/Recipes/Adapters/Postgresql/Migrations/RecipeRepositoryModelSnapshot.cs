@@ -89,6 +89,76 @@ namespace Recipes.Adapters.Postgresql.Migrations
                     b.ToTable("ingredients", "cookbook");
                 });
 
+            modelBuilder.Entity("Recipes.Domain.MealPlan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("meal_plans", "cookbook");
+                });
+
+            modelBuilder.Entity("Recipes.Domain.MealPlanItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("MealPlanSlotId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("meal_plan_slot_id");
+
+                    b.Property<Guid>("RecipeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recipe_id");
+
+                    b.Property<int>("Servings")
+                        .HasColumnType("integer")
+                        .HasColumnName("servings");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MealPlanSlotId");
+
+                    b.ToTable("meal_plan_items", "cookbook");
+                });
+
+            modelBuilder.Entity("Recipes.Domain.MealPlanSlot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("MealType")
+                        .HasColumnType("integer")
+                        .HasColumnName("meal_type");
+
+                    b.Property<int>("WeekDay")
+                        .HasColumnType("integer")
+                        .HasColumnName("week_day");
+
+                    b.Property<Guid?>("meal_plan_id")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("meal_plan_id", "WeekDay", "MealType")
+                        .IsUnique();
+
+                    b.ToTable("meal_plan_slots", "cookbook");
+                });
+
             modelBuilder.Entity("Recipes.Domain.Recipe", b =>
                 {
                     b.Property<Guid>("Id")
@@ -320,6 +390,31 @@ namespace Recipes.Adapters.Postgresql.Migrations
                     b.ToTable("user_favorites", "cookbook");
                 });
 
+            modelBuilder.Entity("Recipes.Domain.MealPlan", b =>
+                {
+                    b.HasOne("Recipes.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Recipes.Domain.MealPlanItem", b =>
+                {
+                    b.HasOne("Recipes.Domain.MealPlanSlot", null)
+                        .WithMany("Items")
+                        .HasForeignKey("MealPlanSlotId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Recipes.Domain.MealPlanSlot", b =>
+                {
+                    b.HasOne("Recipes.Domain.MealPlan", null)
+                        .WithMany("Slots")
+                        .HasForeignKey("meal_plan_id")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("Recipes.Domain.RecipeCategory", b =>
                 {
                     b.HasOne("Recipes.Domain.Recipe", null)
@@ -390,6 +485,16 @@ namespace Recipes.Adapters.Postgresql.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Recipes.Domain.MealPlan", b =>
+                {
+                    b.Navigation("Slots");
+                });
+
+            modelBuilder.Entity("Recipes.Domain.MealPlanSlot", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Recipes.Domain.Recipe", b =>

@@ -19,7 +19,7 @@
 
 ## В работе
 
-Нет активных изменений.
+`menu-planner` — **все 13 разделов завершены**. Готово к архивированию.
 
 ## Заархивировано
 
@@ -28,7 +28,25 @@
 - `recipe-author` (29/29 задач) → `openspec/changes/archive/2026-06-17-recipe-author/`
 - `recipe-comments` (35/35 задач) → `openspec/changes/archive/2026-06-22-recipe-comments/`
 
-## Выполнено (последнее — recipe-author frontend)
+## Выполнено (последнее — багфикс UI-тестов планировщика)
+
+- `PlannerGrid.tsx`: добавлены классы `planner-day-header` и `planner-meal-header`
+- `globals.css`: `isolation: isolate` на `.planner-panel` — устраняет перехват pointer events draggable-карточками dnd-kit
+
+## Выполнено (ранее — багфикс e2e meal plan)
+
+- Создан `apps/web/app/api/cookbook/v1/meal-plan/route.ts` — BFF proxy `GET`/`PUT`/`DELETE`
+- Создан `WeekDayOutOfRangeException` для невалидного weekDay (вне 1–7)
+- `MealPlanController`: добавлена валидация weekDay, catch расширен до `MealPlanDomainException`
+- Причина: BFF route handler отсутствовал → Next.js возвращал 404 на все запросы к `/api/cookbook/v1/meal-plan`
+
+## Выполнено (ранее — багфикс комментариев)
+
+- Создан `lib/bff/comments.server.ts` — `getComments` через `serverFetch` + абсолютный `GATEWAY_URL`
+- `app/recipes/[id]/page.tsx`: импорт `getComments` → `@/lib/bff/comments.server`
+- Причина: относительный URL в `comments.ts` не работал на сервере → `initialData` был пустым → комментарии не отображались + форма показывалась даже при наличии комментария → 400
+
+## Выполнено (ранее — recipe-author frontend)
 
 - Zod: `isPublic: z.boolean()` и `authorName: z.string().nullable()` в `RecipeShortDtoSchema`, `RecipeDtoSchema`; `isPublic` в `RecipeRequestSchema`
 - BFF: `isPublic` передаётся автоматически через `RecipeRequestSchema.parse(data)`

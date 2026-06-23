@@ -263,3 +263,29 @@ export function getUser(id: string): User | undefined {
 export function getRecipe(id: string): Recipe | undefined {
   return recipes.find((r) => r.id === id);
 }
+
+// ---- Meal plan mock data (ported from docs/design/mockup/index.html seedState) ----
+export type PlanItem = { recipe_id: string; servings: number };
+export type Plan = Record<string, PlanItem[]>; // key = `${dayIdx}_${meal}`
+
+export const MEAL_PLAN_KEYS = MEAL_KEYS;
+
+export const mealPlan: Plan = (() => {
+  const p: Plan = {};
+  for (let d = 0; d < 7; d++) for (const m of MEAL_KEYS) p[`${d}_${m}`] = [];
+  p['0_breakfast'] = [{ recipe_id: 'r4', servings: 1 }];
+  p['0_lunch']     = [{ recipe_id: 'r5', servings: 2 }];
+  p['0_dinner']    = [{ recipe_id: 'r1', servings: 4 }];
+  p['1_breakfast'] = [{ recipe_id: 'r2', servings: 2 }];
+  p['1_lunch']     = [{ recipe_id: 'r5', servings: 4 }];
+  p['1_dinner']    = [{ recipe_id: 'r3', servings: 2 }];
+  p['2_breakfast'] = [{ recipe_id: 'r2', servings: 2 }];
+  p['2_dinner']    = [{ recipe_id: 'r4', servings: 2 }];
+  p['3_lunch']     = [{ recipe_id: 'r6', servings: 3 }];
+  p['3_dinner']    = [{ recipe_id: 'r1', servings: 2 }];
+  p['4_dinner']    = [{ recipe_id: 'r3', servings: 4 }];
+  p['5_breakfast'] = [{ recipe_id: 'r2', servings: 3 }];
+  p['5_dinner']    = [{ recipe_id: 'r5', servings: 4 }];
+  p['6_lunch']     = [{ recipe_id: 'r4', servings: 4 }];
+  return p;
+})();

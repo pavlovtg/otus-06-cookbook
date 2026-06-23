@@ -2,16 +2,30 @@
 
 ## Текущая задача
 
-Нет активных изменений. Чейндж `recipe-comments` заархивирован.
+Багфикс UI-тестов планировщика — завершён.
 
 ## Последнее завершённое
 
-Архивирование чейнджа `recipe-comments` (35/35 задач):
+Исправление 2 падающих UI-тестов планировщика (диалог «Очистить всё» не закрывался):
 
-- Delta specs синхронизированы с основными:
-  - Добавлены новые specs: `recipe-comment-add`, `recipe-comment-delete`, `recipe-comment-list`
-  - Обновлён `recipe-detail/spec.md` — добавлены требования и сценарии секции комментариев
-- Архив: `openspec/changes/archive/2026-06-22-recipe-comments/`
+- `globals.css`: добавлены `visibility: hidden` к `.modal-backdrop` и `visibility: visible` к `.modal-backdrop.is-open` — Playwright считает элемент видимым при `opacity: 0`, но скрытым при `visibility: hidden`; также добавлен `transition: visibility 0ms 200ms` для корректной анимации закрытия
+
+## Ранее завершённое
+
+Исправление 4 падающих UI-тестов планировщика:
+
+- `PlannerGrid.tsx`: добавлены классы `planner-day-header` (к `planner-head-cell`) и `planner-meal-header` (к `planner-meal-label`) — тесты искали именно эти классы
+- `globals.css`: добавлен `isolation: isolate` к `.planner-panel` — draggable-карточки dnd-kit создавали stacking context и перекрывали `modal-backdrop` (z-index: 100), блокируя клики по кнопкам диалога
+
+## Ранее завершённое
+
+Улучшение UI планировщика меню:
+
+- `PlannerRecipeCard` — убраны inline-размеры фото (48×48), теперь CSS управляет через `aspect-ratio: 16/10`
+- `PlannerSlot` — добавлена миниатюра рецепта (`aspect-ratio: 16/9`), кнопка удаления перемещена в правый верхний угол (`position: absolute; top: 4px; right: 4px`), контрол порций — в правый нижний (`position: absolute; bottom: 4px; right: 4px`)
+- `PlannerGrid` — добавлен prop `recipePhotos: Record<string, string | undefined>`
+- `PlannerPageClient` — формирует `recipePhotos` из `recipes` и передаёт в `PlannerGrid`
+- `globals.css` — карточка панели `180px`, ячейки сетки `minmax(160px, 1fr)`, слот `min-height: 180px`, layout `planner-slot-item` переработан на `flex-direction: column` с абсолютным позиционированием кнопки и порций
 
 ## Ключевые решения
 
@@ -28,3 +42,5 @@
 - `serverFetch(url, init?)` в `lib/server-fetch.ts` — обёртка для Server Components, автоматически добавляет `Authorization` из `getSession()`. `getRecipe`/`getRecipes` используют `serverFetch` — автор видит свои приватные рецепты.
 - `CommentsSection` — Client Component; первая страница комментариев загружается в Server Component (`getComments` с `.catch`) и передаётся как `initialData`; смена страниц — клиентский fetch
 - Один комментарий на пользователя на рецепт — уникальный индекс `(recipe_id, author_id)` в таблице `recipe_comments`
+- DnD планировщика — `@dnd-kit/core` + `@dnd-kit/utilities` (ADR-0036, AR-0064); `useDraggable` на карточке, `useDroppable` на слоте, `DragOverlay` для floating-карточки
+- Все API-запросы идут через nginx → Next.js BFF route handlers → gateway → recipes; BFF route handler обязателен для каждого ресурса
