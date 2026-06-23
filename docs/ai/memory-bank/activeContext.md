@@ -6,6 +6,12 @@
 
 ## Последнее завершённое
 
+Исправление 2 падающих UI-тестов планировщика (диалог «Очистить всё» не закрывался):
+
+- `globals.css`: добавлены `visibility: hidden` к `.modal-backdrop` и `visibility: visible` к `.modal-backdrop.is-open` — Playwright считает элемент видимым при `opacity: 0`, но скрытым при `visibility: hidden`; также добавлен `transition: visibility 0ms 200ms` для корректной анимации закрытия
+
+## Ранее завершённое
+
 Исправление 4 падающих UI-тестов планировщика:
 
 - `PlannerGrid.tsx`: добавлены классы `planner-day-header` (к `planner-head-cell`) и `planner-meal-header` (к `planner-meal-label`) — тесты искали именно эти классы

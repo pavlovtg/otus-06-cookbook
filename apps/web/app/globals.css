@@ -877,9 +877,10 @@ h1, h2, h3, h4, h5 { margin: 0; font-weight: 500; color: var(--fg-primary); }
   padding: 24px;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 200ms var(--ease-out);
+  visibility: hidden;
+  transition: opacity 200ms var(--ease-out), visibility 0ms 200ms;
 }
-.modal-backdrop.is-open { opacity: 1; pointer-events: auto; }
+.modal-backdrop.is-open { opacity: 1; pointer-events: auto; visibility: visible; transition: opacity 200ms var(--ease-out), visibility 0ms; }
 .modal {
   background: var(--bg-surface-2);
   border-radius: var(--radius-card-lg);
