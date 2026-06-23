@@ -168,7 +168,7 @@ export default async function IngredientsPage({ searchParams }: Props) {
         </div>
       ) : (
         <>
-          <div className="shopping-table">
+          <div className="shopping-table ingredients-list">
             {groups.map((group) => (
               <div key={group.category}>
                 <div className="shopping-group-head">
