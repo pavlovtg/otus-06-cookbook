@@ -9,27 +9,29 @@ export interface KpiProps {
 }
 
 export function Kpi({ label, value, animate = true }: KpiProps) {
-  const [display, setDisplay] = React.useState<number | string>(
-    animate && typeof value === "number" ? 0 : value,
+  const shouldAnimate = animate && typeof value === "number";
+
+  const [animated, setAnimated] = React.useState<number>(
+    shouldAnimate ? 0 : 0,
   );
 
   React.useEffect(() => {
-    if (!animate || typeof value !== "number") {
-      setDisplay(value);
-      return;
-    }
+    if (!shouldAnimate) return;
+    const numValue = value as number;
     const start = performance.now();
     const dur = 700;
     let raf = 0;
     const tick = (t: number) => {
       const p = Math.min(1, (t - start) / dur);
       const eased = 1 - Math.pow(1 - p, 3);
-      setDisplay(Math.round(value * eased));
+      setAnimated(Math.round(numValue * eased));
       if (p < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [value, animate]);
+  }, [value, shouldAnimate]);
+
+  const display = shouldAnimate ? animated : value;
 
   return (
     <div className="kpi">
