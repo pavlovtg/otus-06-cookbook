@@ -53,37 +53,37 @@
 
 ## 8. Storybook: компоненты планировщика
 
-- [ ] 8.1 Добавить компонент `PlannerRecipeCard` в `src/domain/` (миниатюра + название, draggable) по макету `docs/design/mockup/index.html` (`.planner-recipe`)
-- [ ] 8.2 Добавить компонент `PlannerSlot` в `src/domain/` (слот сетки, dragover-подсветка) по макету (`.planner-slot`, `.planner-slot-item`)
-- [ ] 8.3 Добавить компонент `PlannerGrid` в `src/domain/` (сетка 7×3 с заголовками) по макету (`.planner-grid`)
-- [ ] 8.4 Добавить компонент `PlannerPanel` в `src/domain/` (горизонтальный скролл + переключатели + поиск) по макету (`.planner-panel`)
-- [ ] 8.5 Добавить story `Planner.stories.tsx` с Playground в `src/stories/`
-- [ ] 8.6 Добавить mock-данные плана меню в `src/mocks.ts`
+- [x] 8.1 Добавить компонент `PlannerRecipeCard` в `src/domain/` (миниатюра + название, draggable) по макету `docs/design/mockup/index.html` (`.planner-recipe`)
+- [x] 8.2 Добавить компонент `PlannerSlot` в `src/domain/` (слот сетки, dragover-подсветка) по макету (`.planner-slot`, `.planner-slot-item`)
+- [x] 8.3 Добавить компонент `PlannerGrid` в `src/domain/` (сетка 7×3 с заголовками) по макету (`.planner-grid`)
+- [x] 8.4 Добавить компонент `PlannerPanel` в `src/domain/` (горизонтальный скролл + переключатели + поиск) по макету (`.planner-panel`)
+- [x] 8.5 Добавить story `Planner.stories.tsx` с Playground в `src/stories/`
+- [x] 8.6 Добавить mock-данные плана меню в `src/mocks.ts`
 
 ## 9. Frontend: BFF
 
-- [ ] 9.1 Создать Zod-схемы для MealPlan (запрос/ответ) в `lib/bff/meal-plan.ts`
-- [ ] 9.2 Реализовать `getMealPlan()` (Server Component)
-- [ ] 9.3 Реализовать Server Actions `updateMealPlan()` и `clearMealPlan()`
+- [x] 9.1 Создать Zod-схемы для MealPlan (запрос/ответ) в `lib/bff/meal-plan.ts`
+- [x] 9.2 Реализовать `getMealPlan()` (Server Component)
+- [x] 9.3 Реализовать Server Actions `updateMealPlan()` и `clearMealPlan()`
 
 ## 10. Frontend: страница планировщика
 
-- [ ] 10.1 Создать страницу `/planner` (Client Component, защита авторизацией)
-- [ ] 10.2 Реализовать панель выбора рецептов (горизонтальный скролл, переключатели Все/Избранное/Мои, поиск) по макету и Storybook-компоненту `PlannerPanel`
-- [ ] 10.3 Реализовать сетку 7×3 по макету и Storybook-компоненту `PlannerGrid`
-- [ ] 10.4 Подключить `@dnd-kit/core`: `DndContext`, `useDraggable`, `useDroppable`, `DragOverlay`
-- [ ] 10.5 Реализовать карточку блюда в слоте (название, поле порций, кнопка удаления) по макету (`.planner-slot-item`)
-- [ ] 10.6 Реализовать автосохранение с debounce 300 мс
-- [ ] 10.7 Реализовать кнопку «Очистить всё» с диалогом подтверждения
+- [x] 10.1 Создать страницу `/planner` (Client Component, защита авторизацией)
+- [x] 10.2 Реализовать панель выбора рецептов (горизонтальный скролл, переключатели Все/Избранное/Мои, поиск) по макету и Storybook-компоненту `PlannerPanel`
+- [x] 10.3 Реализовать сетку 7×3 по макету и Storybook-компоненту `PlannerGrid`
+- [x] 10.4 Подключить `@dnd-kit/core`: `DndContext`, `useDraggable`, `useDroppable`, `DragOverlay`
+- [x] 10.5 Реализовать карточку блюда в слоте (название, поле порций, кнопка удаления) по макету (`.planner-slot-item`)
+- [x] 10.6 Реализовать автосохранение с debounce 300 мс
+- [x] 10.7 Реализовать кнопку «Очистить всё» с диалогом подтверждения
 
 ## 11. Frontend: навигация
 
-- [ ] 11.1 Добавить пункт «Планировщик» в компонент шапки (только для авторизованных)
+- [x] 11.1 Добавить пункт «Планировщик» в компонент шапки (только для авторизованных)
 
 ## 12. Frontend: тесты
 
-- [ ] 12.1 Unit-тесты Zod-схем (`meal-plan.schema.test.ts`)
-- [ ] 12.2 Unit-тесты BFF-функций с мокированным fetch (`meal-plan.bff.test.ts`)
+- [x] 12.1 Unit-тесты Zod-схем (`meal-plan.schema.test.ts`)
+- [x] 12.2 Unit-тесты BFF-функций с мокированным fetch (`meal-plan.bff.test.ts`)
 
 ## 13. E2E-тесты
 

@@ -2,18 +2,25 @@
 
 ## Текущая задача
 
-Нет активных изменений.
+`menu-planner` — задачи 9–12 (Frontend BFF + страница планировщика + навигация + тесты) — **завершены**.
 
 ## Последнее завершённое
 
-Пересоздана миграция `AddMealPlan` (`20260622235509_AddMealPlan.cs`):
+Frontend-часть планировщика меню (задачи 9–12):
 
-**Проблема:** старая миграция была патчем поверх кривого состояния (артефакт `MealPlanId1`, `DropForeignKey`/`DropIndex` в `Up`).
-
-**Исправления:**
-- `MealPlanSlotConfiguration.cs` — добавлена явная связь `HasOne<MealPlan>().WithMany(p => p.Slots).HasForeignKey("meal_plan_id").OnDelete(Cascade)`; убрано явное объявление shadow property `Guid?`; FK-имя — snake_case `"meal_plan_id"`
-- `MealPlanConfiguration.cs` — без изменений (конвертация `MealPlanId` осталась прежней)
-- Миграция пересоздана: чистый `CreateTable` для трёх таблиц, все колонки в snake_case, нет `MealPlanId1`
+- `lib/schemas/meal-plan.ts` — Zod-схемы DTO и Request (MealPlanItem/Slot/Plan)
+- `lib/bff/meal-plan.server.ts` — `getMealPlan()` (Server Component, `serverFetch`)
+- `lib/bff/meal-plan.ts` — Server Actions `updateMealPlan()` / `clearMealPlan()` (`"use server"`)
+- `lib/planner-utils.ts` — конвертация DTO↔Plan, `emptyPlan()`, константы DAY_LABELS/MEAL_KEYS
+- `components/features/planner/` — `PlannerRecipeCard` (useDraggable), `PlannerSlot` (useDroppable), `PlannerGrid`, `PlannerPanel`
+- `app/planner/page.tsx` — Server Component, redirect если не авторизован
+- `app/planner/PlannerPageClient.tsx` — DndContext, автосохранение debounce 300 мс, диалог очистки
+- `app/layout.tsx` — пункт «Планировщик» с CalendarIcon (только для авторизованных)
+- `lib/icons.tsx` — добавлен `CalendarIcon`
+- `tests/unit/meal-plan.schema.test.ts` — 25 тестов Zod-схем
+- `tests/bff/meal-plan.bff.test.ts` — 10 тестов BFF-функций
+- Установлены `@dnd-kit/core` и `@dnd-kit/utilities`
+- Все 453 теста прошли
 
 ## Ключевые решения
 
