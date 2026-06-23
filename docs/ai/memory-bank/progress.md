@@ -28,7 +28,11 @@
 - `recipe-author` (29/29 задач) → `openspec/changes/archive/2026-06-17-recipe-author/`
 - `recipe-comments` (35/35 задач) → `openspec/changes/archive/2026-06-22-recipe-comments/`
 
-## Выполнено (последнее — багфикс страницы списка покупок)
+## Выполнено (последнее — багфикс UI-тестов ингредиентов)
+
+- `tests/ui/test_ingredients.py`: 6 тестов переключены с `page` на `logged_in_page` — кнопки CRUD видны только авторизованным пользователям
+
+## Выполнено (ранее — багфикс страницы списка покупок)
 
 - `ShoppingListController.cs`: `g.Category.ToString()` → `g.Category.ToDtoString()` — теперь отдаёт snake_case (`vegetables`, `fruits_and_berries` и т.д.)
 - `IngredientCategoryDtoExtensions.cs`: добавлен метод `ToDtoString()` — сериализует через JSON для получения snake_case строки

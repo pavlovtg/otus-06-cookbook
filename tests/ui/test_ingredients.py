@@ -35,8 +35,9 @@ def test_ingredients_list_shows_items(page: Page, base_url: str) -> None:
     expect(items.first).to_be_visible()
 
 
-def test_create_ingredient_success(page: Page, base_url: str) -> None:
+def test_create_ingredient_success(logged_in_page: Page, base_url: str) -> None:
     """11.2 Успешное создание ингредиента через форму."""
+    page = logged_in_page
     title = _unique_title("UI-тест морковь")
     page.goto(f"{base_url}/ingredients")
 
@@ -61,8 +62,9 @@ def test_create_ingredient_success(page: Page, base_url: str) -> None:
     expect(page.locator(".ingredients-list")).to_contain_text(title)
 
 
-def test_create_ingredient_validation_error(page: Page, base_url: str) -> None:
+def test_create_ingredient_validation_error(logged_in_page: Page, base_url: str) -> None:
     """11.2 Ошибка валидации при создании ингредиента с коротким названием."""
+    page = logged_in_page
     page.goto(f"{base_url}/ingredients")
 
     page.locator("[data-testid='create-ingredient-trigger']").click()
@@ -80,8 +82,9 @@ def test_create_ingredient_validation_error(page: Page, base_url: str) -> None:
     expect(modal).to_be_visible()
 
 
-def test_edit_ingredient_prefills_form(page: Page, base_url: str) -> None:
+def test_edit_ingredient_prefills_form(logged_in_page: Page, base_url: str) -> None:
     """11.3 Форма редактирования предзаполнена данными ингредиента."""
+    page = logged_in_page
     page.goto(f"{base_url}/ingredients")
 
     first_item = page.locator(".ingredient-item").first
@@ -94,8 +97,9 @@ def test_edit_ingredient_prefills_form(page: Page, base_url: str) -> None:
     expect(modal.locator("#ingredient-title")).to_have_value(ingredient_title)
 
 
-def test_edit_ingredient_success(page: Page, base_url: str) -> None:
+def test_edit_ingredient_success(logged_in_page: Page, base_url: str) -> None:
     """11.3 Успешное редактирование ингредиента."""
+    page = logged_in_page
     title = _unique_title("UI-тест морковь")
     updated_title = _unique_title("UI-тест морковь обновлённая")
     page.goto(f"{base_url}/ingredients")
@@ -132,8 +136,9 @@ def test_edit_ingredient_success(page: Page, base_url: str) -> None:
     expect(page.locator(".ingredients-list")).to_contain_text(updated_title)
 
 
-def test_delete_ingredient_with_confirmation(page: Page, base_url: str) -> None:
+def test_delete_ingredient_with_confirmation(logged_in_page: Page, base_url: str) -> None:
     """11.4 Удаление ингредиента с подтверждением."""
+    page = logged_in_page
     title = _unique_title("UI-тест удаление")
     page.goto(f"{base_url}/ingredients")
 
@@ -166,8 +171,9 @@ def test_delete_ingredient_with_confirmation(page: Page, base_url: str) -> None:
     expect(page.locator(".ingredient-item", has_text=title)).to_have_count(0)
 
 
-def test_delete_ingredient_cancel(page: Page, base_url: str) -> None:
+def test_delete_ingredient_cancel(logged_in_page: Page, base_url: str) -> None:
     """11.4 Отмена удаления ингредиента."""
+    page = logged_in_page
     page.goto(f"{base_url}/ingredients")
 
     first_item = page.locator(".ingredient-item").first
