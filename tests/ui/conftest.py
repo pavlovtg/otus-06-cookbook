@@ -9,6 +9,9 @@ BASE_URL_DEFAULT = "http://localhost:5500"
 SEED_EMAIL = "user@cookbook.local"
 SEED_PASSWORD = "1234567890"
 
+ADMIN_EMAIL = "admin@cookbook.local"
+ADMIN_PASSWORD = "1234567890"
+
 _API_AUTH = "/api/cookbook/v1/auth"
 
 
@@ -53,6 +56,17 @@ def logged_in_page(page: Page, base_url: str) -> Page:
     page.goto(f"{base_url}/login")
     page.fill("#email", SEED_EMAIL)
     page.fill("#password", SEED_PASSWORD)
+    page.click("button[type=submit]")
+    page.wait_for_url(f"{base_url}/", timeout=15_000)
+    return page
+
+
+@pytest.fixture
+def admin_page(page: Page, base_url: str) -> Page:
+    """Открывает /login, входит под admin и возвращает page."""
+    page.goto(f"{base_url}/login")
+    page.fill("#email", ADMIN_EMAIL)
+    page.fill("#password", ADMIN_PASSWORD)
     page.click("button[type=submit]")
     page.wait_for_url(f"{base_url}/", timeout=15_000)
     return page

@@ -48,9 +48,35 @@ public sealed class CategoriesCrudTests(RecipeMicroserviceFixture fixture) : IAs
     // ── POST /api/v1/categories ──────────────────────────────────────────────
 
     [Fact]
-    public async Task CreateCategory_Returns201_WithCategoryDto()
+    public async Task CreateCategory_Returns401_WhenNotAuthenticated()
     {
         var response = await _client.PostAsJsonAsync("/api/v1/categories", ValidRequest());
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateCategory_Returns403_WhenNotAdmin()
+    {
+        var authHeader = await fixture.GetAuthHeaderAsync("user");
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/categories");
+        request.Headers.Authorization = authHeader;
+        request.Content = JsonContent.Create(ValidRequest());
+
+        var response = await _client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateCategory_Returns201_WithCategoryDto()
+    {
+        var authHeader = await fixture.GetAdminAuthHeaderAsync();
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/categories");
+        request.Headers.Authorization = authHeader;
+        request.Content = JsonContent.Create(ValidRequest());
+
+        var response = await _client.SendAsync(request);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
@@ -65,8 +91,13 @@ public sealed class CategoriesCrudTests(RecipeMicroserviceFixture fixture) : IAs
     [Fact]
     public async Task CreateCategory_Returns400_WhenNameEmpty()
     {
+        var authHeader = await fixture.GetAdminAuthHeaderAsync();
         var request = ValidRequest() with { Name = "" };
-        var response = await _client.PostAsJsonAsync("/api/v1/categories", request);
+        using var msg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/categories");
+        msg.Headers.Authorization = authHeader;
+        msg.Content = JsonContent.Create(request);
+
+        var response = await _client.SendAsync(msg);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -74,8 +105,13 @@ public sealed class CategoriesCrudTests(RecipeMicroserviceFixture fixture) : IAs
     [Fact]
     public async Task CreateCategory_Returns400_WhenNameTooLong()
     {
+        var authHeader = await fixture.GetAdminAuthHeaderAsync();
         var request = ValidRequest() with { Name = new string('А', 201) };
-        var response = await _client.PostAsJsonAsync("/api/v1/categories", request);
+        using var msg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/categories");
+        msg.Headers.Authorization = authHeader;
+        msg.Content = JsonContent.Create(request);
+
+        var response = await _client.SendAsync(msg);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -83,8 +119,13 @@ public sealed class CategoriesCrudTests(RecipeMicroserviceFixture fixture) : IAs
     [Fact]
     public async Task CreateCategory_Returns400_WhenDescriptionTooLong()
     {
+        var authHeader = await fixture.GetAdminAuthHeaderAsync();
         var request = ValidRequest() with { Description = new string('А', 2001) };
-        var response = await _client.PostAsJsonAsync("/api/v1/categories", request);
+        using var msg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/categories");
+        msg.Headers.Authorization = authHeader;
+        msg.Content = JsonContent.Create(request);
+
+        var response = await _client.SendAsync(msg);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -92,7 +133,12 @@ public sealed class CategoriesCrudTests(RecipeMicroserviceFixture fixture) : IAs
     [Fact]
     public async Task CreateCategory_TypeIsSerializedAsSnakeCase()
     {
-        var response = await _client.PostAsJsonAsync("/api/v1/categories", ValidRequest());
+        var authHeader = await fixture.GetAdminAuthHeaderAsync();
+        using var msg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/categories");
+        msg.Headers.Authorization = authHeader;
+        msg.Content = JsonContent.Create(ValidRequest());
+
+        var response = await _client.SendAsync(msg);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
         var json = await response.Content.ReadAsStringAsync();
@@ -102,12 +148,41 @@ public sealed class CategoriesCrudTests(RecipeMicroserviceFixture fixture) : IAs
     // ── PUT /api/v1/categories/{id} ──────────────────────────────────────────
 
     [Fact]
-    public async Task UpdateCategory_Returns204_WhenValid()
+    public async Task UpdateCategory_Returns401_WhenNotAuthenticated()
     {
         var created = await CreateTestCategoryAsync();
 
+        var response = await _client.PutAsJsonAsync($"/api/v1/categories/{created.Id}", ValidRequest());
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateCategory_Returns403_WhenNotAdmin()
+    {
+        var created = await CreateTestCategoryAsync();
+        var authHeader = await fixture.GetAuthHeaderAsync("user");
+        using var msg = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/categories/{created.Id}");
+        msg.Headers.Authorization = authHeader;
+        msg.Content = JsonContent.Create(ValidRequest() with { Name = "Другое" });
+
+        var response = await _client.SendAsync(msg);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateCategory_Returns204_WhenValid()
+    {
+        var created = await CreateTestCategoryAsync();
+        var authHeader = await fixture.GetAdminAuthHeaderAsync();
+
         var updateRequest = ValidRequest() with { Name = "Второе блюдо", Description = "Горячие блюда." };
-        var response = await _client.PutAsJsonAsync($"/api/v1/categories/{created.Id}", updateRequest);
+        using var msg = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/categories/{created.Id}");
+        msg.Headers.Authorization = authHeader;
+        msg.Content = JsonContent.Create(updateRequest);
+
+        var response = await _client.SendAsync(msg);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
@@ -124,9 +199,13 @@ public sealed class CategoriesCrudTests(RecipeMicroserviceFixture fixture) : IAs
     public async Task UpdateCategory_Returns400_WhenNameEmpty()
     {
         var created = await CreateTestCategoryAsync();
+        var authHeader = await fixture.GetAdminAuthHeaderAsync();
 
-        var updateRequest = ValidRequest() with { Name = "" };
-        var response = await _client.PutAsJsonAsync($"/api/v1/categories/{created.Id}", updateRequest);
+        using var msg = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/categories/{created.Id}");
+        msg.Headers.Authorization = authHeader;
+        msg.Content = JsonContent.Create(ValidRequest() with { Name = "" });
+
+        var response = await _client.SendAsync(msg);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -134,7 +213,12 @@ public sealed class CategoriesCrudTests(RecipeMicroserviceFixture fixture) : IAs
     [Fact]
     public async Task UpdateCategory_Returns400_WhenNotFound()
     {
-        var response = await _client.PutAsJsonAsync($"/api/v1/categories/{Guid.NewGuid()}", ValidRequest());
+        var authHeader = await fixture.GetAdminAuthHeaderAsync();
+        using var msg = new HttpRequestMessage(HttpMethod.Put, $"/api/v1/categories/{Guid.NewGuid()}");
+        msg.Headers.Authorization = authHeader;
+        msg.Content = JsonContent.Create(ValidRequest());
+
+        var response = await _client.SendAsync(msg);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -142,11 +226,37 @@ public sealed class CategoriesCrudTests(RecipeMicroserviceFixture fixture) : IAs
     // ── DELETE /api/v1/categories/{id} ───────────────────────────────────────
 
     [Fact]
-    public async Task DeleteCategory_Returns204_WhenExists()
+    public async Task DeleteCategory_Returns401_WhenNotAuthenticated()
     {
         var created = await CreateTestCategoryAsync();
 
         var response = await _client.DeleteAsync($"/api/v1/categories/{created.Id}");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteCategory_Returns403_WhenNotAdmin()
+    {
+        var created = await CreateTestCategoryAsync();
+        var authHeader = await fixture.GetAuthHeaderAsync("user");
+        using var msg = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/categories/{created.Id}");
+        msg.Headers.Authorization = authHeader;
+
+        var response = await _client.SendAsync(msg);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteCategory_Returns204_WhenExists()
+    {
+        var created = await CreateTestCategoryAsync();
+        var authHeader = await fixture.GetAdminAuthHeaderAsync();
+        using var msg = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/categories/{created.Id}");
+        msg.Headers.Authorization = authHeader;
+
+        var response = await _client.SendAsync(msg);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
@@ -159,7 +269,11 @@ public sealed class CategoriesCrudTests(RecipeMicroserviceFixture fixture) : IAs
     [Fact]
     public async Task DeleteCategory_Returns400_WhenNotFound()
     {
-        var response = await _client.DeleteAsync($"/api/v1/categories/{Guid.NewGuid()}");
+        var authHeader = await fixture.GetAdminAuthHeaderAsync();
+        using var msg = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/categories/{Guid.NewGuid()}");
+        msg.Headers.Authorization = authHeader;
+
+        var response = await _client.SendAsync(msg);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -168,7 +282,11 @@ public sealed class CategoriesCrudTests(RecipeMicroserviceFixture fixture) : IAs
 
     private async Task<CategoryDto> CreateTestCategoryAsync()
     {
-        var response = await _client.PostAsJsonAsync("/api/v1/categories", ValidRequest());
+        var authHeader = await fixture.GetAdminAuthHeaderAsync();
+        using var msg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/categories");
+        msg.Headers.Authorization = authHeader;
+        msg.Content = JsonContent.Create(ValidRequest());
+        var response = await _client.SendAsync(msg);
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<CategoryDto>())!;
     }

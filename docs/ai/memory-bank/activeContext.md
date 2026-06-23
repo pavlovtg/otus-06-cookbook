@@ -2,9 +2,26 @@
 
 ## Текущая задача
 
-Багфикс UI-тестов ингредиентов — завершено.
+Ограничение доступа к категориям рецептов + правка тестов — завершено.
 
 ## Последнее завершённое
+
+Страница `/categories` — только для администраторов:
+
+- `CategoriesController.cs`: `[Authorize]` + `IsAdmin()` на POST/PUT/DELETE → 403 если не admin
+- `middleware.ts`: `/categories` добавлен в `ADMIN_PATHS` — неавторизованные → `/login`, авторизованные не-admin → `/`
+- `layout.tsx`: ссылка «Категории» в навигации только при `user?.role === "admin"`
+- `categories/page.tsx`: серверный guard `getSession()` → `redirect("/")` если не admin
+
+Тесты:
+
+- `CategoriesCrudTests.cs`: добавлены тесты 401/403; все POST/PUT/DELETE используют `GetAdminAuthHeaderAsync()`; helper `CreateTestCategoryAsync()` тоже через admin
+- `tests/e2e/conftest.py`: добавлена фикстура `admin_token` (логин `admin@cookbook.local`)
+- `tests/e2e/test_categories_api.py`: тесты 401/403 для POST/PUT/DELETE; мутирующие операции через `admin_token`
+- `tests/ui/conftest.py`: добавлена фикстура `admin_page` (логин `admin@cookbook.local`)
+- `tests/ui/test_categories.py`: все тесты переведены на `admin_page`; добавлены тесты редиректа анонима и не-admin; тест видимости ссылки в навигации
+
+## Ранее завершённое
 
 Рефакторинг страницы `/ingredients`:
 

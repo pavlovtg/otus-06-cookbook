@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Recipes.Adapters.Web.Dto;
 using Recipes.Adapters.Web.Mapping;
@@ -25,9 +26,13 @@ internal sealed class CategoriesController : ControllerBase
         return Ok(categories.Select(ToDto).ToList());
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> CreateCategory([FromBody] CategoryRequest request, CancellationToken cancellationToken)
     {
+        if (!IsAdmin())
+            return Forbid();
+
         try
         {
             var category = await _categoryService.CreateAsync(
@@ -44,9 +49,13 @@ internal sealed class CategoriesController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateCategory(Guid id, [FromBody] CategoryRequest request, CancellationToken cancellationToken)
     {
+        if (!IsAdmin())
+            return Forbid();
+
         try
         {
             await _categoryService.UpdateAsync(
@@ -63,9 +72,13 @@ internal sealed class CategoriesController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteCategory(Guid id, CancellationToken cancellationToken)
     {
+        if (!IsAdmin())
+            return Forbid();
+
         try
         {
             await _categoryService.DeleteAsync(CategoryId.From(id), cancellationToken);
@@ -80,6 +93,9 @@ internal sealed class CategoriesController : ControllerBase
             return BadRequest(ProblemDetailsFor(ex));
         }
     }
+
+    private bool IsAdmin() =>
+        User.IsInRole("admin");
 
     private static CategoryDto ToDto(Category category) => new(
         category.Id.Value,

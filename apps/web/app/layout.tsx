@@ -41,7 +41,9 @@ export default async function RootLayout({
                 )}
                 <Link href="/dashboard"><ChartIcon size={14} /><span>Дашборд</span></Link>
                 <Link href="/ingredients"><LeafIcon size={14} /><span>Ингредиенты</span></Link>
-                <Link href="/categories"><LayersIcon size={14} /><span>Категории</span></Link>
+                {user?.role === "admin" && (
+                  <Link href="/categories"><LayersIcon size={14} /><span>Категории</span></Link>
+                )}
               </nav>
               <div id="user-slot">
                 {user ? (
