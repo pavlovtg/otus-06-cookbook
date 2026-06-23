@@ -53,6 +53,7 @@ public sealed class GetShoppingListTests(RecipeMicroserviceFixture fixture) : IA
         using var ingReq = new HttpRequestMessage(HttpMethod.Post, "/api/v1/ingredients")
         {
             Content = JsonContent.Create(ingredientRequest),
+            Headers = { Authorization = authHeader },
         };
         var ingResp = await _client.SendAsync(ingReq);
         ingResp.EnsureSuccessStatusCode();

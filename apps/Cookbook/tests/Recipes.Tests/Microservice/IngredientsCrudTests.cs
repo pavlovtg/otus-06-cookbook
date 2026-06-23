@@ -27,10 +27,29 @@ public sealed class IngredientsCrudTests(RecipeMicroserviceFixture fixture) : IA
         Category: "vegetables"
     );
 
+    private async Task<HttpResponseMessage> SendWithAuthAsync<T>(HttpMethod method, string url, T body)
+    {
+        using var msg = new HttpRequestMessage(method, url)
+        {
+            Content = JsonContent.Create(body),
+            Headers = { Authorization = _authHeader },
+        };
+        return await _client.SendAsync(msg);
+    }
+
+    private async Task<HttpResponseMessage> SendDeleteWithAuthAsync(string url)
+    {
+        using var msg = new HttpRequestMessage(HttpMethod.Delete, url)
+        {
+            Headers = { Authorization = _authHeader },
+        };
+        return await _client.SendAsync(msg);
+    }
+
     [Fact]
     public async Task CreateIngredient_Returns201_WithIngredientDto()
     {
-        var response = await _client.PostAsJsonAsync("/api/v1/ingredients", ValidRequest());
+        var response = await SendWithAuthAsync(HttpMethod.Post, "/api/v1/ingredients", ValidRequest());
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
@@ -48,7 +67,7 @@ public sealed class IngredientsCrudTests(RecipeMicroserviceFixture fixture) : IA
     public async Task CreateIngredient_Returns400_WhenTitleTooShort()
     {
         var request = ValidRequest() with { Title = "А" };
-        var response = await _client.PostAsJsonAsync("/api/v1/ingredients", request);
+        var response = await SendWithAuthAsync(HttpMethod.Post, "/api/v1/ingredients", request);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -57,7 +76,7 @@ public sealed class IngredientsCrudTests(RecipeMicroserviceFixture fixture) : IA
     public async Task CreateIngredient_Returns400_WhenInvalidCategory()
     {
         var request = ValidRequest() with { Category = "unknown_category" };
-        var response = await _client.PostAsJsonAsync("/api/v1/ingredients", request);
+        var response = await SendWithAuthAsync(HttpMethod.Post, "/api/v1/ingredients", request);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -66,7 +85,7 @@ public sealed class IngredientsCrudTests(RecipeMicroserviceFixture fixture) : IA
     public async Task CreateIngredient_Returns400_WhenDefaultAmountOutOfRange()
     {
         var request = ValidRequest() with { DefaultAmount = 0f };
-        var response = await _client.PostAsJsonAsync("/api/v1/ingredients", request);
+        var response = await SendWithAuthAsync(HttpMethod.Post, "/api/v1/ingredients", request);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -172,7 +191,7 @@ public sealed class IngredientsCrudTests(RecipeMicroserviceFixture fixture) : IA
         var created = await CreateTestIngredientAsync();
 
         var updateRequest = ValidRequest() with { Title = "Обновлённый ингредиент", Unit = "шт." };
-        var response = await _client.PutAsJsonAsync($"/api/v1/ingredients/{created.Id}", updateRequest);
+        var response = await SendWithAuthAsync(HttpMethod.Put, $"/api/v1/ingredients/{created.Id}", updateRequest);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
@@ -189,7 +208,7 @@ public sealed class IngredientsCrudTests(RecipeMicroserviceFixture fixture) : IA
         var created = await CreateTestIngredientAsync();
 
         var updateRequest = ValidRequest() with { Title = "А" };
-        var response = await _client.PutAsJsonAsync($"/api/v1/ingredients/{created.Id}", updateRequest);
+        var response = await SendWithAuthAsync(HttpMethod.Put, $"/api/v1/ingredients/{created.Id}", updateRequest);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -199,7 +218,7 @@ public sealed class IngredientsCrudTests(RecipeMicroserviceFixture fixture) : IA
     {
         var created = await CreateTestIngredientAsync();
 
-        var response = await _client.DeleteAsync($"/api/v1/ingredients/{created.Id}");
+        var response = await SendDeleteWithAuthAsync($"/api/v1/ingredients/{created.Id}");
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
@@ -210,7 +229,7 @@ public sealed class IngredientsCrudTests(RecipeMicroserviceFixture fixture) : IA
     [Fact]
     public async Task DeleteIngredient_Returns400_WhenNotFound()
     {
-        var response = await _client.DeleteAsync($"/api/v1/ingredients/{Guid.NewGuid()}");
+        var response = await SendDeleteWithAuthAsync($"/api/v1/ingredients/{Guid.NewGuid()}");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -220,7 +239,7 @@ public sealed class IngredientsCrudTests(RecipeMicroserviceFixture fixture) : IA
     {
         var request = ValidRequest() with { Category = "nuts_and_seeds" };
 
-        var response = await _client.PostAsJsonAsync("/api/v1/ingredients", request);
+        var response = await SendWithAuthAsync(HttpMethod.Post, "/api/v1/ingredients", request);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
         var json = await response.Content.ReadAsStringAsync();
@@ -252,7 +271,7 @@ public sealed class IngredientsCrudTests(RecipeMicroserviceFixture fixture) : IA
         var recipeResponse = await _client.SendAsync(recipeMsg1);
         recipeResponse.EnsureSuccessStatusCode();
 
-        var deleteResponse = await _client.DeleteAsync($"/api/v1/ingredients/{ingredient.Id}");
+        var deleteResponse = await SendDeleteWithAuthAsync($"/api/v1/ingredients/{ingredient.Id}");
 
         Assert.Equal(HttpStatusCode.BadRequest, deleteResponse.StatusCode);
     }
@@ -279,7 +298,7 @@ public sealed class IngredientsCrudTests(RecipeMicroserviceFixture fixture) : IA
         var recipeResponse = await _client.SendAsync(recipeMsg2);
         recipeResponse.EnsureSuccessStatusCode();
 
-        var deleteResponse = await _client.DeleteAsync($"/api/v1/ingredients/{ingredient.Id}");
+        var deleteResponse = await SendDeleteWithAuthAsync($"/api/v1/ingredients/{ingredient.Id}");
 
         Assert.Equal(HttpStatusCode.BadRequest, deleteResponse.StatusCode);
 
@@ -289,7 +308,7 @@ public sealed class IngredientsCrudTests(RecipeMicroserviceFixture fixture) : IA
 
     private async Task<IngredientDto> CreateTestIngredientAsync()
     {
-        var response = await _client.PostAsJsonAsync("/api/v1/ingredients", ValidRequest());
+        var response = await SendWithAuthAsync(HttpMethod.Post, "/api/v1/ingredients", ValidRequest());
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<IngredientDto>())!;
     }
