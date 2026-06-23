@@ -7,6 +7,7 @@
 ## Последнее завершённое
 
 Багфикс: все 10 e2e-тестов `test_meal_plan_api.py` падали с 404.
+
 - Причина: отсутствовал BFF route handler `apps/web/app/api/cookbook/v1/meal-plan/route.ts`
 - Создан route handler с `GET`, `PUT`, `DELETE` — проксирует на gateway
 - Добавлено исключение `WeekDayOutOfRangeException` (weekDay вне 1–7)
