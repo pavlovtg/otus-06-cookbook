@@ -2,11 +2,11 @@
 
 ## Текущая задача
 
-`menu-planner` — задачи 9–12 (Frontend BFF + страница планировщика + навигация + тесты) — **завершены**.
+`menu-planner` — все 13 разделов **завершены** (включая E2E-тесты 13.1 и 13.2).
 
 ## Последнее завершённое
 
-Frontend-часть планировщика меню (задачи 9–12):
+Frontend-часть планировщика меню (задачи 9–12).
 
 - `lib/schemas/meal-plan.ts` — Zod-схемы DTO и Request (MealPlanItem/Slot/Plan)
 - `lib/bff/meal-plan.server.ts` — `getMealPlan()` (Server Component, `serverFetch`)

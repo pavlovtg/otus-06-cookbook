@@ -87,5 +87,5 @@
 
 ## 13. E2E-тесты
 
-- [ ] 13.1 E2E API-тесты планировщика (`tests/e2e/test_meal_plan_api.py`)
-- [ ] 13.2 UI E2E-тесты планировщика (`tests/ui/test_planner.py`)
+- [x] 13.1 E2E API-тесты планировщика (`tests/e2e/test_meal_plan_api.py`)
+- [x] 13.2 UI E2E-тесты планировщика (`tests/ui/test_planner.py`)
