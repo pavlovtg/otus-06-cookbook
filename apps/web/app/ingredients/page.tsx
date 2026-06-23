@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import logger from "@/lib/logger";
 import { getIngredients } from "@/lib/bff/ingredients.server";
+import { getSession } from "@/lib/session";
 import {
   IngredientCategory,
   IngredientCategoryLabels,
@@ -10,6 +11,8 @@ import {
 } from "@/lib/schemas/ingredient";
 import { IngredientModal } from "./IngredientModal";
 import { DeleteIngredientButton } from "./DeleteIngredientButton";
+
+const PAGE_SIZE = 20;
 
 interface Props {
   searchParams: Promise<{ title?: string; category?: string; page?: string }>;
@@ -73,6 +76,10 @@ export default async function IngredientsPage({ searchParams }: Props) {
     ? (category as (typeof IngredientCategory.options)[number])
     : undefined;
 
+  const session = await getSession();
+  const isLoggedIn = !!session.user;
+  const isAdmin = session.user?.role === "admin";
+
   let result: PagedIngredient | null = null;
   let fetchError: string | null = null;
 
@@ -81,6 +88,7 @@ export default async function IngredientsPage({ searchParams }: Props) {
       title: title || undefined,
       category: categoryValue,
       page,
+      pageSize: PAGE_SIZE,
     });
   } catch (err) {
     logger.error({ err }, "Failed to load ingredients");
@@ -102,16 +110,19 @@ export default async function IngredientsPage({ searchParams }: Props) {
     <>
       <div className="page-heading">
         <h1>Ингредиенты</h1>
-        <IngredientModal
-          trigger={
-            <button
-              className="btn btn-primary btn-sm"
-              data-testid="create-ingredient-trigger"
-            >
-              + Новый ингредиент
-            </button>
-          }
-        />
+        {isLoggedIn && (
+          <IngredientModal
+            isAdmin={isAdmin}
+            trigger={
+              <button
+                className="btn btn-primary btn-sm"
+                data-testid="create-ingredient-trigger"
+              >
+                + Новый ингредиент
+              </button>
+            }
+          />
+        )}
       </div>
 
       <div className="toolbar">
@@ -174,46 +185,52 @@ export default async function IngredientsPage({ searchParams }: Props) {
                 <div className="shopping-group-head">
                   {IngredientCategoryLabels[group.category]}
                 </div>
-                {group.items.map((ingredient) => (
-                  <div
-                    key={ingredient.id}
-                    className="ingredient-item ingredient-row"
-                    data-category={ingredient.category}
-                  >
-                    <div>
-                      <span
-                        className="ingredient-title name"
-                        style={{ color: "var(--fg-primary)" }}
-                      >
-                        {ingredient.title}
-                      </span>
-                      <span
-                        className="t-micro"
-                        style={{ display: "block", marginTop: 2 }}
-                      >
-                        {ingredient.defaultAmount} {ingredient.unit}
-                        {ingredient.isSystem && " · системный"}
-                      </span>
+                {group.items.map((ingredient) => {
+                  const canEdit = isLoggedIn && (!ingredient.isSystem || isAdmin);
+                  return (
+                    <div
+                      key={ingredient.id}
+                      className="ingredient-item ingredient-row"
+                      data-category={ingredient.category}
+                    >
+                      <div>
+                        <span
+                          className="ingredient-title name"
+                          style={{ color: "var(--fg-primary)" }}
+                        >
+                          {ingredient.title}
+                        </span>
+                        <span
+                          className="t-micro"
+                          style={{ display: "block", marginTop: 2 }}
+                        >
+                          {ingredient.defaultAmount} {ingredient.unit}
+                          {ingredient.isSystem && " · системный"}
+                        </span>
+                      </div>
+                      {canEdit && (
+                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                          <IngredientModal
+                            ingredient={ingredient}
+                            isAdmin={isAdmin}
+                            trigger={
+                              <button
+                                className="btn btn-ghost btn-sm"
+                                data-testid="edit-ingredient-trigger"
+                              >
+                                Редактировать
+                              </button>
+                            }
+                          />
+                          <DeleteIngredientButton
+                            id={ingredient.id}
+                            title={ingredient.title}
+                          />
+                        </div>
+                      )}
                     </div>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      <IngredientModal
-                        ingredient={ingredient}
-                        trigger={
-                          <button
-                            className="btn btn-ghost btn-sm"
-                            data-testid="edit-ingredient-trigger"
-                          >
-                            Редактировать
-                          </button>
-                        }
-                      />
-                      <DeleteIngredientButton
-                        id={ingredient.id}
-                        title={ingredient.title}
-                      />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ))}
           </div>

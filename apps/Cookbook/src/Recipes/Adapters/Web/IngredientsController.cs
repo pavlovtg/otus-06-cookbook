@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Recipes.Adapters.Web.Dto;
 using Recipes.Adapters.Web.Mapping;
@@ -78,6 +79,7 @@ internal sealed class IngredientsController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> CreateIngredient([FromBody] IngredientRequest request, CancellationToken cancellationToken)
     {
@@ -86,11 +88,17 @@ internal sealed class IngredientsController : ControllerBase
             if (!IngredientCategoryDtoExtensions.TryParseCategory(request.Category, out var categoryDto))
                 return BadRequest(ProblemDetailsFor($"Invalid category value: '{request.Category}'."));
 
+            var isAdmin = IsAdmin();
+
+            if (request.IsSystem == true && !isAdmin)
+                return Forbid();
+
             var ingredient = await _ingredientService.CreateAsync(
                 request.Title,
                 request.Unit,
                 request.DefaultAmount,
                 categoryDto.ToDomain(),
+                isAdmin,
                 cancellationToken);
 
             return CreatedAtAction(nameof(GetIngredient), new { id = ingredient.Id.Value }, ToDto(ingredient));
@@ -101,6 +109,7 @@ internal sealed class IngredientsController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> UpdateIngredient(Guid id, [FromBody] IngredientRequest request, CancellationToken cancellationToken)
     {
@@ -109,15 +118,23 @@ internal sealed class IngredientsController : ControllerBase
             if (!IngredientCategoryDtoExtensions.TryParseCategory(request.Category, out var categoryDto))
                 return BadRequest(ProblemDetailsFor($"Invalid category value: '{request.Category}'."));
 
+            var isAdmin = IsAdmin();
+
             await _ingredientService.UpdateAsync(
                 IngredientId.From(id),
                 request.Title,
                 request.Unit,
                 request.DefaultAmount,
                 categoryDto.ToDomain(),
+                request.IsSystem,
+                isAdmin,
                 cancellationToken);
 
             return NoContent();
+        }
+        catch (IngredientSystemFlagForbiddenException)
+        {
+            return Forbid();
         }
         catch (IngredientDomainException ex)
         {
@@ -125,13 +142,20 @@ internal sealed class IngredientsController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteIngredient(Guid id, CancellationToken cancellationToken)
     {
         try
         {
-            await _ingredientService.DeleteAsync(IngredientId.From(id), cancellationToken);
+            var isAdmin = IsAdmin();
+
+            await _ingredientService.DeleteAsync(IngredientId.From(id), isAdmin, cancellationToken);
             return NoContent();
+        }
+        catch (IngredientSystemFlagForbiddenException)
+        {
+            return Forbid();
         }
         catch (IngredientInUseException ex)
         {
@@ -143,6 +167,9 @@ internal sealed class IngredientsController : ControllerBase
             return BadRequest(ProblemDetailsFor(ex));
         }
     }
+
+    private bool IsAdmin() =>
+        User.IsInRole("admin");
 
     private static IngredientDto ToDto(Ingredient ingredient) => new(
         ingredient.Id.Value,

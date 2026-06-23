@@ -1,37 +1,38 @@
 import { z } from "zod";
 
+// Порядок совпадает с алфавитной сортировкой строк в БД (category хранится как snake_case строка)
 export const IngredientCategory = z.enum([
-  "vegetables",
-  "fruits_and_berries",
-  "meat_and_poultry",
-  "fish_and_seafood",
+  "bakery_and_sweets",
   "dairy_and_eggs",
+  "fish_and_seafood",
+  "fruits_and_berries",
   "grains_and_cereals",
   "legumes",
+  "meat_and_poultry",
   "nuts_and_seeds",
   "oils_and_fats",
-  "spices_and_seasonings",
-  "sauces_and_pastes",
-  "bakery_and_sweets",
   "other",
+  "sauces_and_pastes",
+  "spices_and_seasonings",
+  "vegetables",
 ]);
 
 export type IngredientCategory = z.infer<typeof IngredientCategory>;
 
 export const IngredientCategoryLabels: Record<IngredientCategory, string> = {
-  vegetables: "Овощи",
-  fruits_and_berries: "Фрукты и ягоды",
-  meat_and_poultry: "Мясо и птица",
-  fish_and_seafood: "Рыба и морепродукты",
+  bakery_and_sweets: "Выпечка и сладости",
   dairy_and_eggs: "Молочные продукты и яйца",
+  fish_and_seafood: "Рыба и морепродукты",
+  fruits_and_berries: "Фрукты и ягоды",
   grains_and_cereals: "Крупы и злаки",
   legumes: "Бобовые",
+  meat_and_poultry: "Мясо и птица",
   nuts_and_seeds: "Орехи и семена",
   oils_and_fats: "Масла и жиры",
-  spices_and_seasonings: "Специи и приправы",
-  sauces_and_pastes: "Соусы и пасты",
-  bakery_and_sweets: "Выпечка и сладости",
   other: "Прочее",
+  sauces_and_pastes: "Соусы и пасты",
+  spices_and_seasonings: "Специи и приправы",
+  vegetables: "Овощи",
 };
 
 export const IngredientSchema = z.object({
@@ -50,6 +51,7 @@ export const IngredientRequestSchema = z.object({
   unit: z.string().min(1).max(20),
   defaultAmount: z.number().min(0.001).max(100000),
   category: IngredientCategory,
+  isSystem: z.boolean().optional(),
 });
 
 export type IngredientRequest = z.infer<typeof IngredientRequestSchema>;

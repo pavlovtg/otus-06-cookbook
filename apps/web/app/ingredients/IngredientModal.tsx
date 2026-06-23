@@ -13,12 +13,13 @@ import { createIngredient, updateIngredient } from "@/lib/bff/ingredients";
 
 interface Props {
   ingredient?: Ingredient;
+  isAdmin?: boolean;
   trigger: React.ReactNode;
 }
 
 const CATEGORY_OPTIONS = IngredientCategory.options;
 
-export function IngredientModal({ ingredient, trigger }: Props) {
+export function IngredientModal({ ingredient, isAdmin = false, trigger }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -28,6 +29,7 @@ export function IngredientModal({ ingredient, trigger }: Props) {
     unit: ingredient?.unit ?? "г",
     defaultAmount: ingredient?.defaultAmount ?? 100,
     category: ingredient?.category ?? "vegetables",
+    isSystem: ingredient?.isSystem ?? false,
   });
 
   function set<K extends keyof IngredientRequest>(
@@ -44,6 +46,7 @@ export function IngredientModal({ ingredient, trigger }: Props) {
       unit: ingredient?.unit ?? "г",
       defaultAmount: ingredient?.defaultAmount ?? 100,
       category: ingredient?.category ?? "vegetables",
+      isSystem: ingredient?.isSystem ?? false,
     });
     setErrors({});
     setOpen(true);
@@ -170,6 +173,20 @@ export function IngredientModal({ ingredient, trigger }: Props) {
                   <span className="error-text">{errors.category}</span>
                 )}
               </div>
+
+              {isAdmin && (
+                <div className="field">
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+                    <input
+                      type="checkbox"
+                      checked={form.isSystem ?? false}
+                      onChange={(e) => set("isSystem", e.target.checked)}
+                      disabled={loading}
+                    />
+                    Системный ингредиент
+                  </label>
+                </div>
+              )}
 
               <div className="form-actions">
                 <button
