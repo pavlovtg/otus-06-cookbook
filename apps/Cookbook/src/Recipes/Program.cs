@@ -37,6 +37,8 @@ builder.Services.AddScoped<IMealPlanRepository>(sp => sp.GetRequiredService<Reci
 builder.Services.AddScoped<MealPlanService>();
 builder.Services.AddScoped<IShoppingListRepository>(sp => sp.GetRequiredService<RecipeRepository>());
 builder.Services.AddScoped<ShoppingListService>();
+builder.Services.AddScoped<IDashboardRepository>(sp => sp.GetRequiredService<RecipeRepository>());
+builder.Services.AddScoped<DashboardService>();
 
 var jwtSecret = builder.Configuration["JWT:Secret"]
     ?? throw new InvalidOperationException("JWT:Secret is not configured.");

@@ -4,6 +4,26 @@ info:
   version: 1.0.0
   description: API сервиса рецептов (bounded context cookbook)
 paths:
+  /api/v1/dashboard:
+    get:
+      summary: Получить статистику дашборда
+      operationId: getDashboardStats
+      tags:
+        - Dashboard
+      security: []
+      responses:
+        "200":
+          description: Статистика дашборда (поля зависят от роли пользователя)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStatsDto"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
   /api/v1/recipes:
     get:
       summary: Получить список рецептов
@@ -1967,6 +1987,116 @@ components:
           items:
             $ref: "#/components/schemas/ShoppingListItemDto"
           description: Ингредиенты в группе, отсортированные по названию
+    DashboardStatsDto:
+      type: object
+      required:
+        - totalRecipes
+        - top10ByRating
+        - topFavoritesByRating
+        - byMainIngredient
+        - byCuisine
+      properties:
+        totalRecipes:
+          type: integer
+          description: Общее количество публичных рецептов
+        myRecipes:
+          type: integer
+          nullable: true
+          description: Количество рецептов текущего пользователя (только для авторизованных)
+        myComments:
+          type: integer
+          nullable: true
+          description: Количество комментариев текущего пользователя (только для авторизованных)
+        top10ByRating:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecipeRankDto"
+          description: Топ-10 рецептов по среднему рейтингу
+        topFavoritesByRating:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecipeRankDto"
+          description: Топ избранных рецептов по рейтингу (только для авторизованных)
+        byMainIngredient:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryCountDto"
+          description: Распределение рецептов по основному ингредиенту
+        byCuisine:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryCountDto"
+          description: Распределение рецептов по кухне
+        totalUsers:
+          type: integer
+          nullable: true
+          description: Общее количество пользователей (только для admin)
+        totalComments:
+          type: integer
+          nullable: true
+          description: Общее количество комментариев (только для admin)
+        topUsersByRating:
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/UserRankDto"
+          description: Топ пользователей по среднему рейтингу рецептов (только для admin)
+        topUsersByComments:
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/UserRankDto"
+          description: Топ пользователей по количеству комментариев (только для admin)
+        planFill:
+          type: object
+          nullable: true
+          additionalProperties:
+            type: boolean
+          description: Заполненность слотов плана меню — ключ slot-key, значение true/false (только для авторизованных)
+    RecipeRankDto:
+      type: object
+      required:
+        - id
+        - title
+        - averageRating
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        averageRating:
+          type: number
+          format: float
+    CategoryCountDto:
+      type: object
+      required:
+        - categoryName
+        - recipeCount
+      properties:
+        categoryName:
+          type: string
+        recipeCount:
+          type: integer
+    UserRankDto:
+      type: object
+      required:
+        - id
+        - displayName
+        - commentCount
+      properties:
+        id:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        averageRating:
+          type: number
+          format: float
+          nullable: true
+          description: Средний рейтинг рецептов пользователя (null если рецептов нет)
+        commentCount:
+          type: integer
   securitySchemes:
     BearerAuth:
       type: http
