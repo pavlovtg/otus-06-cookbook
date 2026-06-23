@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Link from "next/link";
-import { BookIcon, LeafIcon, LayersIcon, CalendarIcon } from "@/lib/icons";
+import { BookIcon, LeafIcon, LayersIcon, CalendarIcon, CartIcon } from "@/lib/icons";
 import { getSession } from "@/lib/session";
 import { LogoutButton } from "@/components/features/LogoutButton";
 import "./globals.css";
@@ -35,6 +35,9 @@ export default async function RootLayout({
                 <Link href="/"><BookIcon size={14} /><span>Рецепты</span></Link>
                 {user && (
                   <Link href="/planner"><CalendarIcon size={14} /><span>Планировщик</span></Link>
+                )}
+                {user && (
+                  <Link href="/shopping-list"><CartIcon size={14} /><span>Список покупок</span></Link>
                 )}
                 <Link href="/ingredients"><LeafIcon size={14} /><span>Ингредиенты</span></Link>
                 <Link href="/categories"><LayersIcon size={14} /><span>Категории</span></Link>

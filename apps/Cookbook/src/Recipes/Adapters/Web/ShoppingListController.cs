@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Recipes.Adapters.Web.Dto;
+using Recipes.Adapters.Web.Mapping;
 using Recipes.Application;
 using Recipes.Application.Ports;
 using Recipes.Domain;
@@ -33,7 +34,7 @@ internal sealed class ShoppingListController : ControllerBase
 
         var dto = groups
             .Select(g => new ShoppingListGroupDto(
-                g.Category.ToString(),
+                g.Category.ToDtoString(),
                 g.Items
                     .Select(i => new ShoppingListItemDto(
                         i.IngredientId.Value,

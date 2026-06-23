@@ -3,6 +3,7 @@
 import * as React from "react";
 import { CopyIcon, PrintIcon } from "@/lib/icons";
 import type { ShoppingListGroup } from "@/lib/schemas/shopping-list";
+import { IngredientCategoryLabels, type IngredientCategory } from "@/lib/schemas/ingredient";
 
 interface ShoppingListActionsProps {
   groups: ShoppingListGroup[];
@@ -15,9 +16,9 @@ export function ShoppingListActions({ groups }: ShoppingListActionsProps) {
     return groups
       .map((g) => {
         const rows = g.items
-          .map((item) => `- ${item.title}, ${item.amount} ${item.unit}`)
+          .map((item) => `- ${item.title}, ${parseFloat(item.amount.toFixed(2))} ${item.unit}`)
           .join("\n");
-        return `${g.category}\n${rows}`;
+        return `${IngredientCategoryLabels[g.category as IngredientCategory] ?? g.category}\n${rows}`;
       })
       .join("\n\n");
   }

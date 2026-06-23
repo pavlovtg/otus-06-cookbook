@@ -7,6 +7,7 @@ import { getShoppingList } from "@/lib/bff/shopping-list.server";
 import { ShoppingListActions } from "./ShoppingListActions";
 import logger from "@/lib/logger";
 import type { ShoppingListGroup } from "@/lib/schemas/shopping-list";
+import { IngredientCategoryLabels, type IngredientCategory } from "@/lib/schemas/ingredient";
 
 export default async function ShoppingListPage() {
   const session = await getSession();
@@ -49,11 +50,11 @@ export default async function ShoppingListPage() {
         <div className="shopping-table">
           {groups.map((group) => (
             <div key={group.category}>
-              <div className="shopping-group-head">{group.category}</div>
+              <div className="shopping-group-head">{IngredientCategoryLabels[group.category as IngredientCategory] ?? group.category}</div>
               {group.items.map((item) => (
                 <div key={item.ingredientId} className="shopping-row">
                   <span>{item.title}</span>
-                  <span className="qty">{item.amount}</span>
+                  <span className="qty">{parseFloat(item.amount.toFixed(2))}</span>
                   <span className="unit">{item.unit}</span>
                 </div>
               ))}

@@ -2,13 +2,16 @@
 
 ## Текущая задача
 
-Багфикс UI-тестов планировщика — завершён.
+Багфикс страницы списка покупок — завершён.
 
 ## Последнее завершённое
 
-Исправление 2 падающих UI-тестов планировщика (диалог «Очистить всё» не закрывался):
+Исправление 4 ошибок на странице `/shopping-list`:
 
-- `globals.css`: добавлены `visibility: hidden` к `.modal-backdrop` и `visibility: visible` к `.modal-backdrop.is-open` — Playwright считает элемент видимым при `opacity: 0`, но скрытым при `visibility: hidden`; также добавлен `transition: visibility 0ms 200ms` для корректной анимации закрытия
+- `ShoppingListController.cs` + `IngredientCategoryDtoExtensions.cs`: категории теперь отдаются в snake_case через `ToDtoString()` (JSON-сериализация enum с `[JsonStringEnumMemberName]`)
+- `shopping-list/page.tsx`: русские названия категорий через `IngredientCategoryLabels`; количество с точностью 2 знака
+- `ShoppingListActions.tsx`: русские категории и точность 2 знака при копировании
+- `layout.tsx`: добавлена вкладка «Список покупок» с `CartIcon` — только для авторизованных
 
 ## Ранее завершённое
 

@@ -28,7 +28,15 @@
 - `recipe-author` (29/29 задач) → `openspec/changes/archive/2026-06-17-recipe-author/`
 - `recipe-comments` (35/35 задач) → `openspec/changes/archive/2026-06-22-recipe-comments/`
 
-## Выполнено (последнее — багфикс UI-тестов планировщика)
+## Выполнено (последнее — багфикс страницы списка покупок)
+
+- `ShoppingListController.cs`: `g.Category.ToString()` → `g.Category.ToDtoString()` — теперь отдаёт snake_case (`vegetables`, `fruits_and_berries` и т.д.)
+- `IngredientCategoryDtoExtensions.cs`: добавлен метод `ToDtoString()` — сериализует через JSON для получения snake_case строки
+- `shopping-list/page.tsx`: категории переведены на русский через `IngredientCategoryLabels`; количество отображается с точностью 2 знака (`parseFloat(amount.toFixed(2))`)
+- `ShoppingListActions.tsx`: категории переведены на русский при копировании; количество с точностью 2 знака
+- `layout.tsx`: добавлена ссылка «Список покупок» (`/shopping-list`) с `CartIcon` — только для авторизованных
+
+## Выполнено (ранее — багфикс UI-тестов планировщика)
 
 - `PlannerGrid.tsx`: добавлены классы `planner-day-header` и `planner-meal-header`
 - `globals.css`: `isolation: isolate` на `.planner-panel` — устраняет перехват pointer events draggable-карточками dnd-kit
