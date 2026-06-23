@@ -1075,6 +1075,93 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/meal-plan:
+    get:
+      summary: Получить план меню текущего пользователя
+      operationId: getMealPlan
+      tags:
+        - MealPlan
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: План меню на неделю (пустые слоты возвращаются с пустым массивом items)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MealPlanDto"
+        "401":
+          description: Не авторизован
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    put:
+      summary: Заменить план меню текущего пользователя
+      operationId: replaceMealPlan
+      tags:
+        - MealPlan
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MealPlanRequest"
+      responses:
+        "200":
+          description: Обновлённый план меню
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MealPlanDto"
+        "400":
+          description: Ошибка валидации (некорректный recipeId, servings вне диапазона 1–99, неизвестный weekDay или mealType)
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Не авторизован
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    delete:
+      summary: Очистить план меню текущего пользователя
+      operationId: clearMealPlan
+      tags:
+        - MealPlan
+      security:
+        - BearerAuth: []
+      responses:
+        "204":
+          description: План меню очищен
+        "401":
+          description: Не авторизован
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Внутренняя ошибка сервера
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
 components:
   schemas:
     Difficulty:
@@ -1709,6 +1796,115 @@ components:
           type: integer
           description: Размер страницы
           example: 10
+    WeekDay:
+      type: string
+      enum:
+        - monday
+        - tuesday
+        - wednesday
+        - thursday
+        - friday
+        - saturday
+        - sunday
+      description: День недели
+    MealType:
+      type: string
+      enum:
+        - breakfast
+        - lunch
+        - dinner
+      description: Приём пищи
+    MealPlanItemDto:
+      type: object
+      required:
+        - recipeId
+        - recipeTitle
+        - servings
+      properties:
+        recipeId:
+          type: string
+          format: uuid
+          description: Идентификатор рецепта
+          example: aad1f839-df31-49f2-84d7-4dd01e04be77
+        recipeTitle:
+          type: string
+          description: Название рецепта
+          example: Борщ
+        servings:
+          type: integer
+          minimum: 1
+          maximum: 99
+          description: Количество порций
+          example: 4
+    MealPlanSlotDto:
+      type: object
+      required:
+        - weekDay
+        - mealType
+        - items
+      properties:
+        weekDay:
+          $ref: "#/components/schemas/WeekDay"
+        mealType:
+          $ref: "#/components/schemas/MealType"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MealPlanItemDto"
+          description: Блюда в слоте
+    MealPlanDto:
+      type: object
+      required:
+        - slots
+      properties:
+        slots:
+          type: array
+          items:
+            $ref: "#/components/schemas/MealPlanSlotDto"
+          description: Список слотов плана меню (до 21 слота — 7 дней × 3 приёма пищи)
+    MealPlanItemRequest:
+      type: object
+      required:
+        - recipeId
+        - servings
+      properties:
+        recipeId:
+          type: string
+          format: uuid
+          description: Идентификатор рецепта
+          example: aad1f839-df31-49f2-84d7-4dd01e04be77
+        servings:
+          type: integer
+          minimum: 1
+          maximum: 99
+          description: Количество порций
+          example: 4
+    MealPlanSlotRequest:
+      type: object
+      required:
+        - weekDay
+        - mealType
+        - items
+      properties:
+        weekDay:
+          $ref: "#/components/schemas/WeekDay"
+        mealType:
+          $ref: "#/components/schemas/MealType"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MealPlanItemRequest"
+          description: Блюда в слоте
+    MealPlanRequest:
+      type: object
+      required:
+        - slots
+      properties:
+        slots:
+          type: array
+          items:
+            $ref: "#/components/schemas/MealPlanSlotRequest"
+          description: Список слотов для замены плана меню
   securitySchemes:
     BearerAuth:
       type: http

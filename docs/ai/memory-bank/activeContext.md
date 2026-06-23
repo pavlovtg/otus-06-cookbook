@@ -2,15 +2,18 @@
 
 ## Текущая задача
 
-Нет активных изменений. ADR-0036 и AR-0064 (DnD-библиотека) зафиксированы.
+Нет активных изменений.
 
 ## Последнее завершённое
 
-Зафиксирован выбор DnD-решения для планировщика меню:
+Пересоздана миграция `AddMealPlan` (`20260622235509_AddMealPlan.cs`):
 
-- `docs/adr/frontend/ADR-0036-dnd-kit-planner.md` — выбор `@dnd-kit/core` + `@dnd-kit/utilities`
-- `docs/architecture/rules/frontend/AR-0064-dnd-kit-planner.md` — правило: только dnd-kit, нативный HTML5 DnD и другие библиотеки запрещены
-- `ARCHITECTURE.md` — обновлены таблицы AR и ADR
+**Проблема:** старая миграция была патчем поверх кривого состояния (артефакт `MealPlanId1`, `DropForeignKey`/`DropIndex` в `Up`).
+
+**Исправления:**
+- `MealPlanSlotConfiguration.cs` — добавлена явная связь `HasOne<MealPlan>().WithMany(p => p.Slots).HasForeignKey("meal_plan_id").OnDelete(Cascade)`; убрано явное объявление shadow property `Guid?`; FK-имя — snake_case `"meal_plan_id"`
+- `MealPlanConfiguration.cs` — без изменений (конвертация `MealPlanId` осталась прежней)
+- Миграция пересоздана: чистый `CreateTable` для трёх таблиц, все колонки в snake_case, нет `MealPlanId1`
 
 ## Ключевые решения
 

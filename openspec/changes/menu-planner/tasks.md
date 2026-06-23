@@ -2,54 +2,54 @@
 
 ## 1. OpenAPI-контракт
 
-- [ ] 1.1 Описать схемы `MealPlanDto`, `MealPlanSlotDto`, `MealPlanItemDto` в `docs/contracts/cookbook/cookbook.yaml`
-- [ ] 1.2 Описать эндпоинт `GET /api/v1/meal-plan` (200, 401)
-- [ ] 1.3 Описать эндпоинт `PUT /api/v1/meal-plan` (200, 400, 401)
-- [ ] 1.4 Описать эндпоинт `DELETE /api/v1/meal-plan` (204, 401)
+- [x] 1.1 Описать схемы `MealPlanDto`, `MealPlanSlotDto`, `MealPlanItemDto` в `docs/contracts/cookbook/cookbook.yaml`
+- [x] 1.2 Описать эндпоинт `GET /api/v1/meal-plan` (200, 401)
+- [x] 1.3 Описать эндпоинт `PUT /api/v1/meal-plan` (200, 400, 401)
+- [x] 1.4 Описать эндпоинт `DELETE /api/v1/meal-plan` (204, 401)
 
 ## 2. Backend: доменная модель
 
-- [ ] 2.1 Создать enum `WeekDay` (Monday=1..Sunday=7) в Domain
-- [ ] 2.2 Создать enum `MealType` (Breakfast=1, Lunch=2, Dinner=3) в Domain
-- [ ] 2.3 Создать Value Object `MealPlanId` (`readonly record struct`)
-- [ ] 2.4 Создать Value Object `Servings` с валидацией диапазона 1–99
-- [ ] 2.5 Создать константы `MealPlanConstraints` (MinServings, MaxServings)
-- [ ] 2.6 Создать сущность `MealPlanItem` (recipe_id, servings)
-- [ ] 2.7 Создать сущность `MealPlanSlot` (WeekDay, MealType, коллекция MealPlanItem)
-- [ ] 2.8 Создать агрегат `MealPlan` с операциями: AddItem, RemoveItem, UpdateServings, Clear, Replace
+- [x] 2.1 Создать enum `WeekDay` (Monday=1..Sunday=7) в Domain
+- [x] 2.2 Создать enum `MealType` (Breakfast=1, Lunch=2, Dinner=3) в Domain
+- [x] 2.3 Создать Value Object `MealPlanId` (`readonly record struct`)
+- [x] 2.4 Создать Value Object `Servings` с валидацией диапазона 1–99
+- [x] 2.5 Создать константы `MealPlanConstraints` (MinServings, MaxServings)
+- [x] 2.6 Создать сущность `MealPlanItem` (recipe_id, servings)
+- [x] 2.7 Создать сущность `MealPlanSlot` (WeekDay, MealType, коллекция MealPlanItem)
+- [x] 2.8 Создать агрегат `MealPlan` с операциями: AddItem, RemoveItem, UpdateServings, Clear, Replace
 
 ## 3. Backend: Application-слой
 
-- [ ] 3.1 Создать интерфейс `IMealPlanRepository` с методами `GetByUserIdAsync`, `SaveAsync`
-- [ ] 3.2 Создать `MealPlanService` с методами `GetAsync` (lazy init), `ReplaceAsync`, `ClearAsync`
-- [ ] 3.3 Создать DTO-модели запроса/ответа для API (MealPlanDto, MealPlanSlotDto, MealPlanItemDto)
+- [x] 3.1 Создать интерфейс `IMealPlanRepository` с методами `GetByUserIdAsync`, `SaveAsync`
+- [x] 3.2 Создать `MealPlanService` с методами `GetAsync` (lazy init), `ReplaceAsync`, `ClearAsync`
+- [x] 3.3 Создать DTO-модели запроса/ответа для API (MealPlanDto, MealPlanSlotDto, MealPlanItemDto)
 
 ## 4. Backend: адаптер PostgreSQL
 
-- [ ] 4.1 Создать EF Core конфигурацию `MealPlanConfiguration`
-- [ ] 4.2 Создать EF Core конфигурацию `MealPlanSlotConfiguration`
-- [ ] 4.3 Создать EF Core конфигурацию `MealPlanItemConfiguration`
-- [ ] 4.4 Добавить `DbSet` в существующий `DbContext`
-- [ ] 4.5 Создать реализацию `MealPlanRepository`
-- [ ] 4.6 Создать миграцию EF Core (таблицы `meal_plan_slots`, `meal_plan_items`, уникальный индекс)
+- [x] 4.1 Создать EF Core конфигурацию `MealPlanConfiguration`
+- [x] 4.2 Создать EF Core конфигурацию `MealPlanSlotConfiguration`
+- [x] 4.3 Создать EF Core конфигурацию `MealPlanItemConfiguration`
+- [x] 4.4 Добавить `DbSet` в существующий `DbContext`
+- [x] 4.5 Создать реализацию `MealPlanRepository`
+- [x] 4.6 Создать миграцию EF Core (таблицы `meal_plan_slots`, `meal_plan_items`, уникальный индекс)
 
 ## 5. Backend: HTTP-контроллер
 
-- [ ] 5.1 Создать `MealPlanController` с эндпоинтами GET, PUT, DELETE `/api/v1/meal-plan`
-- [ ] 5.2 Добавить маршрут на API Gateway (`/api/cookbook/v1/meal-plan`)
+- [x] 5.1 Создать `MealPlanController` с эндпоинтами GET, PUT, DELETE `/api/v1/meal-plan`
+- [x] 5.2 Добавить маршрут на API Gateway (`/api/cookbook/v1/meal-plan`)
 
 ## 6. Backend: seed-данные
 
-- [ ] 6.1 Добавить готовый план меню на неделю для seed-пользователя в `CookbookSeeder`
+- [x] 6.1 Добавить готовый план меню на неделю для seed-пользователя в `CookbookSeeder`
 
 ## 7. Backend: тесты
 
-- [ ] 7.1 Unit-тесты агрегата `MealPlan` (`MealPlanTests`)
-- [ ] 7.2 Unit-тесты `MealPlanService` с замоканным репозиторием (`MealPlanServiceTests`)
-- [ ] 7.3 Integration-тесты репозитория (`MealPlanRepositoryTests`)
-- [ ] 7.4 Microservice-тесты `GET /api/v1/meal-plan` (`GetMealPlanTests`)
-- [ ] 7.5 Microservice-тесты `PUT /api/v1/meal-plan` (`ReplaceMealPlanTests`)
-- [ ] 7.6 Microservice-тесты `DELETE /api/v1/meal-plan` (`ClearMealPlanTests`)
+- [x] 7.1 Unit-тесты агрегата `MealPlan` (`MealPlanTests`)
+- [x] 7.2 Unit-тесты `MealPlanService` с замоканным репозиторием (`MealPlanServiceTests`)
+- [x] 7.3 Integration-тесты репозитория (`MealPlanRepositoryTests`)
+- [x] 7.4 Microservice-тесты `GET /api/v1/meal-plan` (`GetMealPlanTests`)
+- [x] 7.5 Microservice-тесты `PUT /api/v1/meal-plan` (`ReplaceMealPlanTests`)
+- [x] 7.6 Microservice-тесты `DELETE /api/v1/meal-plan` (`ClearMealPlanTests`)
 
 ## 8. Storybook: компоненты планировщика
 

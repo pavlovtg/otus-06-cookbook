@@ -33,6 +33,8 @@ builder.Services.AddScoped<ImageSharpThumbnailGenerator>();
 builder.Services.AddScoped<IRecipePhotoService, RecipePhotoService>();
 builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IMealPlanRepository>(sp => sp.GetRequiredService<RecipeRepository>());
+builder.Services.AddScoped<MealPlanService>();
 
 var jwtSecret = builder.Configuration["JWT:Secret"]
     ?? throw new InvalidOperationException("JWT:Secret is not configured.");

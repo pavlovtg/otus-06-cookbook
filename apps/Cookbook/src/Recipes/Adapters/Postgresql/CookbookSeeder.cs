@@ -19,6 +19,7 @@ internal static class CookbookSeeder
         await SeedUserFavoritesAsync(db, cancellationToken);
         await SeedRatingsAsync(db, cancellationToken);
         await SeedCommentsAsync(db, cancellationToken);
+        await SeedMealPlansAsync(db, cancellationToken);
     }
 
     private static async Task SeedUsersAsync(RecipeRepository db, IPasswordHasher passwordHasher, CancellationToken cancellationToken)
@@ -392,6 +393,36 @@ internal static class CookbookSeeder
                 var exists = await db.RecipeComments.FindAsync([id], cancellationToken);
                 if (exists is null)
                     await db.RecipeComments.AddAsync(RecipeComment.Create(id, recipeId, authorId, text), cancellationToken);
+            }
+
+            await db.SaveChangesAsync(cancellationToken);
+            await tx.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await tx.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
+
+    private static async Task SeedMealPlansAsync(RecipeRepository db, CancellationToken cancellationToken)
+    {
+        await using var tx = await db.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            foreach (var (userId, planId, slots) in SeedData.MealPlanSeeds)
+            {
+                var existing = await db.MealPlans
+                    .Include(p => p.Slots)
+                        .ThenInclude(s => s.Items)
+                    .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
+
+                if (existing is not null)
+                    continue;
+
+                var plan = MealPlan.Create(planId, userId);
+                plan.SetSlots(slots);
+                await db.MealPlans.AddAsync(plan, cancellationToken);
             }
 
             await db.SaveChangesAsync(cancellationToken);
