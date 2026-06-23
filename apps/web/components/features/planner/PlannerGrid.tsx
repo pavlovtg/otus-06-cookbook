@@ -29,7 +29,7 @@ export function PlannerGrid({
       <div className="planner-grid">
         {/* Заголовки дней */}
         {DAY_LABELS.map((d) => (
-          <div key={d} className="planner-head-cell">
+          <div key={d} className="planner-head-cell planner-day-header">
             {d}
           </div>
         ))}
@@ -38,7 +38,7 @@ export function PlannerGrid({
         {(MEAL_KEYS as readonly MealKey[]).map((m) => (
           <div key={m} style={{ display: "contents" }}>
             {/* Метка приёма пищи на всю ширину */}
-            <div className="planner-meal-label">{MEAL_LABELS[m]}</div>
+            <div className="planner-meal-label planner-meal-header">{MEAL_LABELS[m]}</div>
             {DAY_LABELS.map((_, d) => {
               const key = `${d}_${m}`;
               return (

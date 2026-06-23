@@ -28,7 +28,12 @@
 - `recipe-author` (29/29 задач) → `openspec/changes/archive/2026-06-17-recipe-author/`
 - `recipe-comments` (35/35 задач) → `openspec/changes/archive/2026-06-22-recipe-comments/`
 
-## Выполнено (последнее — багфикс e2e meal plan)
+## Выполнено (последнее — багфикс UI-тестов планировщика)
+
+- `PlannerGrid.tsx`: добавлены классы `planner-day-header` и `planner-meal-header`
+- `globals.css`: `isolation: isolate` на `.planner-panel` — устраняет перехват pointer events draggable-карточками dnd-kit
+
+## Выполнено (ранее — багфикс e2e meal plan)
 
 - Создан `apps/web/app/api/cookbook/v1/meal-plan/route.ts` — BFF proxy `GET`/`PUT`/`DELETE`
 - Создан `WeekDayOutOfRangeException` для невалидного weekDay (вне 1–7)

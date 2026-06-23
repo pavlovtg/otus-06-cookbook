@@ -656,6 +656,7 @@ h1, h2, h3, h4, h5 { margin: 0; font-weight: 500; color: var(--fg-primary); }
   background: var(--bg-surface-1);
   border-radius: var(--radius-card-lg);
   box-shadow: var(--shadow-rim);
+  isolation: isolate;
 }
 .planner-panel .scroll {
   display: flex; gap: 12px; overflow-x: auto;

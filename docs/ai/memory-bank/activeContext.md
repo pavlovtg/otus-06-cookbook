@@ -2,9 +2,16 @@
 
 ## Текущая задача
 
-Рефакторинг верстки планировщика меню — завершён.
+Багфикс UI-тестов планировщика — завершён.
 
 ## Последнее завершённое
+
+Исправление 4 падающих UI-тестов планировщика:
+
+- `PlannerGrid.tsx`: добавлены классы `planner-day-header` (к `planner-head-cell`) и `planner-meal-header` (к `planner-meal-label`) — тесты искали именно эти классы
+- `globals.css`: добавлен `isolation: isolate` к `.planner-panel` — draggable-карточки dnd-kit создавали stacking context и перекрывали `modal-backdrop` (z-index: 100), блокируя клики по кнопкам диалога
+
+## Ранее завершённое
 
 Улучшение UI планировщика меню:
 
