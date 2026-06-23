@@ -28,7 +28,14 @@
 - `recipe-author` (29/29 задач) → `openspec/changes/archive/2026-06-17-recipe-author/`
 - `recipe-comments` (35/35 задач) → `openspec/changes/archive/2026-06-22-recipe-comments/`
 
-## Выполнено (последнее — багфикс комментариев)
+## Выполнено (последнее — багфикс e2e meal plan)
+
+- Создан `apps/web/app/api/cookbook/v1/meal-plan/route.ts` — BFF proxy `GET`/`PUT`/`DELETE`
+- Создан `WeekDayOutOfRangeException` для невалидного weekDay (вне 1–7)
+- `MealPlanController`: добавлена валидация weekDay, catch расширен до `MealPlanDomainException`
+- Причина: BFF route handler отсутствовал → Next.js возвращал 404 на все запросы к `/api/cookbook/v1/meal-plan`
+
+## Выполнено (ранее — багфикс комментариев)
 
 - Создан `lib/bff/comments.server.ts` — `getComments` через `serverFetch` + абсолютный `GATEWAY_URL`
 - `app/recipes/[id]/page.tsx`: импорт `getComments` → `@/lib/bff/comments.server`

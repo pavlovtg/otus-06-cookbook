@@ -46,18 +46,24 @@ internal sealed class MealPlanController : ControllerBase
         try
         {
             var slots = request.Slots
-                .Select(s => new MealPlanSlotInput(
-                    (WeekDay)s.WeekDay,
-                    (MealType)s.MealType,
-                    s.Items
-                        .Select(i => new MealPlanItemInput(RecipeId.From(i.RecipeId), Servings.From(i.Servings)))
-                        .ToList()))
+                .Select(s =>
+                {
+                    if (s.WeekDay < 1 || s.WeekDay > 7)
+                        throw new WeekDayOutOfRangeException(s.WeekDay);
+
+                    return new MealPlanSlotInput(
+                        (WeekDay)s.WeekDay,
+                        (MealType)s.MealType,
+                        s.Items
+                            .Select(i => new MealPlanItemInput(RecipeId.From(i.RecipeId), Servings.From(i.Servings)))
+                            .ToList());
+                })
                 .ToList();
 
             var view = await _mealPlanService.ReplaceAsync(userId, slots, cancellationToken);
             return Ok(ToDto(view));
         }
-        catch (ServingsOutOfRangeException ex)
+        catch (MealPlanDomainException ex)
         {
             return BadRequest(ProblemDetailsFor(ex.GetType().Name));
         }

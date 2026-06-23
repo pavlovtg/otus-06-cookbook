@@ -2,13 +2,15 @@
 
 ## Текущая задача
 
-Багфикс комментариев — завершён.
+Багфикс e2e-тестов meal plan — завершён.
 
 ## Последнее завершённое
 
-Багфикс: комментарии не отображались, ошибка 400 при повторном добавлении.
-- Создан `lib/bff/comments.server.ts` — серверная версия `getComments` через `serverFetch` + абсолютный `GATEWAY_URL`
-- В `app/recipes/[id]/page.tsx` импорт `getComments` заменён на `@/lib/bff/comments.server`
+Багфикс: все 10 e2e-тестов `test_meal_plan_api.py` падали с 404.
+- Причина: отсутствовал BFF route handler `apps/web/app/api/cookbook/v1/meal-plan/route.ts`
+- Создан route handler с `GET`, `PUT`, `DELETE` — проксирует на gateway
+- Добавлено исключение `WeekDayOutOfRangeException` (weekDay вне 1–7)
+- В `MealPlanController` добавлена валидация weekDay, catch расширен до `MealPlanDomainException`
 
 ## Ключевые решения
 
@@ -26,3 +28,4 @@
 - `CommentsSection` — Client Component; первая страница комментариев загружается в Server Component (`getComments` с `.catch`) и передаётся как `initialData`; смена страниц — клиентский fetch
 - Один комментарий на пользователя на рецепт — уникальный индекс `(recipe_id, author_id)` в таблице `recipe_comments`
 - DnD планировщика — `@dnd-kit/core` + `@dnd-kit/utilities` (ADR-0036, AR-0064); `useDraggable` на карточке, `useDroppable` на слоте, `DragOverlay` для floating-карточки
+- Все API-запросы идут через nginx → Next.js BFF route handlers → gateway → recipes; BFF route handler обязателен для каждого ресурса
