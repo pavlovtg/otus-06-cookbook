@@ -662,7 +662,7 @@ h1, h2, h3, h4, h5 { margin: 0; font-weight: 500; color: var(--fg-primary); }
   padding-bottom: 6px;
 }
 .planner-recipe {
-  flex: 0 0 200px;
+  flex: 0 0 180px;
   display: flex; flex-direction: column; gap: 8px;
   padding: 8px;
   background: var(--bg-surface-2);
@@ -674,12 +674,22 @@ h1, h2, h3, h4, h5 { margin: 0; font-weight: 500; color: var(--fg-primary); }
 .planner-recipe:active { cursor: grabbing; transform: scale(0.98); }
 .planner-recipe .photo { aspect-ratio: 16 / 10; border-radius: 6px; overflow: hidden; background: var(--bg-surface-3); }
 .planner-recipe .photo svg, .planner-recipe .photo img { width: 100%; height: 100%; object-fit: cover; }
-.planner-recipe .name { font-size: 13px; font-weight: 500; color: var(--fg-primary); line-height: 1.3; }
+.planner-recipe .name { font-size: 13px; font-weight: 500; color: var(--fg-primary); line-height: 1.3; padding: 2px 2px 0; }
 
+.planner-grid-wrap {
+  overflow-x: auto;
+}
 .planner-grid {
   display: grid;
-  grid-template-columns: 90px repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(160px, 1fr));
   gap: 8px;
+  min-width: 0;
+}
+.planner-meal-label {
+  grid-column: 1 / -1;
+  padding: 10px 4px 2px;
+  font-size: 11px; font-weight: 500; color: var(--fg-muted); text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 .planner-head-cell {
   padding: 8px 10px;
@@ -687,14 +697,8 @@ h1, h2, h3, h4, h5 { margin: 0; font-weight: 500; color: var(--fg-primary); }
   letter-spacing: 0.06em;
   text-align: center;
 }
-.planner-row-label {
-  display: flex; align-items: center; justify-content: center;
-  padding: 14px 8px;
-  font-size: 12px; font-weight: 500; color: var(--fg-muted); text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
 .planner-slot {
-  min-height: 130px;
+  min-height: 180px;
   padding: 8px;
   background: var(--bg-surface-1);
   border-radius: var(--radius-card);
@@ -710,21 +714,29 @@ h1, h2, h3, h4, h5 { margin: 0; font-weight: 500; color: var(--fg-primary); }
 }
 .planner-slot.is-empty { color: var(--fg-muted); font-size: 11px; align-items: center; justify-content: center; text-align: center; }
 .planner-slot-item {
-  display: grid; grid-template-columns: 32px 1fr auto; gap: 8px; align-items: center;
-  padding: 6px;
+  position: relative;
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 6px 6px 28px;
   background: var(--bg-surface-2);
   border-radius: 6px;
   box-shadow: var(--shadow-rim);
   font-size: 12px;
+  overflow: hidden;
 }
-.planner-slot-item .thumb { width: 32px; aspect-ratio: 1; border-radius: 4px; overflow: hidden; background: var(--bg-surface-3); }
-.planner-slot-item .thumb svg { width: 100%; height: 100%; }
+.planner-slot-item .thumb {
+  width: 100%; aspect-ratio: 16 / 9; border-radius: 4px; overflow: hidden;
+  background: var(--bg-surface-3); flex-shrink: 0;
+}
+.planner-slot-item .thumb img,
+.planner-slot-item .thumb svg { width: 100%; height: 100%; object-fit: cover; }
 .planner-slot-item .info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .planner-slot-item .name {
   font-weight: 500; color: var(--fg-primary); font-size: 12px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  padding-right: 20px;
 }
 .planner-slot-item .servings-mini {
+  position: absolute; bottom: 4px; right: 4px;
   display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--fg-muted);
 }
 .planner-slot-item .servings-mini input {
@@ -733,8 +745,21 @@ h1, h2, h3, h4, h5 { margin: 0; font-weight: 500; color: var(--fg-primary); }
   border-radius: 4px;
   font-size: 11px; color: var(--fg-primary); text-align: center;
 }
-.planner-slot-item .remove { color: var(--fg-muted); padding: 4px; }
-.planner-slot-item .remove:hover { color: var(--danger); }
+.planner-slot-item .remove {
+  position: absolute; top: 4px; right: 4px;
+  width: 22px; height: 22px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--bg-surface-3);
+  color: var(--fg-secondary);
+  font-size: 16px; line-height: 1;
+  box-shadow: var(--shadow-rim);
+  transition: background 160ms var(--ease-out), color 160ms var(--ease-out);
+}
+.planner-slot-item .remove:hover {
+  background: rgba(244, 114, 114, 0.2);
+  color: var(--danger);
+}
 
 .segmented {
   display: inline-flex;
@@ -1089,8 +1114,7 @@ body:not([data-role="admin"]) [data-requires="admin"] {
   .aside-block { flex: 1 1 200px; }
   .recipes-grid { grid-template-columns: 1fr; }
   .field-row { grid-template-columns: 1fr; }
-  .planner-grid { grid-template-columns: 70px repeat(7, minmax(110px, 1fr)); overflow-x: auto; }
-  .planner-grid > * { min-width: 0; }
+  .planner-grid { grid-template-columns: repeat(7, minmax(130px, 1fr)); }
   .ing-row { grid-template-columns: 1fr 80px 50px 32px; }
   .t-hero { font-size: 36px; }
   .t-display { font-size: 26px; }

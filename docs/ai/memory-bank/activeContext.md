@@ -2,16 +2,17 @@
 
 ## Текущая задача
 
-Багфикс e2e-тестов meal plan — завершён.
+Рефакторинг верстки планировщика меню — завершён.
 
 ## Последнее завершённое
 
-Багфикс: все 10 e2e-тестов `test_meal_plan_api.py` падали с 404.
+Улучшение UI планировщика меню:
 
-- Причина: отсутствовал BFF route handler `apps/web/app/api/cookbook/v1/meal-plan/route.ts`
-- Создан route handler с `GET`, `PUT`, `DELETE` — проксирует на gateway
-- Добавлено исключение `WeekDayOutOfRangeException` (weekDay вне 1–7)
-- В `MealPlanController` добавлена валидация weekDay, catch расширен до `MealPlanDomainException`
+- `PlannerRecipeCard` — убраны inline-размеры фото (48×48), теперь CSS управляет через `aspect-ratio: 16/10`
+- `PlannerSlot` — добавлена миниатюра рецепта (`aspect-ratio: 16/9`), кнопка удаления перемещена в правый верхний угол (`position: absolute; top: 4px; right: 4px`), контрол порций — в правый нижний (`position: absolute; bottom: 4px; right: 4px`)
+- `PlannerGrid` — добавлен prop `recipePhotos: Record<string, string | undefined>`
+- `PlannerPageClient` — формирует `recipePhotos` из `recipes` и передаёт в `PlannerGrid`
+- `globals.css` — карточка панели `180px`, ячейки сетки `minmax(160px, 1fr)`, слот `min-height: 180px`, layout `planner-slot-item` переработан на `flex-direction: column` с абсолютным позиционированием кнопки и порций
 
 ## Ключевые решения
 

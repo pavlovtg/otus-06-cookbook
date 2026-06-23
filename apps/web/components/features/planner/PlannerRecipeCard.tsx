@@ -32,20 +32,8 @@ export function PlannerRecipeCard({ recipe }: PlannerRecipeCardProps) {
           <img
             src={`/api/cookbook/v1/photos/${recipe.photoId}/thumbnail`}
             alt={recipe.title}
-            width={48}
-            height={48}
-            style={{ objectFit: "cover", borderRadius: 6 }}
           />
-        ) : (
-          <div
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 6,
-              background: "var(--surface-2, #f0f0f0)",
-            }}
-          />
-        )}
+        ) : null}
       </div>
       <div className="name">{recipe.title}</div>
     </div>

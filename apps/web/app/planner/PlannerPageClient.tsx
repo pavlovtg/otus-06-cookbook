@@ -46,6 +46,12 @@ export function PlannerPageClient({
     [recipes],
   );
 
+  // Карта id → photoId для слотов
+  const recipePhotos = React.useMemo(
+    () => Object.fromEntries(recipes.map((r) => [r.id, r.photoId ?? undefined])),
+    [recipes],
+  );
+
   // Автосохранение с debounce 300 мс
   const debouncedPlan = useDebounce(plan, 300);
   const isFirstRender = React.useRef(true);
@@ -154,6 +160,7 @@ export function PlannerPageClient({
         <PlannerGrid
           plan={plan}
           recipeNames={recipeNames}
+          recipePhotos={recipePhotos}
           onServingsChange={handleServingsChange}
           onRemove={handleRemove}
         />
@@ -163,40 +170,36 @@ export function PlannerPageClient({
       </DndContext>
 
       {/* Диалог подтверждения очистки */}
-      {showClearDialog && (
+      <div
+        className={`modal-backdrop${showClearDialog ? " is-open" : ""}`}
+        onClick={() => setShowClearDialog(false)}
+      >
         <div
-          className="modal-backdrop"
-          onClick={() => setShowClearDialog(false)}
+          className="modal"
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="clear-dialog-title"
         >
-          <div
-            className="modal"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="clear-dialog-title"
-          >
-            <div className="modal-header">
-              <h2 id="clear-dialog-title" className="modal-title">
-                Очистить план?
-              </h2>
-            </div>
-            <div className="modal-body">
-              <p>Все блюда будут удалены из плана меню. Это действие нельзя отменить.</p>
-            </div>
-            <div className="modal-footer">
-              <button
-                className="btn btn-ghost"
-                onClick={() => setShowClearDialog(false)}
-              >
-                Отмена
-              </button>
-              <button className="btn btn-danger" onClick={handleClearConfirm}>
-                Очистить
-              </button>
-            </div>
+          <div className="modal-head">
+            <h2 id="clear-dialog-title">Очистить план?</h2>
+          </div>
+          <div className="modal-body">
+            <p>Все блюда будут удалены из плана меню. Это действие нельзя отменить.</p>
+          </div>
+          <div className="form-actions" style={{ marginTop: 20 }}>
+            <button
+              className="btn btn-ghost"
+              onClick={() => setShowClearDialog(false)}
+            >
+              Отмена
+            </button>
+            <button className="btn btn-danger" onClick={handleClearConfirm}>
+              Очистить
+            </button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
