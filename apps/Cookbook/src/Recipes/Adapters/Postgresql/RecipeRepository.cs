@@ -7,7 +7,7 @@ using Recipes.Domain;
 
 namespace Recipes.Adapters.Postgresql;
 
-internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredientRepository, IRecipePhotoRepository, ICategoryRepository, IUserRepository, IMealPlanRepository
+internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredientRepository, IRecipePhotoRepository, ICategoryRepository, IUserRepository, IMealPlanRepository, IShoppingListRepository
 {
     public const string DefaultSchema = "cookbook";
 
@@ -604,6 +604,96 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
             .ToList();
 
         return new MealPlanView(plan.Id.Value, slots);
+    }
+
+    // ── IShoppingListRepository ──────────────────────────────────────────────
+
+    public async Task<IReadOnlyList<ShoppingListGroupView>> GetShoppingListAsync(
+        UserId userId,
+        CancellationToken cancellationToken = default)
+    {
+        var plan = await MealPlans
+            .AsNoTracking()
+            .Where(p => p.UserId == userId)
+            .Select(p => new { p.Id })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (plan is null)
+            return [];
+
+        // Загружаем слоты → items
+        var items = await (
+            from slot in MealPlanSlots.AsNoTracking()
+            where EF.Property<MealPlanId>(slot, "meal_plan_id") == plan.Id
+            from item in MealPlanItems.AsNoTracking()
+                .Where(i => EF.Property<Guid?>(i, "MealPlanSlotId") == slot.Id)
+            select new { item.RecipeId, item.Servings }
+        ).ToListAsync(cancellationToken);
+
+        if (items.Count == 0)
+            return [];
+
+        var recipeIds = items.Select(i => i.RecipeId).Distinct().ToList();
+
+        // Загружаем рецепты с ингредиентами
+        var recipes = await Recipes
+            .AsNoTracking()
+            .Include(r => r.Ingredients)
+            .Where(r => recipeIds.Contains(r.Id))
+            .ToListAsync(cancellationToken);
+
+        var recipeMap = recipes.ToDictionary(r => r.Id);
+
+        // Собираем все IngredientId
+        var ingredientIds = recipes
+            .SelectMany(r => r.Ingredients)
+            .Select(ri => ri.IngredientId)
+            .Distinct()
+            .ToList();
+
+        // Загружаем ингредиенты
+        var ingredientMap = await Ingredients
+            .AsNoTracking()
+            .Where(i => ingredientIds.Contains(i.Id))
+            .ToDictionaryAsync(i => i.Id, cancellationToken);
+
+        // Агрегация: группировка по IngredientId, суммирование amount * (servings / recipe.Servings)
+        var totals = new Dictionary<IngredientId, decimal>();
+
+        foreach (var item in items)
+        {
+            if (!recipeMap.TryGetValue(item.RecipeId, out var recipe))
+                continue;
+
+            if (recipe.Servings <= 0)
+                continue;
+
+            var factor = (decimal)item.Servings.Value / recipe.Servings;
+
+            foreach (var ri in recipe.Ingredients)
+            {
+                var amount = ri.Amount * factor;
+                totals[ri.IngredientId] = totals.GetValueOrDefault(ri.IngredientId) + amount;
+            }
+        }
+
+        // Группировка по Category, сортировка
+        var groups = totals
+            .Where(kv => ingredientMap.ContainsKey(kv.Key))
+            .GroupBy(kv => ingredientMap[kv.Key].Category)
+            .OrderBy(g => (int)g.Key)
+            .Select(g => new ShoppingListGroupView(
+                g.Key,
+                g.OrderBy(kv => ingredientMap[kv.Key].Title)
+                    .Select(kv => new ShoppingListItemView(
+                        kv.Key,
+                        ingredientMap[kv.Key].Title,
+                        kv.Value,
+                        ingredientMap[kv.Key].Unit))
+                    .ToList()))
+            .ToList();
+
+        return groups;
     }
 
     public async Task SavePlanAsync(MealPlan mealPlan, CancellationToken cancellationToken = default)

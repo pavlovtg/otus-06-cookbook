@@ -667,6 +667,29 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+  /api/v1/shopping-list:
+    get:
+      summary: Получить список покупок текущего пользователя
+      operationId: getShoppingList
+      tags:
+        - ShoppingList
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Список покупок, сгруппированный по категориям ингредиентов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ShoppingListGroupDto"
+        "401":
+          description: Не авторизован
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
   /api/v1/auth/register:
     post:
       summary: Зарегистрировать нового пользователя
@@ -1905,6 +1928,45 @@ components:
           items:
             $ref: "#/components/schemas/MealPlanSlotRequest"
           description: Список слотов для замены плана меню
+    ShoppingListItemDto:
+      type: object
+      required:
+        - ingredientId
+        - title
+        - amount
+        - unit
+      properties:
+        ingredientId:
+          type: string
+          format: uuid
+          description: Идентификатор ингредиента
+          example: 22222222-0000-0000-0000-000000000001
+        title:
+          type: string
+          description: Название ингредиента
+          example: Морковь
+        amount:
+          type: number
+          format: double
+          description: Суммарное количество
+          example: 300
+        unit:
+          type: string
+          description: Единица измерения
+          example: г
+    ShoppingListGroupDto:
+      type: object
+      required:
+        - category
+        - items
+      properties:
+        category:
+          $ref: "#/components/schemas/IngredientCategory"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ShoppingListItemDto"
+          description: Ингредиенты в группе, отсортированные по названию
   securitySchemes:
     BearerAuth:
       type: http

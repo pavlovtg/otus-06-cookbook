@@ -35,6 +35,8 @@ builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IMealPlanRepository>(sp => sp.GetRequiredService<RecipeRepository>());
 builder.Services.AddScoped<MealPlanService>();
+builder.Services.AddScoped<IShoppingListRepository>(sp => sp.GetRequiredService<RecipeRepository>());
+builder.Services.AddScoped<ShoppingListService>();
 
 var jwtSecret = builder.Configuration["JWT:Secret"]
     ?? throw new InvalidOperationException("JWT:Secret is not configured.");
