@@ -1,22 +1,29 @@
 import * as React from 'react';
 
-export interface ShoppingRow {
-  ingredient: { title: string; unit: string; category: string };
+export interface ShoppingListItem {
+  ingredientId: string;
+  title: string;
   amount: number;
+  unit: string;
 }
-export function ShoppingList({ grouped }: { grouped: Record<string, ShoppingRow[]> }) {
-  const cats = Object.keys(grouped);
-  if (!cats.length) return null;
+
+export interface ShoppingListGroup {
+  category: string;
+  items: ShoppingListItem[];
+}
+
+export function ShoppingList({ groups }: { groups: ShoppingListGroup[] }) {
+  if (!groups.length) return null;
   return (
     <div className="shopping-table">
-      {cats.map((cat) => (
-        <React.Fragment key={cat}>
-          <div className="shopping-group-head">{cat}</div>
-          {grouped[cat].map((row, i) => (
-            <div className="shopping-row" key={i}>
-              <span>{row.ingredient.title}</span>
-              <span className="qty">{Math.round(row.amount * 100) / 100}</span>
-              <span className="unit">{row.ingredient.unit}</span>
+      {groups.map((group) => (
+        <React.Fragment key={group.category}>
+          <div className="shopping-group-head">{group.category}</div>
+          {group.items.map((item) => (
+            <div className="shopping-row" key={item.ingredientId}>
+              <span>{item.title}</span>
+              <span className="qty">{Math.round(item.amount * 100) / 100}</span>
+              <span className="unit">{item.unit}</span>
             </div>
           ))}
         </React.Fragment>

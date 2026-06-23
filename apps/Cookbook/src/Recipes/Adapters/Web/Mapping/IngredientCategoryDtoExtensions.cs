@@ -29,6 +29,9 @@ internal static class IngredientCategoryDtoExtensions
     public static IngredientCategoryDto ToDto(this IngredientCategory category) =>
         ToDtoMap[category];
 
+    public static string ToDtoString(this IngredientCategory category) =>
+        JsonSerializer.Serialize(category.ToDto()).Trim('"');
+
     public static IngredientCategory ToDomain(this IngredientCategoryDto dto) =>
         ToDomainMap[dto];
 

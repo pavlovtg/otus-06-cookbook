@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import {
   DndContext,
   DragOverlay,
@@ -12,6 +13,7 @@ import { PlannerGrid } from "@/components/features/planner/PlannerGrid";
 import { PlannerRecipeCard } from "@/components/features/planner/PlannerRecipeCard";
 import { updateMealPlan, clearMealPlan } from "@/lib/bff/meal-plan";
 import { planToRequest, type Plan } from "@/lib/planner-utils";
+import { CartIcon } from "@/lib/icons";
 import type { RecipeShortDto } from "@/lib/schemas/recipe";
 
 export interface PlannerPageClientProps {
@@ -146,6 +148,10 @@ export function PlannerPageClient({
               {saveError}
             </span>
           )}
+          <Link href="/shopping-list" className="btn btn-ghost btn-sm">
+            <CartIcon size={14} />
+            Список покупок
+          </Link>
           <button
             className="btn btn-ghost btn-sm"
             onClick={() => setShowClearDialog(true)}

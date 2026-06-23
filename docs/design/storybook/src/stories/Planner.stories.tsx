@@ -114,7 +114,7 @@ export const Playground: S = {
     const [q, setQ] = React.useState('');
     const list = recipes.filter((r) => r.title.toLowerCase().includes(q.toLowerCase()));
 
-    const grouped = React.useMemo(() => {
+    const groups = React.useMemo(() => {
       const acc = new Map<string, { ingredient: any; amount: number }>();
       for (const key of Object.keys(plan)) {
         for (const it of plan[key]) {
@@ -130,13 +130,20 @@ export const Playground: S = {
           }
         }
       }
-      const groups: Record<string, any[]> = {};
+      const catMap = new Map<string, { ingredientId: string; title: string; amount: number; unit: string }[]>();
       for (const v of acc.values()) {
-        (groups[v.ingredient.category] ||= []).push(v);
+        const cat = v.ingredient.category as string;
+        if (!catMap.has(cat)) catMap.set(cat, []);
+        catMap.get(cat)!.push({
+          ingredientId: v.ingredient.id,
+          title: v.ingredient.title,
+          amount: v.amount,
+          unit: v.ingredient.unit,
+        });
       }
-      for (const k of Object.keys(groups))
-        groups[k].sort((a, b) => a.ingredient.title.localeCompare(b.ingredient.title, 'ru'));
-      return groups;
+      for (const items of catMap.values())
+        items.sort((a, b) => a.title.localeCompare(b.title, 'ru'));
+      return Array.from(catMap.entries()).map(([category, items]) => ({ category, items }));
     }, [plan]);
 
     return (
@@ -150,7 +157,7 @@ export const Playground: S = {
         <h3 className="t-subheading" style={{ marginTop: 8 }}>
           Список покупок
         </h3>
-        <ShoppingList grouped={grouped} />
+        <ShoppingList groups={groups} />
       </div>
     );
   },
