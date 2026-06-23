@@ -1123,6 +1123,46 @@ body:not([data-role="admin"]) [data-requires="admin"] {
   .kpi-grid { grid-template-columns: 1fr 1fr; }
 }
 
+/* --- Mobile (480px) --------------------------------------- */
+@media (max-width: 480px) {
+  /* Header: скрыть текст nav-ссылок, оставить только иконки */
+  .nav a span { display: none; }
+  .nav a { padding: 8px; gap: 0; }
+
+  /* user-chip: скрыть имя и роль, оставить аватар + кнопку выхода */
+  .user-chip > span:not(.avatar) { display: none; }
+  .role-tag { display: none; }
+
+  /* detail-bar: meta переносится на новую строку */
+  .detail-bar { flex-wrap: wrap; }
+  .detail-bar .title { flex: 1 1 100%; order: 2; white-space: normal; }
+  .detail-bar .meta { order: 3; width: 100%; flex-wrap: wrap; }
+  .detail-bar .spacer { display: none; }
+
+  /* auth-shell: меньше отступ сверху */
+  .auth-shell { padding: 24px var(--side-pad); }
+
+  /* main: меньше нижний отступ */
+  .main { padding-bottom: 40px; }
+
+  /* kpi-grid: 1 колонна */
+  .kpi-grid { grid-template-columns: 1fr; }
+
+  /* shopping-row: 2 колонны */
+  .shopping-row { grid-template-columns: 1fr auto; gap: 8px; }
+
+  /* page-heading: стек */
+  .page-heading { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+  /* detail-toolbar: стек */
+  .detail-toolbar { flex-direction: column; align-items: flex-start; }
+  .detail-actions { margin-left: 0; }
+
+  /* form-actions: растянуть кнопки */
+  .form-actions { flex-direction: column-reverse; }
+  .form-actions .btn { width: 100%; justify-content: center; }
+}
+
 /* --- Print ----------------------------------------------- */
 @media print {
   .header, .aside, .toolbar, .page-head .btn, .btn, .toast-stack, .modal-backdrop { display: none !important; }

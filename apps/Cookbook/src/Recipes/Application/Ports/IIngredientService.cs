@@ -18,6 +18,7 @@ internal interface IIngredientService
         string unit,
         float defaultAmount,
         IngredientCategory category,
+        bool isAdmin = false,
         CancellationToken cancellationToken = default);
 
     Task UpdateAsync(
@@ -26,7 +27,9 @@ internal interface IIngredientService
         string unit,
         float defaultAmount,
         IngredientCategory category,
+        bool? isSystem = null,
+        bool isAdmin = false,
         CancellationToken cancellationToken = default);
 
-    Task DeleteAsync(IngredientId id, CancellationToken cancellationToken = default);
+    Task DeleteAsync(IngredientId id, bool isAdmin = false, CancellationToken cancellationToken = default);
 }

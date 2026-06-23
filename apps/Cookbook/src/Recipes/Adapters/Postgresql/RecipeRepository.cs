@@ -7,7 +7,7 @@ using Recipes.Domain;
 
 namespace Recipes.Adapters.Postgresql;
 
-internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredientRepository, IRecipePhotoRepository, ICategoryRepository, IUserRepository, IMealPlanRepository, IShoppingListRepository
+internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredientRepository, IRecipePhotoRepository, ICategoryRepository, IUserRepository, IMealPlanRepository, IShoppingListRepository, IDashboardRepository
 {
     public const string DefaultSchema = "cookbook";
 
@@ -239,6 +239,8 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
 
         var total = await query.CountAsync(cancellationToken);
         var items = await query
+            .OrderBy(i => i.Category)
+            .ThenBy(i => i.Title)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
@@ -726,5 +728,160 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
                     Entry(item).State = EntityState.Added;
             }
         }
+    }
+
+    // ── IDashboardRepository ─────────────────────────────────────────────────
+
+    async Task<int> IDashboardRepository.GetTotalRecipesAsync(CancellationToken ct)
+        => await Recipes.AsNoTracking().CountAsync(ct);
+
+    async Task<int> IDashboardRepository.GetMyRecipesAsync(UserId userId, CancellationToken ct)
+        => await Recipes.AsNoTracking().CountAsync(r => r.AuthorId == userId, ct);
+
+    async Task<int> IDashboardRepository.GetMyCommentsAsync(UserId userId, CancellationToken ct)
+        => await RecipeComments.AsNoTracking().CountAsync(c => c.AuthorId == userId, ct);
+
+    async Task<IReadOnlyList<RecipeRankView>> IDashboardRepository.GetTop10ByRatingAsync(CancellationToken ct)
+    {
+        var rows = await Recipes
+            .AsNoTracking()
+            .Where(r => r.IsPublic && r.AverageRating != null)
+            .OrderByDescending(r => r.AverageRating)
+            .Take(10)
+            .Select(r => new { r.Id, r.Title, r.AverageRating })
+            .ToListAsync(ct);
+
+        return rows
+            .Select(r => new RecipeRankView(r.Id, r.Title, r.AverageRating!.Value))
+            .ToList();
+    }
+
+    async Task<IReadOnlyList<RecipeRankView>> IDashboardRepository.GetTopFavoritesByRatingAsync(UserId userId, CancellationToken ct)
+    {
+        var rows = await Recipes
+            .AsNoTracking()
+            .Where(r => r.IsPublic && UserFavorites.Any(uf => uf.UserId == userId && uf.RecipeId == r.Id))
+            .OrderByDescending(r => r.AverageRating ?? 0f)
+            .Take(10)
+            .Select(r => new { r.Id, r.Title, r.AverageRating })
+            .ToListAsync(ct);
+
+        return rows
+            .Select(r => new RecipeRankView(r.Id, r.Title, r.AverageRating ?? 0f))
+            .ToList();
+    }
+
+    async Task<IReadOnlyList<CategoryCountView>> IDashboardRepository.GetByMainIngredientAsync(CancellationToken ct)
+    {
+        var rows = await (
+            from rc in Set<RecipeCategory>().AsNoTracking()
+            join c in Categories.AsNoTracking() on rc.CategoryId equals c.Id
+            where c.Type == CategoryType.MainIngredient
+            group c by c.Name into g
+            orderby g.Count() descending
+            select new { CategoryName = g.Key, RecipeCount = g.Count() }
+        ).ToListAsync(ct);
+
+        return rows.Select(r => new CategoryCountView(r.CategoryName, r.RecipeCount)).ToList();
+    }
+
+    async Task<IReadOnlyList<CategoryCountView>> IDashboardRepository.GetByCuisineAsync(CancellationToken ct)
+    {
+        var rows = await (
+            from rc in Set<RecipeCategory>().AsNoTracking()
+            join c in Categories.AsNoTracking() on rc.CategoryId equals c.Id
+            where c.Type == CategoryType.Cuisine
+            group c by c.Name into g
+            orderby g.Count() descending
+            select new { CategoryName = g.Key, RecipeCount = g.Count() }
+        ).ToListAsync(ct);
+
+        return rows.Select(r => new CategoryCountView(r.CategoryName, r.RecipeCount)).ToList();
+    }
+
+    async Task<int> IDashboardRepository.GetTotalUsersAsync(CancellationToken ct)
+        => await Users.AsNoTracking().CountAsync(ct);
+
+    async Task<int> IDashboardRepository.GetTotalCommentsAsync(CancellationToken ct)
+        => await RecipeComments.AsNoTracking().CountAsync(ct);
+
+    async Task<IReadOnlyList<UserRankView>> IDashboardRepository.GetTopUsersByRatingAsync(CancellationToken ct)
+    {
+        var rows = await (
+            from u in Users.AsNoTracking()
+            let avgRating = RecipeRatings
+                .AsNoTracking()
+                .Where(rr => Recipes.Any(r => r.Id == rr.RecipeId && r.AuthorId == u.Id))
+                .Select(rr => (double?)rr.Value)
+                .Average()
+            let commentCount = RecipeComments.AsNoTracking().Count(c => c.AuthorId == u.Id)
+            where avgRating != null
+            orderby avgRating descending
+            select new { u.Id, u.DisplayName, AverageRating = (float?)avgRating, CommentCount = commentCount }
+        ).Take(10).ToListAsync(ct);
+
+        return rows.Select(r => new UserRankView(r.Id, r.DisplayName, r.AverageRating, r.CommentCount)).ToList();
+    }
+
+    async Task<IReadOnlyList<UserRankView>> IDashboardRepository.GetTopUsersByCommentsAsync(CancellationToken ct)
+    {
+        var rows = await (
+            from c in RecipeComments.AsNoTracking()
+            group c by c.AuthorId into g
+            orderby g.Count() descending
+            select new { AuthorId = g.Key, CommentCount = g.Count() }
+        ).Take(10).ToListAsync(ct);
+
+        var authorIds = rows.Select(r => r.AuthorId).ToList();
+
+        var userNames = await Users
+            .AsNoTracking()
+            .Where(u => authorIds.Contains(u.Id))
+            .Select(u => new { u.Id, u.DisplayName })
+            .ToListAsync(ct);
+
+        var nameMap = userNames.ToDictionary(u => u.Id, u => u.DisplayName);
+
+        return rows
+            .Select(r => new UserRankView(
+                r.AuthorId,
+                nameMap.GetValueOrDefault(r.AuthorId, string.Empty),
+                null,
+                r.CommentCount))
+            .ToList();
+    }
+
+    async Task<IReadOnlyDictionary<string, bool>> IDashboardRepository.GetPlanFillAsync(UserId userId, CancellationToken ct)
+    {
+        var plan = await MealPlans
+            .AsNoTracking()
+            .Where(p => p.UserId == userId)
+            .Select(p => new { p.Id })
+            .FirstOrDefaultAsync(ct);
+
+        // Все возможные слоты (7 дней × 3 типа = 21)
+        var allSlots = (
+            from wd in Enum.GetValues<WeekDay>()
+            from mt in Enum.GetValues<MealType>()
+            select $"{wd}_{mt}"
+        ).ToDictionary(k => k, _ => false);
+
+        if (plan is null)
+            return allSlots;
+
+        var filledSlots = await (
+            from slot in MealPlanSlots.AsNoTracking()
+            where EF.Property<MealPlanId>(slot, "meal_plan_id") == plan.Id
+            where MealPlanItems.AsNoTracking().Any(i => EF.Property<Guid?>(i, "MealPlanSlotId") == slot.Id)
+            select new { slot.WeekDay, slot.MealType }
+        ).ToListAsync(ct);
+
+        foreach (var slot in filledSlots)
+        {
+            var key = $"{slot.WeekDay}_{slot.MealType}";
+            allSlots[key] = true;
+        }
+
+        return allSlots;
     }
 }

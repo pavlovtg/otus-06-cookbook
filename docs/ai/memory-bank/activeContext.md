@@ -2,33 +2,40 @@
 
 ## Текущая задача
 
-Багфикс страницы списка покупок — завершён.
+Адаптивная мобильная верстка — завершено.
 
 ## Последнее завершённое
 
-Исправление 4 ошибок на странице `/shopping-list`:
+Мобильная адаптивность (Вариант A — только CSS):
 
-- `ShoppingListController.cs` + `IngredientCategoryDtoExtensions.cs`: категории теперь отдаются в snake_case через `ToDtoString()` (JSON-сериализация enum с `[JsonStringEnumMemberName]`)
-- `shopping-list/page.tsx`: русские названия категорий через `IngredientCategoryLabels`; количество с точностью 2 знака
-- `ShoppingListActions.tsx`: русские категории и точность 2 знака при копировании
-- `layout.tsx`: добавлена вкладка «Список покупок» с `CartIcon` — только для авторизованных
-
-## Ранее завершённое
-
-Исправление 4 падающих UI-тестов планировщика:
-
-- `PlannerGrid.tsx`: добавлены классы `planner-day-header` (к `planner-head-cell`) и `planner-meal-header` (к `planner-meal-label`) — тесты искали именно эти классы
-- `globals.css`: добавлен `isolation: isolate` к `.planner-panel` — draggable-карточки dnd-kit создавали stacking context и перекрывали `modal-backdrop` (z-index: 100), блокируя клики по кнопкам диалога
+- `globals.css`: добавлен блок `@media (max-width: 480px)`:
+  - `.nav a span { display: none }` — nav только иконки на мобиле
+  - `.user-chip > span:not(.avatar) { display: none }` — скрыть имя/роль в шапке
+  - `.detail-bar { flex-wrap: wrap }` + title/meta на отдельные строки
+  - `.auth-shell { padding: 24px }` — меньше отступ на auth-страницах
+  - `.kpi-grid { grid-template-columns: 1fr }` — 1 колонна на дашборде
+  - `.shopping-row { grid-template-columns: 1fr auto }` — 2 колонны в списке покупок
+  - `.page-heading`, `.detail-toolbar`, `.detail-actions` — стек на мобиле
+  - `.form-actions .btn { width: 100% }` — кнопки форм на всю ширину
 
 ## Ранее завершённое
 
-Улучшение UI планировщика меню:
+Ограничение доступа к категориям рецептов + правка тестов:
 
-- `PlannerRecipeCard` — убраны inline-размеры фото (48×48), теперь CSS управляет через `aspect-ratio: 16/10`
-- `PlannerSlot` — добавлена миниатюра рецепта (`aspect-ratio: 16/9`), кнопка удаления перемещена в правый верхний угол (`position: absolute; top: 4px; right: 4px`), контрол порций — в правый нижний (`position: absolute; bottom: 4px; right: 4px`)
-- `PlannerGrid` — добавлен prop `recipePhotos: Record<string, string | undefined>`
-- `PlannerPageClient` — формирует `recipePhotos` из `recipes` и передаёт в `PlannerGrid`
-- `globals.css` — карточка панели `180px`, ячейки сетки `minmax(160px, 1fr)`, слот `min-height: 180px`, layout `planner-slot-item` переработан на `flex-direction: column` с абсолютным позиционированием кнопки и порций
+- `CategoriesController.cs`: `[Authorize]` + `IsAdmin()` на POST/PUT/DELETE → 403 если не admin
+- `middleware.ts`: `/categories` добавлен в `ADMIN_PATHS`
+- `layout.tsx`: ссылка «Категории» только при `user?.role === "admin"`
+- `categories/page.tsx`: серверный guard → `redirect("/")` если не admin
+- Тесты: `CategoriesCrudTests.cs`, `test_categories_api.py`, `test_categories.py` — обновлены
+
+## Ранее завершённое
+
+Рефакторинг страницы `/ingredients`:
+
+- `pageSize=20`, порядок `IngredientCategory` приведён к алфавитному порядку БД
+- Кнопки редактирования/удаления скрыты для неавторизованных
+- Системные ингредиенты — только admin; флаг `isSystem` — только admin
+- Backend: `[Authorize]` + проверки в `IngredientService`
 
 ## Ключевые решения
 
@@ -37,13 +44,12 @@
 - JWT выпускается и валидируется recipes-сервисом
 - S2S не нужен (один доменный сервис в MVP)
 - Token blacklist — не реализован, тест скипнут
-- Hard navigation после логина нужна, т.к. Next.js layout — серверный компонент и не перерендеривается при soft navigation
-- Auth route.ts использовали `/api/v1/auth/...` напрямую к gateway, но gateway знает только `/api/cookbook/**` → исправлено на `/api/cookbook/v1/auth/...`
+- Hard navigation после логина нужна, т.к. Next.js layout — серверный компонент
 - iron-session хранит JWT в зашифрованной cookie `cookbook_session`
-- `isPublic` и `authorName` добавлены в Zod-схемы `RecipeShortDtoSchema`, `RecipeDtoSchema`, `RecipeRequestSchema`
-- 403 на детальной странице обрабатывается через проверку `err.message.includes("403")` → показывает UI-сообщение вместо `notFound()`
-- `serverFetch(url, init?)` в `lib/server-fetch.ts` — обёртка для Server Components, автоматически добавляет `Authorization` из `getSession()`. `getRecipe`/`getRecipes` используют `serverFetch` — автор видит свои приватные рецепты.
-- `CommentsSection` — Client Component; первая страница комментариев загружается в Server Component (`getComments` с `.catch`) и передаётся как `initialData`; смена страниц — клиентский fetch
-- Один комментарий на пользователя на рецепт — уникальный индекс `(recipe_id, author_id)` в таблице `recipe_comments`
-- DnD планировщика — `@dnd-kit/core` + `@dnd-kit/utilities` (ADR-0036, AR-0064); `useDraggable` на карточке, `useDroppable` на слоте, `DragOverlay` для floating-карточки
-- Все API-запросы идут через nginx → Next.js BFF route handlers → gateway → recipes; BFF route handler обязателен для каждого ресурса
+- 403 на детальной странице → UI-сообщение вместо `notFound()`
+- `serverFetch` в `lib/server-fetch.ts` — обёртка для Server Components с авторизацией
+- `CommentsSection` — Client Component; первая страница — SSR, смена страниц — клиент
+- DnD планировщика — `@dnd-kit/core` + `@dnd-kit/utilities` (ADR-0036, AR-0064)
+- Все API-запросы: nginx → Next.js BFF route handlers → gateway → recipes
+- `IngredientCategory` в БД — snake_case, сортировка алфавитная
+- Адаптивность — только CSS (`globals.css`), без изменений TSX; брейкпойнты: 1100px / 768px / 480px

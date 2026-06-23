@@ -268,7 +268,12 @@ public sealed class GetRecipesTests(RecipeMicroserviceFixture fixture) : IAsyncL
             Unit: "г",
             DefaultAmount: 100f,
             Category: "vegetables");
-        var response = await _client.PostAsJsonAsync("/api/v1/ingredients", req);
+        using var msg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/ingredients")
+        {
+            Content = JsonContent.Create(req),
+            Headers = { Authorization = _authHeader },
+        };
+        var response = await _client.SendAsync(msg);
         response.EnsureSuccessStatusCode();
         var dto = await response.Content.ReadFromJsonAsync<IngredientDto>();
         return dto!.Id;

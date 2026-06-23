@@ -5,6 +5,7 @@ import httpx
 import pytest
 
 AUTH_BASE = "/api/cookbook/v1/auth"
+ADMIN_BASE = "/api/cookbook/v1"
 
 
 @pytest.fixture(scope="session")
@@ -24,4 +25,17 @@ def auth_token(base_url: str) -> str:
         f"{base_url}{AUTH_BASE}/login",
         json={"email": email, "password": password},
     )
+    return resp.json()["token"]
+
+
+@pytest.fixture(scope="session")
+def admin_token(base_url: str) -> str:
+    """Возвращает JWT администратора (seed-admin из docker-compose)."""
+    admin_email = os.environ.get("ADMIN_EMAIL", "admin@cookbook.local")
+    admin_password = os.environ.get("ADMIN_PASSWORD", "1234567890")
+    resp = httpx.post(
+        f"{base_url}{AUTH_BASE}/login",
+        json={"email": admin_email, "password": admin_password},
+    )
+    assert resp.status_code == 200, f"Admin login failed: {resp.text}"
     return resp.json()["token"]

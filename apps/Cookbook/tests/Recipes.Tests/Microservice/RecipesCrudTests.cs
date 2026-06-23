@@ -396,7 +396,12 @@ public sealed class RecipesCrudTests(RecipeMicroserviceFixture fixture) : IAsync
             Category: "vegetables"
         );
 
-        var response = await _client.PostAsJsonAsync("/api/v1/ingredients", request);
+        using var msg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/ingredients")
+        {
+            Content = JsonContent.Create(request),
+            Headers = { Authorization = _authHeader },
+        };
+        var response = await _client.SendAsync(msg);
         response.EnsureSuccessStatusCode();
 
         return (await response.Content.ReadFromJsonAsync<IngredientDto>())!;

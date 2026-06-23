@@ -1,6 +1,8 @@
 export const dynamic = "force-dynamic";
 
+import { redirect } from "next/navigation";
 import logger from "@/lib/logger";
+import { getSession } from "@/lib/session";
 import { getCategories } from "@/lib/bff/categories.server";
 import {
   CategoryType,
@@ -11,6 +13,11 @@ import { CategoryModal } from "./CategoryModal";
 import { DeleteCategoryButton } from "./DeleteCategoryButton";
 
 export default async function CategoriesPage() {
+  const session = await getSession();
+  if (!session.user || session.user.role !== "admin") {
+    redirect("/");
+  }
+
   let categories: Category[] = [];
   let fetchError: string | null = null;
 

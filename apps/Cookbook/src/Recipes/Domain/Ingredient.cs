@@ -40,7 +40,8 @@ internal sealed class Ingredient
         string title,
         string unit,
         float defaultAmount,
-        IngredientCategory category)
+        IngredientCategory category,
+        bool? isSystem = null)
     {
         ValidateTitle(title);
         ValidateUnit(unit);
@@ -50,6 +51,9 @@ internal sealed class Ingredient
         Unit = unit;
         DefaultAmount = defaultAmount;
         Category = category;
+
+        if (isSystem.HasValue)
+            IsSystem = isSystem.Value;
     }
 
     private static void ValidateTitle(string title)

@@ -36,6 +36,7 @@ internal sealed class IngredientService : IIngredientService
         string unit,
         float defaultAmount,
         IngredientCategory category,
+        bool isAdmin = false,
         CancellationToken cancellationToken = default)
     {
         var ingredient = Ingredient.Create(IngredientId.New(), title, unit, defaultAmount, category);
@@ -50,20 +51,31 @@ internal sealed class IngredientService : IIngredientService
         string unit,
         float defaultAmount,
         IngredientCategory category,
+        bool? isSystem = null,
+        bool isAdmin = false,
         CancellationToken cancellationToken = default)
     {
         var ingredient = await _repository.GetByIdAsync(id, cancellationToken)
             ?? throw new IngredientNotFoundException(id);
 
-        ingredient.Update(title, unit, defaultAmount, category);
+        if (ingredient.IsSystem && !isAdmin)
+            throw new IngredientSystemFlagForbiddenException();
+
+        if (isSystem.HasValue && !isAdmin)
+            throw new IngredientSystemFlagForbiddenException();
+
+        ingredient.Update(title, unit, defaultAmount, category, isAdmin ? isSystem : null);
         await _repository.UpdateAsync(ingredient, cancellationToken);
         await _repository.CommitAsync(cancellationToken);
     }
 
-    public async Task DeleteAsync(IngredientId id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(IngredientId id, bool isAdmin = false, CancellationToken cancellationToken = default)
     {
         var ingredient = await _repository.GetByIdAsync(id, cancellationToken)
             ?? throw new IngredientNotFoundException(id);
+
+        if (ingredient.IsSystem && !isAdmin)
+            throw new IngredientSystemFlagForbiddenException();
 
         var usage = await _recipeRepository.GetRecipesUsingIngredientAsync(id, cancellationToken);
         if (usage.TotalCount > 0)

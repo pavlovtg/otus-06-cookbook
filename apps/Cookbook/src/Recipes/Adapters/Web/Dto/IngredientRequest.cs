@@ -4,4 +4,5 @@ internal sealed record IngredientRequest(
     string Title,
     string Unit,
     float DefaultAmount,
-    string Category);
+    string Category,
+    bool? IsSystem = null);

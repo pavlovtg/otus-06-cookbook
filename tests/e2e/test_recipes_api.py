@@ -173,14 +173,18 @@ def test_delete_unknown_recipe_returns_400(base_url: str, auth_token: str) -> No
 INGREDIENTS_BASE = "/api/cookbook/v1/ingredients"
 
 
-def _create_ingredient(base_url: str) -> dict:
-    response = httpx.post(f"{base_url}{INGREDIENTS_BASE}", json=VALID_INGREDIENT)
+def _create_ingredient(base_url: str, auth_token: str) -> dict:
+    response = httpx.post(
+        f"{base_url}{INGREDIENTS_BASE}",
+        json=VALID_INGREDIENT,
+        headers={"Authorization": f"Bearer {auth_token}"},
+    )
     assert response.status_code == 201
     return response.json()
 
 
 def test_create_recipe_with_ingredients_returns_ingredients_in_get(base_url: str, auth_token: str) -> None:
-    ingredient = _create_ingredient(base_url)
+    ingredient = _create_ingredient(base_url, auth_token)
 
     recipe_payload = {
         **VALID_RECIPE,
@@ -206,7 +210,7 @@ def test_create_recipe_with_ingredients_returns_ingredients_in_get(base_url: str
 
 def test_update_recipe_removes_ingredient(base_url: str, auth_token: str) -> None:
     headers = {"Authorization": f"Bearer {auth_token}"}
-    ingredient = _create_ingredient(base_url)
+    ingredient = _create_ingredient(base_url, auth_token)
 
     recipe_payload = {
         **VALID_RECIPE,
@@ -432,10 +436,10 @@ def test_search_by_two_ingredients_returns_only_recipe_with_both(base_url: str, 
 
     ing1 = httpx.post(f"{base_url}{INGREDIENTS_BASE}", json={
         "title": ing1_title, "unit": "г", "defaultAmount": 100.0, "category": "vegetables",
-    })
+    }, headers=headers)
     ing2 = httpx.post(f"{base_url}{INGREDIENTS_BASE}", json={
         "title": ing2_title, "unit": "г", "defaultAmount": 100.0, "category": "vegetables",
-    })
+    }, headers=headers)
     assert ing1.status_code == 201
     assert ing2.status_code == 201
     ing1_id = ing1.json()["id"]

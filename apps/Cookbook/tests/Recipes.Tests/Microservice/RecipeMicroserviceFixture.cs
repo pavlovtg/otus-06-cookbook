@@ -22,6 +22,7 @@ public sealed class RecipeMicroserviceFixture : IAsyncLifetime
     private RecipeMicroserviceHost? _host;
 
     public HttpClient Client { get; private set; } = null!;
+    public string ConnectionString => _postgres.GetConnectionString();
 
     public async Task InitializeAsync()
     {
@@ -82,6 +83,34 @@ public sealed class RecipeMicroserviceFixture : IAsyncLifetime
         response.EnsureSuccessStatusCode();
 
         var auth = await response.Content.ReadFromJsonAsync<AuthResponse>();
+        return new AuthenticationHeaderValue("Bearer", auth!.Token);
+    }
+
+    /// <summary>
+    /// Регистрирует пользователя, повышает его до admin через прямой UPDATE в БД,
+    /// логинится и возвращает Bearer-заголовок с ролью admin.
+    /// </summary>
+    public async Task<AuthenticationHeaderValue> GetAdminAuthHeaderAsync()
+    {
+        var email = $"test-admin-{Guid.NewGuid():N}@test.local";
+        const string password = "Password1!";
+
+        var registerRequest = new RegisterRequest(email, "Test Admin", password);
+        var registerResponse = await Client.PostAsJsonAsync("/api/v1/auth/register", registerRequest);
+        registerResponse.EnsureSuccessStatusCode();
+
+        await using var conn = new NpgsqlConnection(_postgres.GetConnectionString());
+        await conn.OpenAsync();
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE cookbook.users SET role = 'admin' WHERE email = @email";
+        cmd.Parameters.AddWithValue("email", email);
+        await cmd.ExecuteNonQueryAsync();
+
+        var loginRequest = new LoginRequest(email, password);
+        var loginResponse = await Client.PostAsJsonAsync("/api/v1/auth/login", loginRequest);
+        loginResponse.EnsureSuccessStatusCode();
+
+        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>();
         return new AuthenticationHeaderValue("Bearer", auth!.Token);
     }
 }
