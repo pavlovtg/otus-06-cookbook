@@ -192,8 +192,12 @@ public sealed class RecipeCategoryTests(RecipeMicroserviceFixture fixture) : IAs
         string name = "Тестовая категория",
         CategoryTypeDto type = CategoryTypeDto.MealRole)
     {
+        var adminHeader = await fixture.GetAdminAuthHeaderAsync();
         var request = new CategoryRequest(Name: name, Description: "Описание", Type: type);
-        var response = await _client.PostAsJsonAsync("/api/v1/categories", request);
+        using var msg = new HttpRequestMessage(HttpMethod.Post, "/api/v1/categories");
+        msg.Headers.Authorization = adminHeader;
+        msg.Content = JsonContent.Create(request);
+        var response = await _client.SendAsync(msg);
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<CategoryDto>())!;
     }

@@ -82,9 +82,9 @@ def test_create_ingredient_validation_error(logged_in_page: Page, base_url: str)
     expect(modal).to_be_visible()
 
 
-def test_edit_ingredient_prefills_form(logged_in_page: Page, base_url: str) -> None:
+def test_edit_ingredient_prefills_form(admin_page: Page, base_url: str) -> None:
     """11.3 Форма редактирования предзаполнена данными ингредиента."""
-    page = logged_in_page
+    page = admin_page
     page.goto(f"{base_url}/ingredients")
 
     first_item = page.locator(".ingredient-item").first
@@ -97,9 +97,9 @@ def test_edit_ingredient_prefills_form(logged_in_page: Page, base_url: str) -> N
     expect(modal.locator("#ingredient-title")).to_have_value(ingredient_title)
 
 
-def test_edit_ingredient_success(logged_in_page: Page, base_url: str) -> None:
+def test_edit_ingredient_success(admin_page: Page, base_url: str) -> None:
     """11.3 Успешное редактирование ингредиента."""
-    page = logged_in_page
+    page = admin_page
     title = _unique_title("UI-тест морковь")
     updated_title = _unique_title("UI-тест морковь обновлённая")
     page.goto(f"{base_url}/ingredients")
@@ -171,9 +171,9 @@ def test_delete_ingredient_with_confirmation(logged_in_page: Page, base_url: str
     expect(page.locator(".ingredient-item", has_text=title)).to_have_count(0)
 
 
-def test_delete_ingredient_cancel(logged_in_page: Page, base_url: str) -> None:
+def test_delete_ingredient_cancel(admin_page: Page, base_url: str) -> None:
     """11.4 Отмена удаления ингредиента."""
-    page = logged_in_page
+    page = admin_page
     page.goto(f"{base_url}/ingredients")
 
     first_item = page.locator(".ingredient-item").first
