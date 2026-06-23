@@ -89,6 +89,15 @@ export default async function IngredientsPage({ searchParams }: Props) {
 
   const ingredients: Ingredient[] = result?.items ?? [];
 
+  const groups = IngredientCategory.options
+    .map((cat) => ({
+      category: cat,
+      items: ingredients
+        .filter((i) => i.category === cat)
+        .sort((a, b) => a.title.localeCompare(b.title, "ru")),
+    }))
+    .filter((g) => g.items.length > 0);
+
   return (
     <>
       <div className="page-heading">
@@ -159,46 +168,52 @@ export default async function IngredientsPage({ searchParams }: Props) {
         </div>
       ) : (
         <>
-          <div className="ingredients-list">
-            {ingredients.map((ingredient) => (
-              <div
-                key={ingredient.id}
-                className="ingredient-item ingredient-row"
-                data-category={ingredient.category}
-              >
-                <div>
-                  <span
-                    className="ingredient-title name"
-                    style={{ color: "var(--fg-primary)" }}
-                  >
-                    {ingredient.title}
-                  </span>
-                  <span
-                    className="t-micro"
-                    style={{ display: "block", marginTop: 2 }}
-                  >
-                    {IngredientCategoryLabels[ingredient.category]} ·{" "}
-                    {ingredient.defaultAmount} {ingredient.unit}
-                    {ingredient.isSystem && " · системный"}
-                  </span>
+          <div className="shopping-table">
+            {groups.map((group) => (
+              <div key={group.category}>
+                <div className="shopping-group-head">
+                  {IngredientCategoryLabels[group.category]}
                 </div>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <IngredientModal
-                    ingredient={ingredient}
-                    trigger={
-                      <button
-                        className="btn btn-ghost btn-sm"
-                        data-testid="edit-ingredient-trigger"
+                {group.items.map((ingredient) => (
+                  <div
+                    key={ingredient.id}
+                    className="ingredient-item ingredient-row"
+                    data-category={ingredient.category}
+                  >
+                    <div>
+                      <span
+                        className="ingredient-title name"
+                        style={{ color: "var(--fg-primary)" }}
                       >
-                        Редактировать
-                      </button>
-                    }
-                  />
-                  <DeleteIngredientButton
-                    id={ingredient.id}
-                    title={ingredient.title}
-                  />
-                </div>
+                        {ingredient.title}
+                      </span>
+                      <span
+                        className="t-micro"
+                        style={{ display: "block", marginTop: 2 }}
+                      >
+                        {ingredient.defaultAmount} {ingredient.unit}
+                        {ingredient.isSystem && " · системный"}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      <IngredientModal
+                        ingredient={ingredient}
+                        trigger={
+                          <button
+                            className="btn btn-ghost btn-sm"
+                            data-testid="edit-ingredient-trigger"
+                          >
+                            Редактировать
+                          </button>
+                        }
+                      />
+                      <DeleteIngredientButton
+                        id={ingredient.id}
+                        title={ingredient.title}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             ))}
           </div>

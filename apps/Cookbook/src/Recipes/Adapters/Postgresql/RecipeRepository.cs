@@ -239,6 +239,8 @@ internal sealed class RecipeRepository : DbContext, IRecipeRepository, IIngredie
 
         var total = await query.CountAsync(cancellationToken);
         var items = await query
+            .OrderBy(i => i.Category)
+            .ThenBy(i => i.Title)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);

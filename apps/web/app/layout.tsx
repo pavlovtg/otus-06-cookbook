@@ -37,7 +37,7 @@ export default async function RootLayout({
                   <Link href="/planner"><CalendarIcon size={14} /><span>Планировщик</span></Link>
                 )}
                 {user && (
-                  <Link href="/shopping-list"><CartIcon size={14} /><span>Список покупок</span></Link>
+                  <Link href="/shopping-list"><CartIcon size={14} /><span>Покупки</span></Link>
                 )}
                 <Link href="/ingredients"><LeafIcon size={14} /><span>Ингредиенты</span></Link>
                 <Link href="/categories"><LayersIcon size={14} /><span>Категории</span></Link>
